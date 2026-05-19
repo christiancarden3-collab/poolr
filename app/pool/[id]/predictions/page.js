@@ -1,663 +1,303 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'next'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { supabase, getCurrentUser } from '../../../../lib/supabase'
-import { WC2026_TEAMS, generateGroupStageMatches, SCORING_RULES } from '../../../../lib/wc2026-data'
-import * as espn from '../../../styles/espn-theme'
+import { useParams } from 'next/navigation'
 
-// ESPN-style Match Pick Card
-function MatchPickCard({ match, homeTeam, awayTeam, prediction, actualScore, onUpdatePrediction, status = 'open' }) {
-  const isSaved = prediction?.homeScore !== undefined && prediction?.awayScore !== undefined
-  const isLive = status === 'live'
-  const isFinished = status === 'ft'
-  const isLocked = isLive || isFinished
+const mockMatches = [
+  { id: 1, home: 'Argentina', away: 'France', homeFlag: 'ar', awayFlag: 'fr', group: 'A', date: 'Jun 25', time: '3:00 PM ET', venue: 'MetLife Stadium', status: 'open', homePick: null, awayPick: null },
+  { id: 2, home: 'Brazil', away: 'Germany', homeFlag: 'br', awayFlag: 'de', group: 'C', date: 'Jun 25', time: '6:00 PM ET', venue: 'SoFi Stadium', status: 'saved', homePick: 2, awayPick: 1, savedAt: 'Jun 24 at 9:12 PM' },
+  { id: 3, home: 'Mexico', away: 'Portugal', homeFlag: 'mx', awayFlag: 'pt', group: 'D', date: 'Jun 25', time: '9:00 PM ET', venue: 'AT&T Stadium', status: 'live', liveTime: "67'", liveScore: '1 – 0', homePick: 1, awayPick: 0, pts: '+1 pt so far' },
+  { id: 4, home: 'Spain', away: 'Netherlands', homeFlag: 'es', awayFlag: 'nl', group: 'H', date: 'Jun 24', time: 'Completed', venue: 'Rose Bowl', status: 'ft', finalScore: '2 – 0', homePick: 2, awayPick: 1, pts: '+1 pt' },
+]
 
-  const handleScoreChange = (team, value) => {
-    if (isLocked) return
-    const numVal = parseInt(value)
-    if (isNaN(numVal) && value !== '') return
-    if (numVal < 0 || numVal > 20) return
-    onUpdatePrediction(match.id, team === 'home' ? 'homeScore' : 'awayScore', value === '' ? undefined : numVal)
+export default function PredictionsPage() {
+  const params = useParams()
+  const [matchday, setMatchday] = useState(3)
+  const [matches, setMatches] = useState(mockMatches)
+
+  const handleScoreChange = (matchId, side, value) => {
+    setMatches(matches.map(m => 
+      m.id === matchId ? { ...m, [`${side}Pick`]: value === '' ? null : parseInt(value) } : m
+    ))
   }
 
-  // Calculate points earned
-  let pointsEarned = null
-  if (isFinished && isSaved && actualScore) {
-    if (prediction.homeScore === actualScore.home && prediction.awayScore === actualScore.away) {
-      pointsEarned = 3
-    } else if (
-      (prediction.homeScore > prediction.awayScore && actualScore.home > actualScore.away) ||
-      (prediction.homeScore < prediction.awayScore && actualScore.home < actualScore.away) ||
-      (prediction.homeScore === prediction.awayScore && actualScore.home === actualScore.away)
-    ) {
-      if (prediction.homeScore === actualScore.home || prediction.awayScore === actualScore.away) {
-        pointsEarned = 2
-      } else {
-        pointsEarned = 1
-      }
-    } else {
-      pointsEarned = 0
-    }
-  }
-
-  return (
-    <div className={`mpc ${isSaved ? 'submitted' : ''} ${isLocked ? 'locked-card' : ''}`}>
-      <div className="mpc-head">
-        <div className="mpc-info">
-          Group {match.group} · {match.date} · {match.time} · {match.venue?.split(',')[0]}
-        </div>
-        <div className={`mpc-status ${isLive ? 's-live' : isFinished ? 's-ft' : isSaved ? 's-saved' : 's-open'}`}>
-          {isLive && <span className="live-dot"></span>}
-          {isLive ? `Live ${actualScore?.minute || ''}'` : isFinished ? 'FT' : isSaved ? '✓ Saved' : 'Open'}
-        </div>
-      </div>
-      
-      <div className="mpc-body">
-        <div className="team-side">
-          <div className="team-flag">
-            <img src={`https://flagcdn.com/w80/${getCountryCode(homeTeam?.code)}.png`} alt={homeTeam?.code} />
-          </div>
-          <div className="team-nm">{homeTeam?.name}</div>
-        </div>
-        
-        <div className="score-center">
-          {isLive && actualScore && (
-            <div className="live-score-label">Live {actualScore.home} – {actualScore.away}</div>
-          )}
-          {isFinished && actualScore && (
-            <div className="final-score-label">Final {actualScore.home} – {actualScore.away}</div>
-          )}
-          
-          {!isLocked ? (
-            <>
-              <div className="score-status s-open">Pick your score</div>
-              <div className="score-inputs">
-                <input 
-                  className={`si ${prediction?.homeScore !== undefined ? 'filled' : ''}`}
-                  type="number" 
-                  min="0" 
-                  max="20" 
-                  placeholder="0"
-                  value={prediction?.homeScore ?? ''}
-                  onChange={(e) => handleScoreChange('home', e.target.value)}
-                />
-                <span className="sc-dash">—</span>
-                <input 
-                  className={`si ${prediction?.awayScore !== undefined ? 'filled' : ''}`}
-                  type="number" 
-                  min="0" 
-                  max="20" 
-                  placeholder="0"
-                  value={prediction?.awayScore ?? ''}
-                  onChange={(e) => handleScoreChange('away', e.target.value)}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="score-display">
-                <span className={`sd-val ${isFinished && !pointsEarned ? 'muted' : ''}`}>{prediction?.homeScore ?? '—'}</span>
-                <span className="sd-sep">–</span>
-                <span className={`sd-val ${isFinished && !pointsEarned ? 'muted' : ''}`}>{prediction?.awayScore ?? '—'}</span>
-              </div>
-              <div className="your-pick-label">Your pick</div>
-              {pointsEarned !== null && pointsEarned > 0 && (
-                <span className="pts-badge">+{pointsEarned} pt{pointsEarned > 1 ? 's' : ''}</span>
-              )}
-              {isLive && isSaved && (
-                <span className="pts-badge">+{prediction.homeScore === actualScore?.home && prediction.awayScore === actualScore?.away ? 3 : 1}+ pt so far</span>
-              )}
-            </>
-          )}
-        </div>
-        
-        <div className="team-side">
-          <div className="team-flag">
-            <img src={`https://flagcdn.com/w80/${getCountryCode(awayTeam?.code)}.png`} alt={awayTeam?.code} />
-          </div>
-          <div className="team-nm">{awayTeam?.name}</div>
-        </div>
-      </div>
-
-      {!isLocked && (
-        <div className="mpc-foot">
-          {isSaved && (
-            <div style={{fontSize: '0.7rem', color: 'var(--f3)', marginRight: 'auto'}}>
-              Saved
-            </div>
-          )}
-          <button className="btn-edit" onClick={() => {
-            onUpdatePrediction(match.id, 'homeScore', undefined)
-            onUpdatePrediction(match.id, 'awayScore', undefined)
-          }}>Clear</button>
-          <button className="btn-save">Save Pick</button>
-        </div>
-      )}
-
-      <style jsx>{`
-        ${espn.matchPickCardStyles}
-        .live-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: var(--red);
-          animation: pulse 1.4s ease infinite;
-          display: inline-block;
-          margin-right: 4px;
-        }
-        .live-score-label {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.6rem;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--red);
-          margin-bottom: 2px;
-        }
-        .final-score-label {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.6rem;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--f4);
-          margin-bottom: 2px;
-        }
-        .your-pick-label {
-          font-size: 0.65rem;
-          color: var(--f4);
-          margin-top: 2px;
-          font-family: 'Barlow Condensed', sans-serif;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.35; }
-        }
-      `}</style>
-    </div>
-  )
-}
-
-function getCountryCode(teamCode) {
-  const codeMap = {
-    'MEX': 'mx', 'USA': 'us', 'CAN': 'ca',
-    'ARG': 'ar', 'BRA': 'br', 'COL': 'co', 'URU': 'uy', 'ECU': 'ec', 'PRY': 'py', 'CHL': 'cl', 'PER': 'pe', 'VEN': 've',
-    'ENG': 'gb-eng', 'ESP': 'es', 'FRA': 'fr', 'GER': 'de', 'ITA': 'it', 'NED': 'nl', 'POR': 'pt', 'BEL': 'be',
-    'CRO': 'hr', 'SUI': 'ch', 'DEN': 'dk', 'POL': 'pl', 'SWE': 'se', 'AUT': 'at', 'TUR': 'tr', 'UKR': 'ua',
-    'JPN': 'jp', 'KOR': 'kr', 'AUS': 'au', 'IRN': 'ir', 'SAU': 'sa', 'QAT': 'qa', 'CHN': 'cn',
-    'SEN': 'sn', 'NGA': 'ng', 'MAR': 'ma', 'GHA': 'gh', 'CMR': 'cm', 'CIV': 'ci', 'ALG': 'dz', 'EGY': 'eg', 'TUN': 'tn',
-    'NZL': 'nz', 'WAL': 'gb-wls', 'CRC': 'cr', 'SRB': 'rs',
-  }
-  return codeMap[teamCode] || teamCode?.toLowerCase() || 'un'
-}
-
-export default function PredictionsPage({ params }) {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [pool, setPool] = useState(null)
-  const [poolMemberId, setPoolMemberId] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [activeMatchday, setActiveMatchday] = useState(1)
-  const [predictions, setPredictions] = useState({})
-  const [savedPredictions, setSavedPredictions] = useState({})
-  const [matches, setMatches] = useState([])
-  const [saveMessage, setSaveMessage] = useState('')
-  const [countdown, setCountdown] = useState('11:42:07')
-  const [myMembership, setMyMembership] = useState(null)
-
-  useEffect(() => {
-    loadData()
-  }, [params.id])
-
-  // Countdown timer
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        const [h, m, s] = prev.split(':').map(Number)
-        let total = h * 3600 + m * 60 + s - 1
-        if (total < 0) total = 0
-        const newH = Math.floor(total / 3600)
-        const newM = Math.floor((total % 3600) / 60)
-        const newS = total % 60
-        return [newH, newM, newS].map(v => String(v).padStart(2, '0')).join(':')
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const loadData = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-
-    // Load pool
-    const { data: poolData } = await supabase
-      .from('pools')
-      .select('*')
-      .eq('id', params.id)
-      .single()
-
-    if (!poolData) {
-      router.push('/dashboard')
-      return
-    }
-    setPool(poolData)
-
-    // Get pool member ID
-    const { data: memberData } = await supabase
-      .from('pool_members')
-      .select('*')
-      .eq('pool_id', params.id)
-      .eq('user_id', currentUser.id)
-      .single()
-
-    if (!memberData) {
-      router.push(`/join/${poolData.invite_code}`)
-      return
-    }
-    setPoolMemberId(memberData.id)
-    setMyMembership(memberData)
-
-    // Generate matches
-    const groupMatches = generateGroupStageMatches()
-    setMatches(groupMatches)
-
-    // Load existing predictions
-    const { data: existingPicks } = await supabase
-      .from('match_picks')
-      .select('*')
-      .eq('pool_member_id', memberData.id)
-
-    if (existingPicks) {
-      const picksMap = {}
-      existingPicks.forEach(pick => {
-        picksMap[pick.match_id] = {
-          homeScore: pick.home_score,
-          awayScore: pick.away_score,
-        }
-      })
-      setPredictions(picksMap)
-      setSavedPredictions(picksMap)
-    }
-
-    setLoading(false)
-  }
-
-  const updatePrediction = (matchId, field, value) => {
-    setPredictions(prev => ({
-      ...prev,
-      [matchId]: {
-        ...prev[matchId],
-        [field]: value,
-      }
-    }))
-  }
-
-  const savePredictions = async () => {
-    setSaving(true)
-    setSaveMessage('')
-
-    try {
-      const validPredictions = Object.entries(predictions)
-        .filter(([matchId, pred]) => 
-          pred.homeScore !== undefined && 
-          pred.awayScore !== undefined &&
-          !isNaN(pred.homeScore) &&
-          !isNaN(pred.awayScore)
-        )
-
-      if (validPredictions.length === 0) {
-        setSaveMessage('No predictions to save')
-        setSaving(false)
-        return
-      }
-
-      const upserts = validPredictions.map(([matchId, pred]) => ({
-        pool_member_id: poolMemberId,
-        match_id: matchId,
-        home_score: pred.homeScore,
-        away_score: pred.awayScore,
-        locked: false,
-      }))
-
-      const { error } = await supabase
-        .from('match_picks')
-        .upsert(upserts, { 
-          onConflict: 'pool_member_id,match_id',
-          ignoreDuplicates: false 
-        })
-
-      if (error) throw error
-
-      setSavedPredictions({ ...predictions })
-      setSaveMessage(`Saved ${upserts.length} predictions!`)
-      
-      setTimeout(() => setSaveMessage(''), 3000)
-    } catch (err) {
-      console.error('Save error:', err)
-      setSaveMessage('Error: ' + err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
-
-  const getUserInitials = () => {
-    const name = user?.user_metadata?.name || user?.email || ''
-    if (user?.user_metadata?.name) {
-      return user.user_metadata.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    }
-    return name[0]?.toUpperCase() || '?'
-  }
-
-  const getTeamByCode = (code) => WC2026_TEAMS.find(t => t.code === code)
-  
-  // Group matches by matchday (6 matches each for simplicity)
-  const matchdays = [1, 2, 3, 4, 5, 6]
-  const knockoutRounds = ['R32', 'R16', 'QF', 'SF', 'F']
-  const matchesPerDay = 12
-  const matchdayMatches = matches.slice((activeMatchday - 1) * matchesPerDay, activeMatchday * matchesPerDay)
-
-  const hasUnsavedChanges = JSON.stringify(predictions) !== JSON.stringify(savedPredictions)
-
-  // Count predictions
-  const predictedCount = Object.entries(predictions).filter(
-    ([id, p]) => p.homeScore !== undefined && p.awayScore !== undefined
-  ).length
-
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="loader">
-          <div className="logo">Pick<span>Poolr</span></div>
-          <div className="loading-bar"><div className="loading-fill"></div></div>
-        </div>
-        <style jsx>{`
-          .loading-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg);
-          }
-          .loader { text-align: center; }
-          .logo {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--white);
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-          }
-          .logo span { color: var(--gold); }
-          .loading-bar {
-            width: 120px;
-            height: 4px;
-            background: var(--bg3);
-            border-radius: 2px;
-            overflow: hidden;
-          }
-          .loading-fill {
-            height: 100%;
-            width: 40%;
-            background: var(--gold);
-            border-radius: 2px;
-            animation: loading 1s ease-in-out infinite;
-          }
-          @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
-          }
-          ${espn.espnStyles}
-        `}</style>
-      </div>
-    )
+  const handleSave = (matchId) => {
+    setMatches(matches.map(m => 
+      m.id === matchId ? { ...m, status: 'saved', savedAt: 'Just now' } : m
+    ))
   }
 
   return (
     <>
-      {/* Top Bar */}
-      <div className="topbar">
-        <div className="topbar-links">
-          <Link href="/dashboard" className="tb-link">Dashboard</Link>
-          <span className="tb-link active">My Pools</span>
-          <span className="tb-link">World Cup 2026</span>
-          <span className="tb-link">Results</span>
-        </div>
-        <div className="topbar-right">
-          <div className="user-pill">
-            <div className="user-avatar">{getUserInitials()}</div>
-            {user?.user_metadata?.name || user?.email?.split('@')[0]}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Nav */}
-      <nav className="main-nav">
-        <Link href="/dashboard" className="nav-logo">Pick<span>Poolr</span></Link>
+      {/* NAV */}
+      <nav>
+        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
-          <Link href={`/pool/${params.id}`} className="nav-item">{pool?.name}</Link>
-          <span className="nav-item active">Match Picks</span>
+          <Link href={`/pool/${params.id}`} className="nav-item active">Amigos WC26</Link>
         </div>
-        <button 
-          onClick={savePredictions} 
-          disabled={saving || !hasUnsavedChanges}
-          className="nav-cta"
-          style={{opacity: hasUnsavedChanges ? 1 : 0.5}}
-        >
-          {saving ? 'Saving...' : hasUnsavedChanges ? 'Save All' : '✓ Saved'}
-        </button>
+        <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>
 
-      {/* Page Header */}
+      {/* PAGE HEADER */}
       <div className="page-header">
         <div className="page-header-inner">
           <div className="ph-left">
-            <div className="ph-eyebrow">
-              <Link href={`/pool/${params.id}`} style={{color: 'var(--gold)', textDecoration: 'none'}}>
-                {pool?.name}
-              </Link> › Match Picks
-            </div>
-            <div className="ph-title">Matchday {activeMatchday}</div>
-            <div className="ph-meta">Submit your predictions before kickoff</div>
+            <div className="ph-eyebrow">My Pools › Amigos WC26 Pool</div>
+            <div className="ph-title">Match Picks</div>
+            <div className="ph-meta">FIFA World Cup 2026 · 14 players</div>
           </div>
           <div className="ph-right">
-            <div className="ph-score">{myMembership?.total_points || 0} pts</div>
-            <div className="ph-rank">{predictedCount} / {matches.length} picks</div>
+            <div className="ph-score">47 pts</div>
+            <div className="ph-rank">3rd place</div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* TAB NAV */}
+      <div className="tab-nav">
+        <div className="tab-nav-inner">
+          <span className="tab active">Match Picks<span className="tab-badge">2</span></span>
+          <Link href={`/pool/${params.id}/special-picks`} className="tab">Special Picks</Link>
+          <span className="tab">Leaderboard</span>
+        </div>
+      </div>
+
+      {/* CONTENT */}
       <div className="wrap">
         <div className="two-col">
           <div>
-            {/* Matchday Strip */}
+            {/* Matchday strip */}
             <div className="md-strip">
-              {matchdays.map(md => (
+              {['MD 1', 'MD 2', 'MD 3', 'MD 4', 'MD 5', 'MD 6', 'R16', 'QF', 'SF', 'F'].map((md, i) => (
                 <button 
                   key={md}
-                  className={`md-btn ${activeMatchday === md ? 'active' : ''} ${md < activeMatchday ? 'done' : ''}`}
-                  onClick={() => setActiveMatchday(md)}
+                  className={`md-btn ${i + 1 === matchday ? 'active' : ''} ${i < 2 ? 'done' : ''} ${i > 5 ? 'locked' : ''}`}
+                  onClick={() => i <= 5 && setMatchday(i + 1)}
                 >
-                  MD {md}
+                  {md}
                 </button>
               ))}
-              {knockoutRounds.map(round => (
-                <button key={round} className="md-btn locked">{round}</button>
-              ))}
             </div>
 
-            {/* Deadline Banner */}
+            {/* Deadline banner */}
             <div className="deadline-banner">
               <div>
-                <div className="db-left">Matchday {activeMatchday} — Picks close Jun {10 + activeMatchday * 3}, 3:00 PM ET</div>
+                <div className="db-left">Matchday {matchday} — Picks close Jun 25, 3:00 PM ET</div>
                 <div className="db-sub">Submit all picks before the first match kicks off</div>
               </div>
-              <div className="db-countdown">{countdown}</div>
+              <div className="db-countdown">11:42:07</div>
             </div>
 
-            {/* Save Message */}
-            {saveMessage && (
-              <div className={`save-message ${saveMessage.includes('Error') ? 'error' : 'success'}`}>
-                {saveMessage.includes('Error') ? '❌' : '✅'} {saveMessage}
+            {/* Match cards */}
+            {matches.map(match => (
+              <div key={match.id} className={`mpc ${match.status === 'saved' ? 'submitted' : ''} ${['live', 'ft'].includes(match.status) ? 'locked-card' : ''}`}>
+                <div className="mpc-head">
+                  <div className="mpc-info">Group {match.group} · {match.date} · {match.time} · {match.venue}</div>
+                  <div className={`mpc-status s-${match.status}`}>
+                    {match.status === 'open' && 'Open'}
+                    {match.status === 'saved' && '✓ Saved'}
+                    {match.status === 'live' && <><span className="live-dot"></span>Live {match.liveTime}</>}
+                    {match.status === 'ft' && 'FT'}
+                  </div>
+                </div>
+                <div className="mpc-body">
+                  <div className="team-side">
+                    <div className="team-flag"><img src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt="" /></div>
+                    <div className="team-nm">{match.home}</div>
+                  </div>
+                  <div className="score-center">
+                    {match.status === 'live' && <div className="live-label">Live {match.liveScore}</div>}
+                    {match.status === 'ft' && <div className="ft-label">Final {match.finalScore}</div>}
+                    
+                    {match.status === 'open' ? (
+                      <>
+                        <div className="score-status">Pick your score</div>
+                        <div className="score-inputs">
+                          <input 
+                            className={`si ${match.homePick !== null ? 'filled' : ''}`}
+                            type="number" 
+                            min="0" 
+                            max="20" 
+                            placeholder="0"
+                            value={match.homePick ?? ''}
+                            onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                          />
+                          <span className="sc-dash">—</span>
+                          <input 
+                            className={`si ${match.awayPick !== null ? 'filled' : ''}`}
+                            type="number" 
+                            min="0" 
+                            max="20" 
+                            placeholder="0"
+                            value={match.awayPick ?? ''}
+                            onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="score-display">
+                          <span className={`sd-val ${['live', 'ft'].includes(match.status) ? 'muted' : ''}`}>{match.homePick}</span>
+                          <span className="sd-sep">–</span>
+                          <span className={`sd-val ${['live', 'ft'].includes(match.status) ? 'muted' : ''}`}>{match.awayPick}</span>
+                        </div>
+                        <div className="pick-label">Your pick</div>
+                        {match.pts && <span className="pts-badge">{match.pts}</span>}
+                      </>
+                    )}
+                  </div>
+                  <div className="team-side">
+                    <div className="team-flag"><img src={`https://flagcdn.com/w80/${match.awayFlag}.png`} alt="" /></div>
+                    <div className="team-nm">{match.away}</div>
+                  </div>
+                </div>
+                {match.status === 'open' && (
+                  <div className="mpc-foot">
+                    <button className="btn-edit">Clear</button>
+                    <button className="btn-save" onClick={() => handleSave(match.id)}>Save Pick</button>
+                  </div>
+                )}
+                {match.status === 'saved' && (
+                  <div className="mpc-foot">
+                    <div style={{ fontSize: '0.7rem', color: 'var(--f3)' }}>Saved {match.savedAt}</div>
+                    <button className="btn-edit">Edit</button>
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Match Cards */}
-            <div className="matches-list">
-              {matchdayMatches.map(match => {
-                const homeTeam = getTeamByCode(match.homeTeam)
-                const awayTeam = getTeamByCode(match.awayTeam)
-                const prediction = predictions[match.id] || {}
-
-                return (
-                  <MatchPickCard 
-                    key={match.id}
-                    match={match}
-                    homeTeam={homeTeam}
-                    awayTeam={awayTeam}
-                    prediction={prediction}
-                    onUpdatePrediction={(matchId, field, value) => updatePrediction(matchId, field, value)}
-                    status="open"
-                  />
-                )
-              })}
-            </div>
+            ))}
           </div>
 
           {/* Sidebar */}
           <div>
             <div className="card">
-              <div className="card-head"><div className="card-title">Matchday {activeMatchday} Progress</div></div>
+              <div className="card-head"><div className="card-title">Matchday {matchday} Progress</div></div>
               <div className="card-body">
-                <div className="sc-row">
-                  <div className="sc-label">Picks submitted</div>
-                  <div className="sc-val green">{matchdayMatches.filter(m => predictions[m.id]?.homeScore !== undefined).length} / {matchdayMatches.length}</div>
-                </div>
-                <div className="sc-row">
-                  <div className="sc-label">Points this matchday</div>
-                  <div className="sc-val gold">0</div>
-                </div>
-                <div className="sc-row">
-                  <div className="sc-label">Total points</div>
-                  <div className="sc-val">{myMembership?.total_points || 0}</div>
-                </div>
-                <div className="sc-row">
-                  <div className="sc-label">Your rank</div>
-                  <div className="sc-val gold">{myMembership?.rank ? `${myMembership.rank}${getRankSuffix(myMembership.rank)}` : '—'}</div>
-                </div>
+                <div className="sc-row"><div className="sc-label">Picks submitted</div><div className="sc-val green">2 / 4</div></div>
+                <div className="sc-row"><div className="sc-label">Points this matchday</div><div className="sc-val gold">2</div></div>
+                <div className="sc-row"><div className="sc-label">Total points</div><div className="sc-val">47</div></div>
+                <div className="sc-row"><div className="sc-label">Your rank</div><div className="sc-val gold">3rd / 14</div></div>
               </div>
             </div>
-
             <div className="card">
               <div className="card-head"><div className="card-title">Scoring</div></div>
               <div className="card-body">
                 <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
                 <div className="sc-row"><div className="sc-label">Correct winner + 1 score</div><div className="sc-val gold">2 pts</div></div>
                 <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
-                <div className="sc-row" style={{marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--line)'}}>
-                  <div className="sc-label">Champion pick</div><div className="sc-val gold">10 pts</div>
-                </div>
-                <div className="sc-row"><div className="sc-label">Runner-up pick</div><div className="sc-val gold">7 pts</div></div>
-                <div className="sc-row"><div className="sc-label">Top scorer pick</div><div className="sc-val gold">5 pts</div></div>
-                <div className="sc-row"><div className="sc-label">Best goalkeeper pick</div><div className="sc-val gold">5 pts</div></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Floating Save Button */}
-      {hasUnsavedChanges && (
-        <button className="floating-save" onClick={savePredictions} disabled={saving}>
-          {saving ? 'Saving...' : `Save ${Object.values(predictions).filter(p => p.homeScore !== undefined).length} Predictions`}
-        </button>
-      )}
-
       <style jsx>{`
-        ${espn.espnStyles}
-        ${espn.topbarStyles}
-        ${espn.navStyles}
-        ${espn.pageHeaderStyles}
-        ${espn.cardStyles}
-        ${espn.sidebarStyles}
-        ${espn.matchdayStripStyles}
-        ${espn.deadlineBannerStyles}
-        ${espn.layoutStyles}
+        nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 200; }
+        .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; margin-right: 2rem; padding-right: 2rem; border-right: 1px solid var(--f4); text-decoration: none; }
+        .nav-logo span { color: var(--gold); }
+        .nav-items { display: flex; height: 100%; }
+        .nav-item { display: flex; align-items: center; padding: 0 1.25rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f3); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -3px; }
+        .nav-item:hover { color: var(--f1); }
+        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
+        .nav-cta { margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold); color: #000; padding: 0.5rem 1.25rem; border-radius: 2px; text-decoration: none; }
 
-        .matches-list {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
+        .page-header { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 1.25rem 2rem; }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; }
+        .ph-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+        .ph-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; color: var(--white); }
+        .ph-meta { font-size: 0.78rem; color: var(--f3); margin-top: 0.2rem; }
+        .ph-right { text-align: right; }
+        .ph-score { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; color: var(--gold); line-height: 1; }
+        .ph-rank { font-size: 0.72rem; color: var(--f3); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; margin-top: 2px; }
 
-        .save-message {
-          padding: 0.75rem 1rem;
-          border-radius: 4px;
-          margin-bottom: 1rem;
-          font-size: 0.85rem;
-          font-weight: 500;
-        }
-        .save-message.success {
-          background: rgba(44,182,125,0.1);
-          border: 1px solid rgba(44,182,125,0.3);
-          color: var(--green);
-        }
-        .save-message.error {
-          background: rgba(224,59,59,0.1);
-          border: 1px solid rgba(224,59,59,0.3);
-          color: var(--red);
-        }
+        .tab-nav { background: var(--bg2); border-bottom: 1px solid var(--line); }
+        .tab-nav-inner { max-width: 1100px; margin: 0 auto; display: flex; }
+        .tab { display: flex; align-items: center; gap: 0.4rem; padding: 0 1.5rem; height: 44px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f3); border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; }
+        .tab:hover { color: var(--f1); }
+        .tab.active { color: var(--white); border-bottom-color: var(--gold); }
+        .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--gold); color: #000; font-size: 0.6rem; font-weight: 900; }
 
-        .floating-save {
-          position: fixed;
-          bottom: 1.5rem;
-          left: 50%;
-          transform: translateX(-50%);
-          background: var(--gold);
-          color: #000;
-          border: none;
-          padding: 1rem 2rem;
-          border-radius: 30px;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.9rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          cursor: pointer;
-          box-shadow: 0 4px 20px rgba(201,168,76,0.3);
-          z-index: 1000;
-          transition: all 0.2s ease;
-        }
-        .floating-save:hover {
-          transform: translateX(-50%) translateY(-2px);
-          box-shadow: 0 6px 24px rgba(201,168,76,0.4);
-        }
-        .floating-save:disabled {
-          opacity: 0.7;
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .two-col { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
+
+        .md-strip { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem; }
+        .md-btn { flex: 1; padding: 0.45rem 0; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: var(--bg2); color: var(--f3); border: none; cursor: pointer; border-right: 1px solid var(--line); transition: all 0.15s; }
+        .md-btn:last-child { border-right: none; }
+        .md-btn.active { background: var(--gold); color: #000; }
+        .md-btn.done { color: var(--green); }
+        .md-btn.locked { color: var(--f4); cursor: default; }
+
+        .deadline-banner { display: flex; align-items: center; justify-content: space-between; background: rgba(201,168,76,0.07); border: 1px solid var(--gold-line); border-radius: 4px; padding: 0.6rem 1rem; margin-bottom: 1.25rem; }
+        .db-left { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); }
+        .db-sub { font-size: 0.7rem; color: var(--f3); margin-top: 1px; }
+        .db-countdown { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--gold); letter-spacing: 0.04em; }
+
+        .mpc { background: var(--bg2); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 2px; }
+        .mpc.submitted { border-color: rgba(44,182,125,0.25); }
+        .mpc.locked-card { opacity: 0.65; }
+        .mpc-head { background: var(--bg3); padding: 0.4rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+        .mpc-info { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--f4); }
+        .mpc-status { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+        .s-open { color: var(--green); }
+        .s-saved { color: var(--green); }
+        .s-live { color: var(--red); }
+        .s-ft { color: var(--f4); }
+        .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: pulse 1.4s ease infinite; }
+
+        .mpc-body { display: grid; grid-template-columns: 1fr 170px 1fr; align-items: center; gap: 0; padding: 0.85rem 1rem; }
+        .team-side { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+        .team-flag img { width: 42px; height: 29px; border-radius: 3px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+        .team-nm { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--f1); text-align: center; }
+        .score-center { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .score-status { font-family: 'Barlow Condensed', sans-serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); }
+        .live-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red); margin-bottom: 2px; }
+        .ft-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--f4); margin-bottom: 2px; }
+        .pick-label { font-size: 0.65rem; color: var(--f4); margin-top: 2px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+
+        .score-inputs { display: flex; align-items: center; gap: 6px; }
+        .si { width: 50px; height: 50px; background: var(--bg3); border: 1px solid var(--f4); border-radius: 3px; color: var(--white); font-family: 'Barlow Condensed', sans-serif; font-size: 1.7rem; font-weight: 900; text-align: center; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; padding: 0; }
+        .si::-webkit-outer-spin-button, .si::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .si:focus { border-color: var(--gold); }
+        .si.filled { border-color: rgba(44,182,125,0.4); background: rgba(44,182,125,0.04); }
+        .sc-dash { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 900; color: var(--f4); }
+
+        .score-display { display: flex; align-items: center; gap: 6px; }
+        .sd-val { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; color: var(--gold); min-width: 30px; text-align: center; line-height: 1; }
+        .sd-val.muted { color: var(--f2); }
+        .sd-sep { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--f4); }
+        .pts-badge { display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 2px; background: rgba(44,182,125,0.12); color: var(--green); border: 1px solid rgba(44,182,125,0.25); margin-top: 3px; }
+
+        .mpc-foot { border-top: 1px solid var(--line); padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; background: rgba(0,0,0,0.15); }
+        .btn-save { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold); color: #000; padding: 0.4rem 1.1rem; border-radius: 2px; border: none; cursor: pointer; }
+        .btn-save:hover { background: var(--gold2); }
+        .btn-edit { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; color: var(--f3); border: 1px solid var(--f4); padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; }
+        .btn-edit:hover { color: var(--f1); border-color: var(--f2); }
+
+        .card { background: var(--bg2); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 1rem; }
+        .card-head { background: var(--bg3); padding: 0.65rem 1rem; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+        .card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); }
+        .card-body { padding: 1rem; }
+        .sc-row { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .sc-row:last-child { border-bottom: none; }
+        .sc-label { font-size: 0.75rem; color: var(--f3); }
+        .sc-val { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--f1); }
+        .sc-val.gold { color: var(--gold); }
+        .sc-val.green { color: var(--green); }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+        @media (max-width: 900px) {
+          nav { padding: 0 1rem; }
+          .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
+          .nav-items { display: none; }
+          .wrap { padding: 1rem; }
+          .two-col { grid-template-columns: 1fr; }
+          .mpc-body { grid-template-columns: 1fr 120px 1fr; }
+          .si { width: 40px; height: 40px; font-size: 1.4rem; }
+          .md-strip { overflow-x: auto; }
         }
       `}</style>
     </>
   )
-}
-
-function getRankSuffix(rank) {
-  if (rank === 1) return 'st'
-  if (rank === 2) return 'nd'
-  if (rank === 3) return 'rd'
-  return 'th'
 }

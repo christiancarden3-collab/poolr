@@ -3,190 +3,74 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase, getCurrentUser } from '../../lib/supabase'
-import { WC2026_TOURNAMENT } from '../../lib/wc2026-data'
-import * as espn from '../styles/espn-theme'
+import { supabase, getCurrentUser } from '@/lib/supabase'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
+  const [pools, setPools] = useState([])
   const [loading, setLoading] = useState(true)
-  const [myPools, setMyPools] = useState([])
-  const [joinedPools, setJoinedPools] = useState([])
-  const [joinCode, setJoinCode] = useState('')
-  const [showJoinModal, setShowJoinModal] = useState(false)
 
   useEffect(() => {
-    checkUser()
-  }, [])
+    async function loadData() {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        router.push('/login')
+        return
+      }
+      setUser(currentUser)
 
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-    
-    // Fetch pools I created (as commissioner)
-    const { data: createdPools } = await supabase
-      .from('pools')
-      .select('*')
-      .eq('commissioner_id', currentUser.id)
-      .order('created_at', { ascending: false })
-    
-    // Fetch pools I joined
-    const { data: memberships } = await supabase
-      .from('pool_members')
-      .select(`
-        pool_id,
-        total_points,
-        rank,
-        payment_status,
-        pools:pool_id (
-          id,
-          name,
-          buy_in,
-          status,
-          commissioner_id,
-          created_at
-        )
-      `)
-      .eq('user_id', currentUser.id)
-    
-    // Process my pools (as commissioner)
-    if (createdPools) {
-      const poolsWithCounts = await Promise.all(
-        createdPools.map(async (pool) => {
-          const { count } = await supabase
-            .from('pool_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('pool_id', pool.id)
-          
-          // Get user's rank in this pool
-          const myMember = memberships?.find(m => m.pool_id === pool.id)
-          
-          return {
-            ...pool,
-            isCommissioner: true,
-            playerCount: count || 0,
-            prizePool: (pool.buy_in || 0) * (count || 0) * 0.95,
-            myRank: myMember?.rank,
-            myPoints: myMember?.total_points,
-          }
-        })
-      )
-      setMyPools(poolsWithCounts)
-    }
-    
-    // Process joined pools (where I'm not the commissioner)
-    if (memberships) {
-      const joined = memberships
-        .filter(m => m.pools && m.pools.commissioner_id !== currentUser.id)
-        .map(m => ({
-          ...m.pools,
-          myRank: m.rank,
-          myPoints: m.total_points,
-        }))
-      
-      const poolsWithCounts = await Promise.all(
-        joined.map(async (pool) => {
-          const { count } = await supabase
-            .from('pool_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('pool_id', pool.id)
-          
-          return {
-            ...pool,
-            isCommissioner: false,
-            playerCount: count || 0,
-            prizePool: (pool.buy_in || 0) * (count || 0) * 0.95,
-          }
-        })
-      )
-      setJoinedPools(poolsWithCounts)
-    }
-    
-    setLoading(false)
-  }
+      // Load user's pools
+      const { data: memberships } = await supabase
+        .from('pool_members')
+        .select('*, pool:pools(*)')
+        .eq('user_id', currentUser.id)
 
-  const handleLogout = async () => {
+      if (memberships) {
+        setPools(memberships.map(m => ({
+          ...m.pool,
+          role: m.role,
+          points: m.points || 0
+        })))
+      }
+      setLoading(false)
+    }
+    loadData()
+  }, [router])
+
+  const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  const handleJoinSubmit = (e) => {
-    e.preventDefault()
-    if (joinCode.trim()) {
-      router.push(`/join/${joinCode.trim().toUpperCase()}`)
-    }
-  }
-
   const getUserInitials = () => {
-    const name = user?.user_metadata?.name || user?.email || ''
-    if (user?.user_metadata?.name) {
-      return user.user_metadata.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    }
-    return name[0]?.toUpperCase() || '?'
+    if (!user) return 'U'
+    const meta = user.user_metadata || {}
+    const first = meta.first_name?.[0] || user.email?.[0] || 'U'
+    const last = meta.last_name?.[0] || ''
+    return (first + last).toUpperCase()
   }
 
-  const allPools = [...myPools, ...joinedPools]
-
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="loader">
-          <div className="logo">Pick<span>Poolr</span></div>
-          <div className="loading-bar"><div className="loading-fill"></div></div>
-        </div>
-        <style jsx>{`
-          .loading-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg);
-          }
-          .loader { text-align: center; }
-          .logo {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--white);
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-          }
-          .logo span { color: var(--gold); }
-          .loading-bar {
-            width: 120px;
-            height: 4px;
-            background: var(--bg3);
-            border-radius: 2px;
-            overflow: hidden;
-          }
-          .loading-fill {
-            height: 100%;
-            width: 40%;
-            background: var(--gold);
-            border-radius: 2px;
-            animation: loading 1s ease-in-out infinite;
-          }
-          @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
-          }
-          ${espn.espnStyles}
-        `}</style>
-      </div>
-    )
+  const getUserName = () => {
+    if (!user) return 'User'
+    const meta = user.user_metadata || {}
+    if (meta.first_name) return `${meta.first_name} ${meta.last_name?.[0] || ''}.`
+    return user.email?.split('@')[0] || 'User'
   }
+
+  // Mock data if no pools exist yet
+  const displayPools = pools.length > 0 ? pools : [
+    { id: 1, name: 'Amigos WC26 Pool', tournament_name: 'FIFA World Cup 2026', role: 'commissioner', player_count: 14, pot_amount: 280, status: 'live', user_rank: 3 },
+    { id: 2, name: 'Work Crew WC26', tournament_name: 'FIFA World Cup 2026', role: 'player', player_count: 8, pot_amount: 0, status: 'live', user_rank: 1 },
+    { id: 3, name: 'Family Pool 2026', tournament_name: 'FIFA World Cup 2026', role: 'commissioner', player_count: 5, pot_amount: 0, status: 'upcoming', user_rank: null },
+  ]
 
   return (
     <>
-      {/* Top Bar */}
+      {/* TOPBAR */}
       <div className="topbar">
         <div className="topbar-links">
-          <span className="tb-link active">Dashboard</span>
+          <Link href="/dashboard" className="tb-link active">Dashboard</Link>
           <span className="tb-link">My Pools</span>
           <span className="tb-link">World Cup 2026</span>
           <span className="tb-link">Results</span>
@@ -194,34 +78,42 @@ export default function DashboardPage() {
         <div className="topbar-right">
           <div className="user-pill">
             <div className="user-avatar">{getUserInitials()}</div>
-            {user?.user_metadata?.name || user?.email?.split('@')[0]}
+            {getUserName()}
           </div>
-          <button onClick={handleLogout} className="logout-btn">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M10.6667 11.3333L14 8L10.6667 4.66667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <button className="signout-btn" onClick={handleSignOut}>Sign Out</button>
         </div>
       </div>
 
-      {/* Main Nav */}
-      <nav className="main-nav">
-        <Link href="/dashboard" className="nav-logo">Pick<span>Poolr</span></Link>
+      {/* NAV */}
+      <nav>
+        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
-          <span className="nav-item active">Home</span>
+          <Link href="/dashboard" className="nav-item active">Home</Link>
+          <span className="nav-item">My Pools</span>
+          <span className="nav-item">World Cup 2026</span>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>
 
-      {/* Page Header */}
+      {/* TICKER */}
+      <div className="ticker">
+        <div className="ticker-label">Live</div>
+        <div className="ticker-items">
+          <span className="ticker-item">ARG 3 – 1 FRA &nbsp;●&nbsp; 78&apos;</span>
+          <span className="ticker-item">BRA 2 – 2 GER &nbsp;●&nbsp; 86&apos;</span>
+          <span className="ticker-item">MEX 1 – 0 ZAF &nbsp;●&nbsp; FT</span>
+          <span className="ticker-item">ESP 2 – 0 CPV &nbsp;●&nbsp; HT</span>
+          <span className="ticker-item">ENG 1 – 1 CRO &nbsp;●&nbsp; 67&apos;</span>
+        </div>
+      </div>
+
+      {/* PAGE HEADER */}
       <div className="page-header">
         <div className="page-header-inner">
           <div className="ph-left">
             <div className="ph-eyebrow">My Account</div>
             <div className="ph-title">Dashboard</div>
-            <div className="ph-meta">{WC2026_TOURNAMENT.name} — {WC2026_TOURNAMENT.startDate.replace('2026-', 'Jun ')} to {WC2026_TOURNAMENT.endDate.replace('2026-', 'Jul ')}</div>
+            <div className="ph-meta">World Cup 2026 — Jun 11 to Jul 19</div>
           </div>
           <div className="ph-right">
             <Link href="/create" className="btn-primary">+ Create Pool</Link>
@@ -229,62 +121,51 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* CONTENT */}
       <div className="wrap">
-        {/* My Pools Card */}
-        <div className="card" style={{marginBottom: '2rem'}}>
+        <div className="card" style={{ marginBottom: '2rem' }}>
           <div className="card-head">
             <div className="card-title">My Pools</div>
-            <span className="card-link">{allPools.length} active</span>
+            <span className="card-link">{displayPools.length} active</span>
           </div>
           <div className="card-body">
-            {allPools.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">🏆</div>
-                <h2>No pools yet</h2>
-                <p>Create your first prediction pool or join one with an invite code.</p>
-                <div className="empty-actions">
-                  <Link href="/create" className="btn-primary">Create a Pool</Link>
-                  <button onClick={() => setShowJoinModal(true)} className="btn-ghost">Join with Code</button>
-                </div>
-              </div>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--f3)' }}>Loading...</div>
             ) : (
               <div className="pool-grid">
-                {allPools.map((pool) => (
-                  <Link href={`/pool/${pool.id}`} key={pool.id} className="pool-card">
+                {displayPools.map((pool, i) => (
+                  <Link key={pool.id || i} href={`/pool/${pool.id || i + 1}`} className="pool-card">
                     <div className="pc-banner">
                       <div>
                         <div className="pc-name">{pool.name}</div>
-                        <div className="pc-tournament">{WC2026_TOURNAMENT.name}</div>
+                        <div className="pc-tournament">{pool.tournament_name || 'FIFA World Cup 2026'}</div>
                       </div>
-                      <span className={`pc-role ${pool.isCommissioner ? '' : 'player'}`}>
-                        {pool.isCommissioner ? 'Commissioner' : 'Player'}
+                      <span className={`pc-role ${pool.role === 'player' ? 'player' : ''}`}>
+                        {pool.role || 'Commissioner'}
                       </span>
                     </div>
                     <div className="pc-body">
                       <div className="pc-stats">
                         <div className="pc-stat">
-                          <div className="pc-stat-val">{pool.playerCount}</div>
+                          <div className="pc-stat-val">{pool.player_count || 0}</div>
                           <div className="pc-stat-label">Players</div>
                         </div>
                         <div className="pc-stat">
-                          <div className="pc-stat-val" style={{color: pool.myRank ? 'var(--gold)' : 'var(--f3)'}}>
-                            {pool.myRank ? `${pool.myRank}${getRankSuffix(pool.myRank)}` : '—'}
+                          <div className="pc-stat-val" style={{ color: pool.user_rank ? 'var(--gold)' : 'var(--f3)' }}>
+                            {pool.user_rank ? `${pool.user_rank}${pool.user_rank === 1 ? 'st' : pool.user_rank === 2 ? 'nd' : pool.user_rank === 3 ? 'rd' : 'th'}` : '—'}
                           </div>
                           <div className="pc-stat-label">Your rank</div>
                         </div>
                         <div className="pc-stat">
-                          <div className="pc-stat-val">
-                            {pool.buy_in === 0 ? 'Free' : `$${pool.prizePool?.toFixed(0) || 0}`}
-                          </div>
+                          <div className="pc-stat-val">{pool.pot_amount > 0 ? `$${pool.pot_amount}` : 'Free'}</div>
                           <div className="pc-stat-label">Pot</div>
                         </div>
                       </div>
                       <div className="pc-footer">
                         <div className="pc-status">
-                          <span className={`status-dot ${pool.status === 'open' ? 'dot-upcoming' : pool.status === 'live' ? 'dot-live' : 'dot-done'}`}></span>
-                          <span style={{color: pool.status === 'live' ? 'var(--red)' : pool.status === 'open' ? 'var(--gold)' : 'var(--f4)'}}>
-                            {pool.status === 'open' ? 'Starting Jun 11' : pool.status === 'live' ? 'Live' : 'Completed'}
+                          <span className={`status-dot ${pool.status === 'live' ? 'dot-live' : pool.status === 'upcoming' ? 'dot-upcoming' : 'dot-done'}`}></span>
+                          <span style={{ color: pool.status === 'live' ? 'var(--red)' : pool.status === 'upcoming' ? 'var(--gold)' : 'var(--f4)' }}>
+                            {pool.status === 'live' ? 'Live' : pool.status === 'upcoming' ? 'Starting Jun 11' : 'Completed'}
                           </span>
                         </div>
                         <span className="pc-cta">Open Pool</span>
@@ -297,93 +178,445 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Tournament Overview */}
+        {/* Tournament overview */}
         <div className="card">
           <div className="card-head">
             <div className="card-title">World Cup 2026 — Group Stage</div>
             <span className="card-link">Full schedule</span>
           </div>
-          <div className="card-body" style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--line)', borderRadius: '3px', overflow: 'hidden'}}>
-            <div className="stat-cell">
-              <div className="stat-label">Start</div>
-              <div className="stat-value">Jun 11</div>
-            </div>
-            <div className="stat-cell">
-              <div className="stat-label">Teams</div>
-              <div className="stat-value">48</div>
-            </div>
-            <div className="stat-cell">
-              <div className="stat-label">Matches</div>
-              <div className="stat-value">104</div>
-            </div>
-            <div className="stat-cell">
-              <div className="stat-label">Final</div>
-              <div className="stat-value">Jul 19</div>
+          <div className="card-body">
+            <div className="overview-grid">
+              <div className="overview-item">
+                <div className="overview-label">Start</div>
+                <div className="overview-val">Jun 11</div>
+              </div>
+              <div className="overview-item">
+                <div className="overview-label">Teams</div>
+                <div className="overview-val">48</div>
+              </div>
+              <div className="overview-item">
+                <div className="overview-label">Matches</div>
+                <div className="overview-val">104</div>
+              </div>
+              <div className="overview-item">
+                <div className="overview-label">Final</div>
+                <div className="overview-val">Jul 19</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Join Modal */}
-      {showJoinModal && (
-        <div className="modal-overlay" onClick={() => setShowJoinModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowJoinModal(false)}>×</button>
-            <div className="modal-icon">🎟️</div>
-            <h2>Join a Pool</h2>
-            <p>Enter the invite code shared by your pool commissioner</p>
-            <form onSubmit={handleJoinSubmit}>
-              <input
-                type="text"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="e.g., ABC123"
-                maxLength={8}
-                autoFocus
-                className="code-input"
-              />
-              <button type="submit" className="btn-primary w-full" disabled={!joinCode.trim()}>
-                Join Pool
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
       <style jsx>{`
-        ${espn.espnStyles}
-        ${espn.topbarStyles}
-        ${espn.navStyles}
-        ${espn.pageHeaderStyles}
-        ${espn.cardStyles}
-        ${espn.poolCardStyles}
-        ${espn.formStyles}
-        ${espn.layoutStyles}
-
-        .logout-btn {
-          background: transparent;
-          border: 1px solid var(--f4);
+        /* TOPBAR */
+        .topbar {
+          background: var(--bg2);
+          border-bottom: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2rem;
+          height: 42px;
+        }
+        .topbar-links {
+          display: flex;
+          height: 100%;
+        }
+        .tb-link {
+          display: flex;
+          align-items: center;
+          padding: 0 1rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.78rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
           color: var(--f3);
-          width: 30px;
-          height: 30px;
-          border-radius: 4px;
+          text-decoration: none;
+          border-right: 1px solid var(--line);
           cursor: pointer;
+          transition: all 0.15s;
+        }
+        .tb-link:first-child { border-left: 1px solid var(--line); }
+        .tb-link:hover, .tb-link.active {
+          color: var(--f1);
+          background: rgba(255,255,255,0.03);
+        }
+        .topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        .user-pill {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.78rem;
+          color: var(--f2);
+        }
+        .user-avatar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: var(--gold);
           display: flex;
           align-items: center;
           justify-content: center;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 900;
+          color: #000;
+        }
+        .signout-btn {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f4);
+          background: transparent;
+          border: 1px solid var(--f4);
+          padding: 0.25rem 0.6rem;
+          border-radius: 2px;
+          cursor: pointer;
           transition: all 0.15s;
         }
-        .logout-btn:hover {
-          border-color: var(--red);
-          color: var(--red);
+        .signout-btn:hover { color: var(--f2); border-color: var(--f2); }
+
+        /* NAV */
+        nav {
+          background: var(--bg);
+          border-bottom: 3px solid var(--gold);
+          display: flex;
+          align-items: center;
+          padding: 0 2rem;
+          height: 56px;
+          position: sticky;
+          top: 0;
+          z-index: 200;
+        }
+        .nav-logo {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 2rem;
+          font-weight: 900;
+          letter-spacing: 0.04em;
+          color: var(--white);
+          text-transform: uppercase;
+          margin-right: 2rem;
+          padding-right: 2rem;
+          border-right: 1px solid var(--f4);
+          text-decoration: none;
+        }
+        .nav-logo span { color: var(--gold); }
+        .nav-items {
+          display: flex;
+          height: 100%;
+        }
+        .nav-item {
+          display: flex;
+          align-items: center;
+          padding: 0 1.25rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
+          text-decoration: none;
+          border-bottom: 3px solid transparent;
+          margin-bottom: -3px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .nav-item:hover { color: var(--f1); }
+        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
+        .nav-cta {
+          margin-left: auto;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          padding: 0.5rem 1.25rem;
+          border-radius: 2px;
+          text-decoration: none;
+          cursor: pointer;
+          border: none;
+          transition: background 0.15s;
+        }
+        .nav-cta:hover { background: var(--gold2); }
+
+        /* TICKER */
+        .ticker {
+          background: var(--gold);
+          padding: 0 2rem;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          overflow: hidden;
+        }
+        .ticker-label {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #000;
+          white-space: nowrap;
+          border-right: 1px solid rgba(0,0,0,0.2);
+          padding-right: 1.5rem;
+        }
+        .ticker-items {
+          display: flex;
+          gap: 2rem;
+        }
+        .ticker-item {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: #000;
+          white-space: nowrap;
         }
 
-        .stat-cell {
+        /* PAGE HEADER */
+        .page-header {
+          background: var(--bg2);
+          border-bottom: 1px solid var(--line);
+          padding: 1.25rem 2rem;
+        }
+        .page-header-inner {
+          max-width: 1100px;
+          margin: 0 auto;
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+        }
+        .ph-eyebrow {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin-bottom: 0.3rem;
+        }
+        .ph-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.8rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          color: var(--white);
+        }
+        .ph-meta {
+          font-size: 0.78rem;
+          color: var(--f3);
+          margin-top: 0.2rem;
+        }
+        .btn-primary {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          padding: 0.6rem 1.5rem;
+          border-radius: 2px;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          transition: background 0.15s;
+        }
+        .btn-primary:hover { background: var(--gold2); }
+
+        /* LAYOUT */
+        .wrap {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 2rem;
+        }
+
+        /* CARDS */
+        .card {
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+        }
+        .card-head {
+          background: var(--bg3);
+          padding: 0.65rem 1rem;
+          border-bottom: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .card-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--white);
+        }
+        .card-link {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: var(--gold);
+          cursor: pointer;
+          text-decoration: none;
+        }
+        .card-body { padding: 1rem; }
+
+        /* POOL CARDS */
+        .pool-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 1rem;
+        }
+        .pool-card {
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          overflow: hidden;
+          cursor: pointer;
+          transition: border-color 0.15s;
+          text-decoration: none;
+          display: block;
+        }
+        .pool-card:hover { border-color: var(--gold); }
+        .pc-banner {
+          background: var(--bg3);
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .pc-name {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          color: var(--white);
+        }
+        .pc-tournament {
+          font-size: 0.72rem;
+          color: var(--f3);
+          margin-top: 2px;
+        }
+        .pc-body { padding: 1rem; }
+        .pc-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0;
+          border: 1px solid var(--line);
+          border-radius: 3px;
+          overflow: hidden;
+          margin-bottom: 0.75rem;
+        }
+        .pc-stat {
+          padding: 0.6rem 0.75rem;
+          border-right: 1px solid var(--line);
+          text-align: center;
+        }
+        .pc-stat:last-child { border-right: none; }
+        .pc-stat-val {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.1rem;
+          font-weight: 900;
+          color: var(--gold);
+          line-height: 1;
+        }
+        .pc-stat-label {
+          font-size: 0.62rem;
+          color: var(--f4);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-top: 2px;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-weight: 600;
+        }
+        .pc-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .pc-status {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+        .status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+        }
+        .dot-live { background: var(--red); animation: pulse 1.4s ease infinite; }
+        .dot-upcoming { background: var(--gold); }
+        .dot-done { background: var(--f4); }
+        .pc-cta {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          padding: 0.35rem 0.85rem;
+          border-radius: 2px;
+          border: none;
+          cursor: pointer;
+        }
+        .pc-role {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.62rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 0.15rem 0.5rem;
+          border-radius: 2px;
+          background: rgba(201,168,76,0.12);
+          color: var(--gold);
+          border: 1px solid var(--gold-line);
+        }
+        .pc-role.player {
+          background: rgba(44,182,125,0.1);
+          color: var(--green);
+          border-color: rgba(44,182,125,0.25);
+        }
+
+        /* OVERVIEW */
+        .overview-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1px;
+          background: var(--line);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+        .overview-item {
           background: var(--bg);
           padding: 0.75rem;
           text-align: center;
         }
-        .stat-cell .stat-label {
+        .overview-label {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 0.65rem;
           font-weight: 700;
@@ -392,122 +625,30 @@ export default function DashboardPage() {
           color: var(--f4);
           margin-bottom: 4px;
         }
-        .stat-cell .stat-value {
+        .overview-val {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 1rem;
           font-weight: 900;
           color: var(--gold);
         }
 
-        .empty-state {
-          text-align: center;
-          padding: 3rem 2rem;
-        }
-        .empty-icon {
-          font-size: 3rem;
-          margin-bottom: 1rem;
-        }
-        .empty-state h2 {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.4rem;
-          font-weight: 800;
-          color: var(--white);
-          margin-bottom: 0.5rem;
-          text-transform: uppercase;
-        }
-        .empty-state p {
-          color: var(--f3);
-          font-size: 0.85rem;
-          margin-bottom: 1.5rem;
-        }
-        .empty-actions {
-          display: flex;
-          gap: 0.75rem;
-          justify-content: center;
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.35; }
         }
 
-        .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 1rem;
-        }
-        .modal {
-          background: var(--bg2);
-          border: 1px solid var(--line);
-          border-radius: 4px;
-          padding: 2rem;
-          width: 100%;
-          max-width: 360px;
-          position: relative;
-          text-align: center;
-        }
-        .modal-close {
-          position: absolute;
-          top: 0.75rem;
-          right: 0.75rem;
-          background: transparent;
-          border: none;
-          color: var(--f4);
-          font-size: 1.5rem;
-          cursor: pointer;
-          line-height: 1;
-        }
-        .modal-close:hover {
-          color: var(--f1);
-        }
-        .modal-icon {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-        }
-        .modal h2 {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.2rem;
-          font-weight: 800;
-          color: var(--white);
-          margin-bottom: 0.5rem;
-          text-transform: uppercase;
-        }
-        .modal p {
-          color: var(--f3);
-          font-size: 0.8rem;
-          margin-bottom: 1.25rem;
-        }
-        .code-input {
-          text-align: center;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.5rem;
-          font-weight: 800;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          padding: 0.85rem;
-          margin-bottom: 1rem;
-          background: var(--bg3);
-          border: 1px solid var(--f4);
-          color: var(--white);
-          width: 100%;
-          border-radius: 3px;
-        }
-        .code-input:focus {
-          outline: none;
-          border-color: var(--gold);
-        }
-        .w-full {
-          width: 100%;
+        @media (max-width: 768px) {
+          .topbar { display: none; }
+          nav { padding: 0 1rem; }
+          .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
+          .nav-items { display: none; }
+          .wrap { padding: 1rem; }
+          .pool-grid { grid-template-columns: 1fr; }
+          .overview-grid { grid-template-columns: repeat(2, 1fr); }
+          .page-header { padding: 1rem; }
+          .page-header-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
         }
       `}</style>
     </>
   )
-}
-
-function getRankSuffix(rank) {
-  if (rank === 1) return 'st'
-  if (rank === 2) return 'nd'
-  if (rank === 3) return 'rd'
-  return 'th'
 }

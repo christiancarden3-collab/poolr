@@ -1,0 +1,728 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;--bg4:#1e2330;
+  --gold:#c9a84c;--gold2:#e6c76a;--red:#e03b3b;--green:#2cb67d;
+  --white:#ffffff;--f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;
+  --line:rgba(255,255,255,0.07);--gold-line:rgba(201,168,76,0.3);
+}
+body{background:var(--bg);color:var(--f1);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* NAV */
+nav{background:var(--bg);border-bottom:3px solid var(--gold);display:flex;align-items:center;padding:0 2rem;height:56px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:0.04em;color:var(--white);text-transform:uppercase;margin-right:2rem;padding-right:2rem;border-right:1px solid var(--f4)}
+.nav-logo span{color:var(--gold)}
+.nav-items{display:flex;height:100%}
+.nav-item{display:flex;align-items:center;padding:0 1.25rem;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:color 0.15s,border-color 0.15s}
+.nav-item:hover{color:var(--f1)}
+.nav-item.active{color:var(--white);border-bottom-color:var(--gold)}
+.nav-cta{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.5rem 1.25rem;border-radius:2px;text-decoration:none}
+
+/* PAGE HEADER */
+.page-header{background:var(--bg2);border-bottom:1px solid var(--line);padding:1.25rem 2rem}
+.page-header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.pool-breadcrumb{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--f3)}
+.pool-breadcrumb span{color:var(--f1)}
+.pool-title-row{margin-top:0.4rem;display:flex;align-items:baseline;gap:1rem}
+.pool-title{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:var(--white)}
+.pool-meta-pill{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.6rem;border-radius:2px}
+.pill-live{background:rgba(224,59,59,0.15);color:var(--red);border:1px solid rgba(224,59,59,0.3)}
+.pill-pot{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--gold-line)}
+.pot-label{font-size:0.72rem;color:var(--f3);margin-top:0.25rem;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em}
+
+/* TAB NAV */
+.tab-nav{background:var(--bg2);border-bottom:1px solid var(--line)}
+.tab-nav-inner{max-width:1100px;margin:0 auto;display:flex}
+.tab{display:flex;align-items:center;padding:0 1.5rem;height:44px;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.15s;text-decoration:none}
+.tab:hover{color:var(--f1)}
+.tab.active{color:var(--white);border-bottom-color:var(--gold)}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--gold);color:#000;font-size:0.6rem;font-weight:900;margin-left:6px}
+
+/* MAIN LAYOUT */
+.main{max-width:1100px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 300px;gap:2rem}
+
+/* MATCHDAY SELECTOR */
+.matchday-strip{display:flex;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:1.5rem}
+.md-btn{flex:1;padding:0.5rem 0.25rem;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:var(--bg2);color:var(--f3);border:none;cursor:pointer;border-right:1px solid var(--line);transition:all 0.15s}
+.md-btn:last-child{border-right:none}
+.md-btn:hover{background:var(--bg3);color:var(--f1)}
+.md-btn.active{background:var(--gold);color:#000}
+.md-btn.locked{color:var(--f4)}
+.md-btn.done{color:var(--green)}
+
+/* DEADLINE BANNER */
+.deadline-banner{display:flex;align-items:center;justify-content:space-between;background:rgba(201,168,76,0.08);border:1px solid var(--gold-line);border-radius:4px;padding:0.65rem 1rem;margin-bottom:1.5rem}
+.deadline-left{display:flex;align-items:center;gap:0.6rem}
+.deadline-icon{font-size:0.9rem}
+.deadline-text{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold)}
+.deadline-sub{font-size:0.72rem;color:var(--f3);margin-top:1px}
+.deadline-countdown{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:900;color:var(--gold);letter-spacing:0.04em}
+
+/* LOCKED BANNER */
+.locked-banner{display:flex;align-items:center;gap:0.75rem;background:rgba(224,59,59,0.08);border:1px solid rgba(224,59,59,0.2);border-radius:4px;padding:0.65rem 1rem;margin-bottom:1.5rem}
+.locked-icon{font-size:1rem}
+.locked-text{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--red)}
+.locked-sub{font-size:0.72rem;color:var(--f3);margin-top:1px}
+
+/* MATCH PICK CARD */
+.match-pick-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:1px}
+.match-pick-card.submitted{border-color:rgba(44,182,125,0.25)}
+.match-pick-card.locked-card{border-color:rgba(255,255,255,0.04);opacity:0.7}
+.mpc-header{background:var(--bg3);padding:0.45rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.mpc-info{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)}
+.mpc-status{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+.mpc-status.open{color:var(--green)}
+.mpc-status.saved{color:var(--green)}
+.mpc-status.live{color:var(--red);display:flex;align-items:center;gap:4px}
+.mpc-live-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.4s ease infinite}
+.mpc-status.locked{color:var(--f4)}
+
+.mpc-body{
+  display:grid;
+  grid-template-columns:1fr 180px 1fr;
+  align-items:center;
+  gap:0;
+  padding:1rem 1rem;
+}
+.team-side{display:flex;flex-direction:column;align-items:center;gap:0.4rem}
+.team-flag-lg img{width:44px;height:30px;border-radius:3px;object-fit:cover;border:1px solid rgba(255,255,255,0.1)}
+.team-name-lg{font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--f1);text-align:center}
+
+/* Score inputs */
+.score-entry{display:flex;align-items:center;justify-content:center;gap:8px}
+.score-input{
+  width:52px;height:52px;
+  background:var(--bg3);
+  border:1px solid var(--f4);
+  border-radius:3px;
+  color:var(--white);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.8rem;font-weight:900;
+  text-align:center;
+  outline:none;
+  transition:border-color 0.15s;
+  -moz-appearance:textfield;
+}
+.score-input::-webkit-outer-spin-button,
+.score-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.score-input:focus{border-color:var(--gold)}
+.score-input.filled{border-color:rgba(44,182,125,0.4);background:rgba(44,182,125,0.05)}
+.score-input.locked-input{color:var(--f2);border-color:var(--f4);background:var(--bg3);pointer-events:none}
+.score-dash{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:900;color:var(--f4)}
+
+/* Submitted score display */
+.score-display{display:flex;align-items:center;gap:8px;justify-content:center}
+.score-val{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:var(--gold);min-width:36px;text-align:center}
+.score-val.locked-val{color:var(--f2)}
+.score-sep2{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:var(--f4)}
+
+/* Points earned */
+.pts-earned{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px}
+.pts-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(44,182,125,0.15);color:var(--green);border:1px solid rgba(44,182,125,0.25)}
+
+/* Save button row */
+.mpc-footer{border-top:1px solid var(--line);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:flex-end;gap:0.75rem}
+.btn-save{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.45rem 1.25rem;border-radius:2px;border:none;cursor:pointer;transition:background 0.15s}
+.btn-save:hover{background:var(--gold2)}
+.btn-saved{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:5px}
+.btn-clear{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--f4);border:1px solid var(--f4);padding:0.4rem 0.75rem;border-radius:2px;cursor:pointer;transition:all 0.15s}
+.btn-clear:hover{color:var(--f2);border-color:var(--f2)}
+
+/* SIDEBAR */
+.sidebar{}
+.sidebar-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:1rem}
+.sc-head{background:var(--bg3);padding:0.6rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.sc-title{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f3)}
+.sc-body{padding:1rem}
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.sc-row:last-child{border-bottom:none}
+.sc-label{font-size:0.78rem;color:var(--f3)}
+.sc-val{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;color:var(--f1)}
+.sc-val.gold{color:var(--gold)}
+.sc-val.green{color:var(--green)}
+
+/* Mini leaderboard */
+.mini-lb-row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:0 0.5rem;padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.mini-lb-row:last-child{border-bottom:none}
+.mini-rank{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:800;color:var(--f4);text-align:center}
+.mini-rank.gold{color:var(--gold)}
+.mini-name{font-size:0.78rem;font-weight:500;color:var(--f1)}
+.mini-pts{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:var(--f2)}
+.mini-you{font-size:0.62rem;color:var(--gold);font-weight:600;margin-left:4px}
+
+/* ============================================================
+   SPECIAL PICKS PAGE
+============================================================ */
+.special-lock-banner{display:flex;align-items:flex-start;gap:0.75rem;background:rgba(201,168,76,0.08);border:1px solid var(--gold-line);border-radius:4px;padding:0.85rem 1rem;margin-bottom:1.5rem}
+.slb-icon{font-size:1.1rem;margin-top:1px}
+.slb-title{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold)}
+.slb-sub{font-size:0.75rem;color:var(--f3);margin-top:3px;line-height:1.5}
+
+.special-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:1px}
+.sp-header{background:var(--bg3);padding:0.5rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.sp-title-wrap{display:flex;align-items:center;gap:0.6rem}
+.sp-icon{font-size:1rem}
+.sp-title{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--white)}
+.sp-pts-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--gold-line)}
+.sp-body{padding:1rem}
+.sp-desc{font-size:0.78rem;color:var(--f3);margin-bottom:0.75rem;line-height:1.5}
+
+/* Team/player search pick */
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-top:0.5rem}
+.pick-option{
+  display:flex;flex-direction:column;align-items:center;gap:0.35rem;
+  padding:0.65rem 0.5rem;border-radius:3px;
+  background:var(--bg3);border:1px solid var(--line);
+  cursor:pointer;transition:all 0.15s;
+}
+.pick-option:hover{border-color:var(--f3);background:var(--bg4)}
+.pick-option.selected{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.pick-option img{width:36px;height:25px;border-radius:2px;object-fit:cover;border:1px solid rgba(255,255,255,0.1)}
+.pick-option-name{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--f2);text-align:center}
+.pick-option.selected .pick-option-name{color:var(--gold)}
+
+/* Player search */
+.player-search-wrap{position:relative;margin-bottom:0.75rem}
+.player-search{
+  width:100%;padding:0.55rem 0.85rem;
+  background:var(--bg3);border:1px solid var(--f4);border-radius:3px;
+  color:var(--f1);font-size:0.82rem;font-family:'Inter',sans-serif;
+  outline:none;transition:border-color 0.15s;
+}
+.player-search:focus{border-color:var(--gold)}
+.player-search::placeholder{color:var(--f4)}
+.player-results{background:var(--bg3);border:1px solid var(--f4);border-radius:3px;margin-top:2px;overflow:hidden}
+.player-result-item{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.55rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.05);
+  cursor:pointer;transition:background 0.15s;
+}
+.player-result-item:last-child{border-bottom:none}
+.player-result-item:hover{background:rgba(255,255,255,0.04)}
+.player-result-item.selected-player{background:rgba(201,168,76,0.08)}
+.pri-flag img{width:20px;height:14px;border-radius:1px;object-fit:cover}
+.pri-name{font-size:0.82rem;font-weight:500;color:var(--f1)}
+.pri-team{font-size:0.72rem;color:var(--f3);margin-top:1px}
+.pri-check{margin-left:auto;color:var(--gold);font-size:0.85rem;font-weight:700}
+
+.selected-pick-display{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.6rem 0.85rem;
+  background:rgba(201,168,76,0.06);border:1px solid var(--gold-line);border-radius:3px;
+  margin-top:0.5rem;
+}
+.spd-flag img{width:28px;height:19px;border-radius:2px;object-fit:cover}
+.spd-name{font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--white)}
+.spd-team{font-size:0.72rem;color:var(--f3)}
+.spd-change{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--f4);cursor:pointer;text-decoration:underline}
+.spd-change:hover{color:var(--f2)}
+
+.sp-footer{border-top:1px solid var(--line);padding:0.65rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.sp-footer-note{font-size:0.72rem;color:var(--f4)}
+
+/* DIVIDER between pages */
+.page-divider{border:none;border-top:3px solid var(--gold);margin:3rem 0;position:relative}
+.page-divider::after{content:'SPECIAL PICKS';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);background:var(--bg);padding:0 1rem}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+</style>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Pick<span>Poolr</span></div>
+  <div class="nav-items">
+    <a href="#" class="nav-item">Home</a>
+    <a href="#" class="nav-item">My Pools</a>
+    <a href="#" class="nav-item active">Amigos WC26</a>
+    <a href="#" class="nav-item">Results</a>
+  </div>
+  <a href="#" class="nav-cta">+ Create Pool</a>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="pool-breadcrumb">My Pools &rsaquo; <span>Amigos WC26 Pool</span></div>
+      <div class="pool-title-row">
+        <div class="pool-title">Amigos WC26 Pool</div>
+        <span class="pool-meta-pill pill-live">Group Stage</span>
+        <span class="pool-meta-pill pill-pot">$280 Pot</span>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:var(--gold)">47 pts</div>
+      <div class="pot-label">Your score &mdash; 3rd place</div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <div class="tab-nav-inner">
+    <a href="#picks" class="tab active">Match Picks<span class="tab-badge">2</span></a>
+    <a href="#special" class="tab">Special Picks</a>
+    <a href="#" class="tab">Leaderboard</a>
+    <a href="#" class="tab">My Results</a>
+    <a href="#" class="tab">Pool Settings</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     MATCH PICKS PAGE
+════════════════════════════════ -->
+<div id="picks" class="main">
+  <div>
+    <!-- Matchday selector -->
+    <div class="matchday-strip">
+      <button class="md-btn done">MD 1</button>
+      <button class="md-btn done">MD 2</button>
+      <button class="md-btn active">MD 3</button>
+      <button class="md-btn">MD 4</button>
+      <button class="md-btn locked">MD 5</button>
+      <button class="md-btn locked">MD 6</button>
+      <button class="md-btn locked">R16</button>
+      <button class="md-btn locked">QF</button>
+      <button class="md-btn locked">SF</button>
+      <button class="md-btn locked">F</button>
+    </div>
+
+    <!-- Deadline countdown -->
+    <div class="deadline-banner">
+      <div class="deadline-left">
+        <div>
+          <div class="deadline-text">Matchday 3 &mdash; Picks close Jun 25, 3:00 PM ET</div>
+          <div class="deadline-sub">Submit all picks before the first match kicks off</div>
+        </div>
+      </div>
+      <div class="deadline-countdown" id="countdown">11:42:07</div>
+    </div>
+
+    <!-- MATCH 1 — open, no picks yet -->
+    <div class="match-pick-card">
+      <div class="mpc-header">
+        <div class="mpc-info">Group A &middot; Jun 25 &middot; 3:00 PM ET &middot; MetLife Stadium</div>
+        <div class="mpc-status open">Open</div>
+      </div>
+      <div class="mpc-body">
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/ar.png" alt="ARG"></div>
+          <div class="team-name-lg">Argentina</div>
+        </div>
+        <div class="score-entry">
+          <input class="score-input" type="number" min="0" max="20" placeholder="0" id="m1h">
+          <div class="score-dash">—</div>
+          <input class="score-input" type="number" min="0" max="20" placeholder="0" id="m1a">
+        </div>
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/fr.png" alt="FRA"></div>
+          <div class="team-name-lg">France</div>
+        </div>
+      </div>
+      <div class="mpc-footer">
+        <button class="btn-clear">Clear</button>
+        <button class="btn-save">Save Pick</button>
+      </div>
+    </div>
+
+    <!-- MATCH 2 — submitted -->
+    <div class="match-pick-card submitted">
+      <div class="mpc-header">
+        <div class="mpc-info">Group B &middot; Jun 25 &middot; 6:00 PM ET &middot; SoFi Stadium</div>
+        <div class="mpc-status saved">&#10003; Saved</div>
+      </div>
+      <div class="mpc-body">
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/br.png" alt="BRA"></div>
+          <div class="team-name-lg">Brazil</div>
+        </div>
+        <div style="text-align:center">
+          <div class="score-display">
+            <span class="score-val">2</span>
+            <span class="score-sep2">–</span>
+            <span class="score-val">1</span>
+          </div>
+          <div style="font-size:0.7rem;color:var(--f4);margin-top:4px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase">Your pick</div>
+        </div>
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/de.png" alt="GER"></div>
+          <div class="team-name-lg">Germany</div>
+        </div>
+      </div>
+      <div class="mpc-footer">
+        <div style="font-size:0.72rem;color:var(--f3)">Saved Jun 24 at 9:12 PM</div>
+        <button class="btn-clear">Edit</button>
+      </div>
+    </div>
+
+    <!-- MATCH 3 — live / locked -->
+    <div class="match-pick-card locked-card">
+      <div class="mpc-header">
+        <div class="mpc-info">Group C &middot; Jun 25 &middot; 9:00 PM ET &middot; AT&T Stadium</div>
+        <div class="mpc-status live"><span class="mpc-live-dot"></span>Live 67'</div>
+      </div>
+      <div class="mpc-body">
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/mx.png" alt="MEX"></div>
+          <div class="team-name-lg">Mexico</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);margin-bottom:4px">Live 1 – 0</div>
+          <div class="score-display">
+            <span class="score-val locked-val">1</span>
+            <span class="score-sep2">–</span>
+            <span class="score-val locked-val">0</span>
+          </div>
+          <div style="font-size:0.7rem;color:var(--f4);margin-top:4px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase">Your pick</div>
+          <div class="pts-earned"><span class="pts-badge">+1 pt so far</span></div>
+        </div>
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/pt.png" alt="POR"></div>
+          <div class="team-name-lg">Portugal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCH 4 — completed, scored -->
+    <div class="match-pick-card locked-card">
+      <div class="mpc-header">
+        <div class="mpc-info">Group D &middot; Jun 24 &middot; Completed</div>
+        <div class="mpc-status locked">Locked</div>
+      </div>
+      <div class="mpc-body">
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/es.png" alt="ESP"></div>
+          <div class="team-name-lg">Spain</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4);margin-bottom:2px">Final 2 – 0</div>
+          <div class="score-display">
+            <span class="score-val locked-val">2</span>
+            <span class="score-sep2">–</span>
+            <span class="score-val locked-val">1</span>
+          </div>
+          <div style="font-size:0.7rem;color:var(--f4);margin-top:4px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase">Your pick</div>
+          <div class="pts-earned"><span class="pts-badge">+1 pt</span></div>
+        </div>
+        <div class="team-side">
+          <div class="team-flag-lg"><img src="https://flagcdn.com/w80/nl.png" alt="NED"></div>
+          <div class="team-name-lg">Netherlands</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <div class="sc-head"><div class="sc-title">Matchday 3 Progress</div></div>
+      <div class="sc-body">
+        <div class="sc-row"><div class="sc-label">Picks submitted</div><div class="sc-val green">2 / 4</div></div>
+        <div class="sc-row"><div class="sc-label">Points this matchday</div><div class="sc-val gold">2</div></div>
+        <div class="sc-row"><div class="sc-label">Total points</div><div class="sc-val">47</div></div>
+        <div class="sc-row"><div class="sc-label">Current rank</div><div class="sc-val gold">3rd</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-head">
+        <div class="sc-title">Standings</div>
+        <a href="#" style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:var(--gold);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase">Full →</a>
+      </div>
+      <div class="sc-body">
+        <div class="mini-lb-row"><div class="mini-rank gold">1</div><div class="mini-name">Carlos M.</div><div class="mini-pts">84</div></div>
+        <div class="mini-lb-row"><div class="mini-rank">2</div><div class="mini-name">Ana R.</div><div class="mini-pts">79</div></div>
+        <div class="mini-lb-row" style="background:rgba(201,168,76,0.05);border-radius:2px"><div class="mini-rank" style="color:var(--gold)">3</div><div class="mini-name">You<span class="mini-you">&#9654;</span></div><div class="mini-pts" style="color:var(--gold)">47</div></div>
+        <div class="mini-lb-row"><div class="mini-rank">4</div><div class="mini-name">Valentina S.</div><div class="mini-pts">44</div></div>
+        <div class="mini-lb-row"><div class="mini-rank">5</div><div class="mini-name">Rafa G.</div><div class="mini-pts">41</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-head"><div class="sc-title">Scoring Guide</div></div>
+      <div class="sc-body">
+        <div class="sc-row"><div class="sc-label">Exact scoreline</div><div class="sc-val gold">3 pts</div></div>
+        <div class="sc-row"><div class="sc-label">Correct winner + 1 score</div><div class="sc-val gold">2 pts</div></div>
+        <div class="sc-row"><div class="sc-label">Correct result only</div><div class="sc-val gold">1 pt</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SPECIAL PICKS PAGE
+════════════════════════════════ -->
+<hr class="page-divider">
+
+<!-- Re-use tab nav for special picks context -->
+<div class="tab-nav" style="margin-top:-1px">
+  <div class="tab-nav-inner">
+    <a href="#picks" class="tab">Match Picks</a>
+    <a href="#special" class="tab active">Special Picks</a>
+    <a href="#" class="tab">Leaderboard</a>
+    <a href="#" class="tab">My Results</a>
+    <a href="#" class="tab">Pool Settings</a>
+  </div>
+</div>
+
+<div id="special" class="main">
+  <div>
+    <!-- Lock warning -->
+    <div class="special-lock-banner">
+      <div>
+        <div class="slb-title">&#9888; Locks at first kickoff &mdash; Jun 11, 5:00 PM ET</div>
+        <div class="slb-sub">All special picks lock permanently when the tournament begins. You cannot change them once the first match starts. Submit before the deadline to earn bonus points.</div>
+      </div>
+    </div>
+
+    <!-- CHAMPION -->
+    <div class="special-card">
+      <div class="sp-header">
+        <div class="sp-title-wrap">
+          <div class="sp-icon">&#127942;</div>
+          <div class="sp-title">Champion</div>
+        </div>
+        <div class="sp-pts-badge">10 pts if correct</div>
+      </div>
+      <div class="sp-body">
+        <div class="sp-desc">Pick the team that wins the 2026 World Cup. Pays 10 points if your pick lifts the trophy.</div>
+        <div class="pick-grid">
+          <div class="pick-option selected">
+            <img src="https://flagcdn.com/w40/ar.png" alt="ARG">
+            <div class="pick-option-name">Argentina</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/fr.png" alt="FRA">
+            <div class="pick-option-name">France</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/br.png" alt="BRA">
+            <div class="pick-option-name">Brazil</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/es.png" alt="ESP">
+            <div class="pick-option-name">Spain</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/de.png" alt="GER">
+            <div class="pick-option-name">Germany</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/pt.png" alt="POR">
+            <div class="pick-option-name">Portugal</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/gb-eng.png" alt="ENG">
+            <div class="pick-option-name">England</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/mx.png" alt="MEX">
+            <div class="pick-option-name">Mexico</div>
+          </div>
+        </div>
+      </div>
+      <div class="sp-footer">
+        <div class="sp-footer-note">Selected: <strong style="color:var(--gold)">Argentina</strong></div>
+        <button class="btn-save">Save</button>
+      </div>
+    </div>
+
+    <!-- RUNNER-UP -->
+    <div class="special-card" style="margin-top:1px">
+      <div class="sp-header">
+        <div class="sp-title-wrap">
+          <div class="sp-icon">&#129352;</div>
+          <div class="sp-title">Runner-Up</div>
+        </div>
+        <div class="sp-pts-badge">7 pts if correct</div>
+      </div>
+      <div class="sp-body">
+        <div class="sp-desc">Pick the team that reaches the final but finishes second.</div>
+        <div class="pick-grid">
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/ar.png" alt="ARG">
+            <div class="pick-option-name">Argentina</div>
+          </div>
+          <div class="pick-option selected">
+            <img src="https://flagcdn.com/w40/fr.png" alt="FRA">
+            <div class="pick-option-name">France</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/br.png" alt="BRA">
+            <div class="pick-option-name">Brazil</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/es.png" alt="ESP">
+            <div class="pick-option-name">Spain</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/de.png" alt="GER">
+            <div class="pick-option-name">Germany</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/pt.png" alt="POR">
+            <div class="pick-option-name">Portugal</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/gb-eng.png" alt="ENG">
+            <div class="pick-option-name">England</div>
+          </div>
+          <div class="pick-option">
+            <img src="https://flagcdn.com/w40/mx.png" alt="MEX">
+            <div class="pick-option-name">Mexico</div>
+          </div>
+        </div>
+      </div>
+      <div class="sp-footer">
+        <div class="sp-footer-note">Selected: <strong style="color:var(--gold)">France</strong></div>
+        <button class="btn-save">Save</button>
+      </div>
+    </div>
+
+    <!-- PICHICHI / TOP SCORER -->
+    <div class="special-card" style="margin-top:1px">
+      <div class="sp-header">
+        <div class="sp-title-wrap">
+          <div class="sp-icon">&#9917;</div>
+          <div class="sp-title">Pichichi &mdash; Top Scorer</div>
+        </div>
+        <div class="sp-pts-badge">5 pts if correct</div>
+      </div>
+      <div class="sp-body">
+        <div class="sp-desc">Pick the player who scores the most goals in the tournament. Search by name or country.</div>
+        <div class="player-search-wrap">
+          <input class="player-search" type="text" placeholder="Search player name or country..." value="Mbapp">
+        </div>
+        <div class="player-results">
+          <div class="player-result-item selected-player">
+            <div class="pri-flag"><img src="https://flagcdn.com/w40/fr.png" alt="FRA"></div>
+            <div>
+              <div class="pri-name">Kylian Mbappé</div>
+              <div class="pri-team">France</div>
+            </div>
+            <div class="pri-check">&#10003;</div>
+          </div>
+        </div>
+        <div class="selected-pick-display">
+          <div class="spd-flag"><img src="https://flagcdn.com/w40/fr.png" alt="FRA"></div>
+          <div>
+            <div class="spd-name">Kylian Mbappé</div>
+            <div class="spd-team">France</div>
+          </div>
+          <div class="spd-change">Change</div>
+        </div>
+      </div>
+      <div class="sp-footer">
+        <div class="sp-footer-note">Selected: <strong style="color:var(--gold)">K. Mbappé</strong></div>
+        <button class="btn-save">Save</button>
+      </div>
+    </div>
+
+    <!-- BEST GOALKEEPER -->
+    <div class="special-card" style="margin-top:1px">
+      <div class="sp-header">
+        <div class="sp-title-wrap">
+          <div class="sp-icon">&#129354;</div>
+          <div class="sp-title">Best Goalkeeper</div>
+        </div>
+        <div class="sp-pts-badge">5 pts if correct</div>
+      </div>
+      <div class="sp-body">
+        <div class="sp-desc">Pick the goalkeeper awarded the Golden Glove at the end of the tournament.</div>
+        <div class="player-search-wrap">
+          <input class="player-search" type="text" placeholder="Search goalkeeper name or country...">
+        </div>
+        <div class="player-results">
+          <div class="player-result-item">
+            <div class="pri-flag"><img src="https://flagcdn.com/w40/ar.png" alt="ARG"></div>
+            <div><div class="pri-name">Emiliano Martínez</div><div class="pri-team">Argentina</div></div>
+          </div>
+          <div class="player-result-item">
+            <div class="pri-flag"><img src="https://flagcdn.com/w40/br.png" alt="BRA"></div>
+            <div><div class="pri-name">Alisson Becker</div><div class="pri-team">Brazil</div></div>
+          </div>
+          <div class="player-result-item">
+            <div class="pri-flag"><img src="https://flagcdn.com/w40/pt.png" alt="POR"></div>
+            <div><div class="pri-name">Rui Patrício</div><div class="pri-team">Portugal</div></div>
+          </div>
+          <div class="player-result-item">
+            <div class="pri-flag"><img src="https://flagcdn.com/w40/es.png" alt="ESP"></div>
+            <div><div class="pri-name">David Raya</div><div class="pri-team">Spain</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sp-footer">
+        <div class="sp-footer-note" style="color:var(--red)">No pick saved yet</div>
+        <button class="btn-save">Save</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR for special picks -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <div class="sc-head"><div class="sc-title">Special Picks Status</div></div>
+      <div class="sc-body">
+        <div class="sc-row"><div class="sc-label">Champion</div><div class="sc-val green">&#10003; Argentina</div></div>
+        <div class="sc-row"><div class="sc-label">Runner-up</div><div class="sc-val green">&#10003; France</div></div>
+        <div class="sc-row"><div class="sc-label">Top scorer</div><div class="sc-val green">&#10003; Mbappé</div></div>
+        <div class="sc-row"><div class="sc-label" style="color:var(--red)">Goalkeeper</div><div class="sc-val" style="color:var(--red)">&#9888; Missing</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sc-head"><div class="sc-title">Points Available</div></div>
+      <div class="sc-body">
+        <div class="sc-row"><div class="sc-label">Champion</div><div class="sc-val gold">10 pts</div></div>
+        <div class="sc-row"><div class="sc-label">Runner-up</div><div class="sc-val gold">7 pts</div></div>
+        <div class="sc-row"><div class="sc-label">Top scorer</div><div class="sc-val gold">5 pts</div></div>
+        <div class="sc-row"><div class="sc-label">Best goalkeeper</div><div class="sc-val gold">5 pts</div></div>
+        <div class="price-divider" style="margin:0.75rem 0;border-top:1px solid var(--line)"></div>
+        <div class="sc-row"><div class="sc-label" style="font-weight:600">Total available</div><div class="sc-val gold" style="font-size:1.1rem">27 pts</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card" style="background:rgba(224,59,59,0.06);border-color:rgba(224,59,59,0.2)">
+      <div class="sc-head" style="background:rgba(224,59,59,0.08);border-color:rgba(224,59,59,0.15)">
+        <div class="sc-title" style="color:var(--red)">Deadline</div>
+      </div>
+      <div class="sc-body">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;color:var(--red);line-height:1">Jun 11</div>
+        <div style="font-size:0.75rem;color:var(--f3);margin-top:4px">5:00 PM ET &mdash; First kickoff</div>
+        <div style="font-size:0.72rem;color:var(--f4);margin-top:8px;line-height:1.5">All special picks lock the moment the first match starts. No exceptions.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function tick(){
+  var d=document.getElementById('countdown');
+  if(!d)return;
+  var p=d.textContent.split(':').map(Number);
+  var s=p[0]*3600+p[1]*60+p[2]-1;
+  if(s<0)s=0;
+  var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  d.textContent=[h,m,sc].map(v=>String(v).padStart(2,'0')).join(':');
+}
+setInterval(tick,1000);
+
+document.querySelectorAll('.pick-option').forEach(el=>{
+  el.addEventListener('click',function(){
+    var g=this.closest('.sp-body').querySelectorAll('.pick-option');
+    g.forEach(x=>x.classList.remove('selected'));
+    this.classList.add('selected');
+  });
+});
+
+document.querySelectorAll('.md-btn:not(.locked)').forEach(el=>{
+  el.addEventListener('click',function(){
+    document.querySelectorAll('.md-btn').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
