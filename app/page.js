@@ -8,11 +8,12 @@ const translations = {
   en: {
     kicker: 'World Cup 2026 — Now Open',
     heroSub: 'Private prediction pools for the world\'s biggest tournament. Score picks, chase the leaderboard, split the pot.',
-    startPool: 'Start a pool — free',
+    startPool: 'Sign In',
+    signUp: 'Create Account',
     howItWorks: 'See how it works',
     features: 'Features',
     pricing: 'Pricing',
-    createPool: 'Create pool',
+    createPool: 'Sign In',
     platformFeatures: 'Platform features',
     everythingNeeds: 'Everything your pool needs',
     builtFor: 'Built for World Cup 2026. Works for any tournament. Clean, bilingual, built to last.',
@@ -60,11 +61,12 @@ const translations = {
   es: {
     kicker: 'Copa del Mundo 2026 — Disponible',
     heroSub: 'Pools privados de predicciones para el torneo más grande. Puntúa, sube en el marcador, divide el premio.',
-    startPool: 'Crear pool — gratis',
+    startPool: 'Iniciar sesión',
+    signUp: 'Crear cuenta',
     howItWorks: 'Cómo funciona',
     features: 'Funciones',
     pricing: 'Precios',
-    createPool: 'Crear pool',
+    createPool: 'Iniciar sesión',
     platformFeatures: 'Funciones de la plataforma',
     everythingNeeds: 'Todo lo que tu pool necesita',
     builtFor: 'Hecho para el Mundial 2026. Funciona para cualquier torneo. Limpio, bilingüe, duradero.',
@@ -148,7 +150,7 @@ export default function Home() {
               ES
             </button>
           </div>
-          <Link href="/register" className="nav-cta">{t.createPool}</Link>
+          <Link href="/login" className="nav-cta">{t.createPool}</Link>
         </div>
       </nav>
 
@@ -176,8 +178,8 @@ export default function Home() {
         <p className="hero-sub">{t.heroSub}</p>
 
         <div className="hero-actions">
-          <Link href="/register" className="btn-gold">{t.startPool}</Link>
-          <a href="#how-it-works" className="btn-outline">{t.howItWorks}</a>
+          <Link href="/login" className="btn-gold">{t.startPool}</Link>
+          <Link href="/register" className="btn-outline">{t.signUp}</Link>
         </div>
       </section>
 
@@ -281,7 +283,7 @@ export default function Home() {
             <PriceFeature text={t.unlimited} />
           </div>
           <div style={{marginTop: '2.5rem'}}>
-            <Link href="/register" className="btn-gold">{t.createFirst}</Link>
+            <Link href="/login" className="btn-gold">{t.startPool}</Link>
           </div>
           <div className="stripe-note">
             <i className="ti ti-lock" aria-hidden="true"></i>
