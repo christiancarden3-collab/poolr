@@ -243,7 +243,7 @@ export default function LandingPage() {
         <p className="footer-copy">© 2026 PickPoolr. Not affiliated with FIFA. For entertainment purposes only.</p>
       </footer>
 
-      <style jsx>{`
+      <style jsx global>{`
         /* TOPBAR */
         .topbar {
           background: var(--bg2);
