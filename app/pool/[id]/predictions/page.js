@@ -1,6 +1,38 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+
+// Demo data fallback when database is empty
+function getDemoMatches(matchday) {
+  const demoMatchesByDay = {
+    1: [
+      { id: 'demo-1', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'United States', flag: 'us' }, awayTeam: { name: 'Colombia', flag: 'co' }, date: 'Jun 11', time: '12:00 PM ET', status: 'scheduled' },
+      { id: 'demo-2', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'Senegal', flag: 'sn' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 11', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'demo-3', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Mexico', flag: 'mx' }, awayTeam: { name: 'England', flag: 'gb-eng' }, date: 'Jun 11', time: '6:00 PM ET', status: 'scheduled' },
+      { id: 'demo-4', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Iran', flag: 'ir' }, awayTeam: { name: 'Nigeria', flag: 'ng' }, date: 'Jun 11', time: '9:00 PM ET', status: 'scheduled' },
+      { id: 'demo-5', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Canada', flag: 'ca' }, awayTeam: { name: 'Germany', flag: 'de' }, date: 'Jun 12', time: '12:00 PM ET', status: 'scheduled' },
+      { id: 'demo-6', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Japan', flag: 'jp' }, awayTeam: { name: 'Cameroon', flag: 'cm' }, date: 'Jun 12', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'demo-7', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Netherlands', flag: 'nl' }, date: 'Jun 12', time: '6:00 PM ET', status: 'scheduled' },
+      { id: 'demo-8', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'Australia', flag: 'au' }, awayTeam: { name: 'Egypt', flag: 'eg' }, date: 'Jun 12', time: '9:00 PM ET', status: 'scheduled' },
+      { id: 'demo-9', matchday: 1, stage: 'group', group: 'E', homeTeam: { name: 'France', flag: 'fr' }, awayTeam: { name: 'Uruguay', flag: 'uy' }, date: 'Jun 13', time: '12:00 PM ET', status: 'scheduled' },
+      { id: 'demo-10', matchday: 1, stage: 'group', group: 'E', homeTeam: { name: 'South Korea', flag: 'kr' }, awayTeam: { name: 'Morocco', flag: 'ma' }, date: 'Jun 13', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'demo-11', matchday: 1, stage: 'group', group: 'F', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Spain', flag: 'es' }, date: 'Jun 13', time: '6:00 PM ET', status: 'scheduled' },
+      { id: 'demo-12', matchday: 1, stage: 'group', group: 'F', homeTeam: { name: 'Serbia', flag: 'rs' }, awayTeam: { name: 'Costa Rica', flag: 'cr' }, date: 'Jun 13', time: '9:00 PM ET', status: 'scheduled' },
+    ],
+    2: [
+      { id: 'demo-13', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'United States', flag: 'us' }, awayTeam: { name: 'Senegal', flag: 'sn' }, date: 'Jun 15', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'demo-14', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'Colombia', flag: 'co' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 15', time: '6:00 PM ET', status: 'scheduled' },
+      { id: 'demo-15', matchday: 2, stage: 'group', group: 'D', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Australia', flag: 'au' }, date: 'Jun 16', time: '6:00 PM ET', status: 'scheduled' },
+      { id: 'demo-16', matchday: 2, stage: 'group', group: 'F', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Serbia', flag: 'rs' }, date: 'Jun 17', time: '9:00 PM ET', status: 'scheduled' },
+    ],
+    3: [
+      { id: 'demo-17', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'United States', flag: 'us' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 19', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'demo-18', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'Colombia', flag: 'co' }, awayTeam: { name: 'Senegal', flag: 'sn' }, date: 'Jun 19', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'demo-19', matchday: 3, stage: 'group', group: 'D', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Egypt', flag: 'eg' }, date: 'Jun 20', time: '6:00 PM ET', status: 'scheduled' },
+    ],
+  }
+  return demoMatchesByDay[matchday] || []
+}
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
@@ -53,7 +85,7 @@ export default function PredictionsPage() {
       const response = await fetch(`/api/matches?matchday=${matchday}`)
       const data = await response.json()
       
-      if (data.success && data.matches) {
+      if (data.success && data.matches && data.matches.length > 0) {
         setMatches(data.matches)
         
         // Find earliest match time for deadline
@@ -63,6 +95,12 @@ export default function PredictionsPage() {
           )
           setDeadline(new Date(earliestMatch.matchTime))
         }
+      } else {
+        // Fallback to demo data if database is empty
+        const demoMatches = getDemoMatches(matchday)
+        setMatches(demoMatches)
+        // Set demo deadline to next June 11
+        setDeadline(new Date('2026-06-11T12:00:00-04:00'))
       }
 
       // Load existing picks for this user

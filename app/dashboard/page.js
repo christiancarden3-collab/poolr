@@ -58,12 +58,8 @@ export default function DashboardPage() {
     return user.email?.split('@')[0] || 'User'
   }
 
-  // Mock data if no pools exist yet
-  const displayPools = pools.length > 0 ? pools : [
-    { id: 1, name: 'Amigos WC26 Pool', tournament_name: 'FIFA World Cup 2026', role: 'commissioner', player_count: 14, pot_amount: 280, status: 'live', user_rank: 3 },
-    { id: 2, name: 'Work Crew WC26', tournament_name: 'FIFA World Cup 2026', role: 'player', player_count: 8, pot_amount: 0, status: 'live', user_rank: 1 },
-    { id: 3, name: 'Family Pool 2026', tournament_name: 'FIFA World Cup 2026', role: 'commissioner', player_count: 5, pot_amount: 0, status: 'upcoming', user_rank: null },
-  ]
+  // No mock data - show empty state if no pools
+  const displayPools = pools
 
   return (
     <>
@@ -131,6 +127,13 @@ export default function DashboardPage() {
           <div className="card-body">
             {loading ? (
               <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--f3)' }}>Loading...</div>
+            ) : displayPools.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🏆</div>
+                <div className="empty-title">No pools yet</div>
+                <div className="empty-text">Create your first pool or join one to get started</div>
+                <Link href="/create" className="btn-primary" style={{ marginTop: '1rem' }}>+ Create Pool</Link>
+              </div>
             ) : (
               <div className="pool-grid">
                 {displayPools.map((pool, i) => (
@@ -635,6 +638,29 @@ export default function DashboardPage() {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.35; }
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+          text-align: center;
+          padding: 3rem 1rem;
+        }
+        .empty-icon {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+        }
+        .empty-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.4rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          color: var(--white);
+          margin-bottom: 0.5rem;
+        }
+        .empty-text {
+          font-size: 0.85rem;
+          color: var(--f3);
         }
 
         @media (max-width: 768px) {
