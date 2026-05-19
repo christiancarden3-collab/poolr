@@ -417,7 +417,9 @@ export default function DashboardPage() {
           color: var(--white);
         }
         .ph-meta {
-          font-size: 0.78rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 600;
           color: var(--f3);
           margin-top: 0.2rem;
         }
@@ -661,10 +663,9 @@ export default function DashboardPage() {
           margin-bottom: 0.75rem;
         }
         .empty-text {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1rem;
-          font-weight: 500;
-          letter-spacing: 0.02em;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.95rem;
+          font-weight: 600;
           color: var(--f3);
           margin-bottom: 1.5rem;
         }

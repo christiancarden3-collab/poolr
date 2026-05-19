@@ -571,8 +571,9 @@ export default function LandingPage() {
           -webkit-text-stroke: 2px var(--white);
         }
         .hero-sub {
+          font-family: 'Inter', sans-serif;
           font-size: 0.95rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--f2);
           line-height: 1.7;
           max-width: 380px;
@@ -961,10 +962,11 @@ export default function LandingPage() {
           margin-bottom: 0.35rem;
         }
         .feat-card-desc {
-          font-size: 0.78rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.82rem;
           color: var(--f3);
           line-height: 1.6;
-          font-weight: 300;
+          font-weight: 600;
         }
 
         /* SCORING TABLE */
@@ -1060,10 +1062,11 @@ export default function LandingPage() {
           margin-bottom: 0.25rem;
         }
         .step-desc {
-          font-size: 0.78rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.82rem;
           color: var(--f3);
           line-height: 1.6;
-          font-weight: 300;
+          font-weight: 600;
         }
 
         /* PRICING BOX */
