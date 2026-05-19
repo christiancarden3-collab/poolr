@@ -1,132 +1,205 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '../../../lib/supabase'
 
 export default function JoinPoolPage({ params }) {
   const router = useRouter()
-  const [user, setUser] = useState(null)
+  const { code } = use(params)
+  
   const [pool, setPool] = useState(null)
-  const [memberCount, setMemberCount] = useState(0)
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState('')
-  const [alreadyMember, setAlreadyMember] = useState(false)
+  const [joined, setJoined] = useState(false)
+  
+  // Login form state (for non-logged in users)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
 
   useEffect(() => {
-    loadPool()
-  }, [params.code])
-
-  const loadPool = async () => {
-    // Get current user (might not be logged in)
-    const currentUser = await getCurrentUser()
-    setUser(currentUser)
-
-    // Find pool by invite code
-    const { data: poolData, error: poolError } = await supabase
-      .from('pools')
-      .select('*')
-      .eq('invite_code', params.code.toUpperCase())
-      .single()
-
-    if (poolError || !poolData) {
-      setError('Pool not found. Check your invite link.')
-      setLoading(false)
-      return
-    }
-
-    setPool(poolData)
-
-    // Get member count
-    const { count } = await supabase
-      .from('pool_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('pool_id', poolData.id)
-    
-    setMemberCount(count || 0)
-
-    // Check if user is already a member
-    if (currentUser) {
-      const { data: membership } = await supabase
-        .from('pool_members')
-        .select('*')
-        .eq('pool_id', poolData.id)
-        .eq('user_id', currentUser.id)
+    async function fetchData() {
+      setLoading(true)
+      
+      // Get current user
+      const currentUser = await getCurrentUser()
+      setUser(currentUser)
+      
+      // Fetch pool by invite code
+      const { data: poolData, error: poolError } = await supabase
+        .from('pools')
+        .select(`
+          *,
+          commissioner:profiles!pools_commissioner_id_fkey(id, first_name, last_name),
+          tournaments(name, start_date, end_date),
+          pool_members(user_id)
+        `)
+        .eq('invite_code', code)
         .single()
-
-      if (membership) {
-        setAlreadyMember(true)
+      
+      if (poolError || !poolData) {
+        setError('Pool not found or invite link has expired')
+      } else {
+        setPool(poolData)
+        
+        // Check if user already joined
+        if (currentUser && poolData.pool_members?.some(m => m.user_id === currentUser.id)) {
+          setJoined(true)
+        }
       }
+      
+      setLoading(false)
     }
-
-    setLoading(false)
-  }
+    
+    fetchData()
+  }, [code])
 
   const handleJoin = async () => {
-    if (!user) {
-      // Redirect to login with return URL
-      router.push(`/login?redirect=/join/${params.code}`)
-      return
-    }
-
+    if (!user) return
+    
     setJoining(true)
     setError('')
-
+    
     try {
-      // Add user as pool member
-      const { error: joinError } = await supabase
+      const { error } = await supabase
         .from('pool_members')
         .insert({
           pool_id: pool.id,
           user_id: user.id,
-          payment_status: pool.buy_in === 0 ? 'paid' : 'pending',
-          total_points: 0,
-          rank: null
+          role: 'member'
         })
-
-      if (joinError) {
-        if (joinError.code === '23505') {
-          // Already a member (unique constraint)
-          router.push(`/pool/${pool.id}`)
-          return
-        }
-        throw joinError
-      }
-
-      // Redirect to pool page
-      router.push(`/pool/${pool.id}?joined=true`)
+      
+      if (error) throw error
+      setJoined(true)
     } catch (err) {
-      console.error('Join error:', err)
-      setError(err.message || 'Failed to join pool')
+      setError(err.message)
+    } finally {
       setJoining(false)
     }
   }
 
+  const handleLoginAndJoin = async (e) => {
+    e.preventDefault()
+    setLoginError('')
+    setJoining(true)
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (error) throw error
+      
+      // After login, join the pool
+      setUser(data.user)
+      
+      const { error: joinError } = await supabase
+        .from('pool_members')
+        .insert({
+          pool_id: pool.id,
+          user_id: data.user.id,
+          role: 'member'
+        })
+      
+      if (joinError && !joinError.message.includes('duplicate')) {
+        throw joinError
+      }
+      
+      setJoined(true)
+    } catch (err) {
+      setLoginError(err.message)
+    } finally {
+      setJoining(false)
+    }
+  }
+
+  const getInitials = (firstName, lastName) => {
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase()
+  }
+
+  const formatBuyIn = (amount) => {
+    if (!amount || amount === 0) return 'Free'
+    return `$${amount}`
+  }
+
   if (loading) {
     return (
-      <div className="loading-screen">
-        <div className="logo">PickPoolr</div>
-        <p>Loading pool...</p>
+      <div className="auth-page">
+        <div className="auth-pitch">
+          <div className="pitch-3d">
+            <div className="pitch-surface"></div>
+            <div className="pitch-lines"></div>
+            <div className="pitch-circle"></div>
+            <div className="pitch-glow"></div>
+          </div>
+        </div>
+        <div className="loading-text">Loading pool...</div>
         <style jsx>{`
-          .loading-screen {
+          .auth-page {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: var(--ink);
+            background: var(--bg);
+            position: relative;
           }
-          .logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2rem;
-            font-weight: 300;
-            letter-spacing: 0.12em;
-            color: var(--gold2);
-            text-transform: uppercase;
+          .auth-pitch {
+            position: absolute;
+            inset: 0;
+            perspective: 700px;
+            perspective-origin: 50% 10%;
+            pointer-events: none;
+            overflow: hidden;
           }
-          p { color: var(--muted); margin-top: 1rem; }
+          .pitch-3d {
+            position: absolute;
+            bottom: -35%;
+            left: 50%;
+            transform: translateX(-50%) rotateX(64deg);
+            width: 900px;
+            height: 620px;
+            animation: pitchFloat 9s ease-in-out infinite;
+          }
+          .pitch-surface {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg,rgba(10, 28, 10, 0.6) 0px,rgba(10, 28, 10, 0.6) 38px,rgba(14, 36, 14, 0.6) 38px,rgba(14, 36, 14, 0.6) 76px);
+            border: 2px solid rgba(255, 255, 255, 0.06);
+          }
+          .pitch-lines {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 49.4%, rgba(255,255,255,0.1) 49.4%, rgba(255,255,255,0.1) 50.6%, transparent 50.6%),linear-gradient(0deg, transparent 49.4%, rgba(255,255,255,0.1) 49.4%, rgba(255,255,255,0.1) 50.6%, transparent 50.6%);
+          }
+          .pitch-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+          }
+          .pitch-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 70% 40% at 50% 60%, rgba(201, 168, 76, 0.05), transparent 70%);
+          }
+          @keyframes pitchFloat {
+            0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); }
+            50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); }
+          }
+          .loading-text {
+            color: var(--f3);
+            font-size: 0.9rem;
+            z-index: 10;
+          }
         `}</style>
       </div>
     )
@@ -134,299 +207,759 @@ export default function JoinPoolPage({ params }) {
 
   if (error && !pool) {
     return (
-      <div className="error-screen">
-        <div className="logo">PickPoolr</div>
-        <div className="error-card">
-          <h1>😕 Pool Not Found</h1>
-          <p>{error}</p>
-          <Link href="/" className="btn-gold">Go to Homepage</Link>
+      <div className="auth-page">
+        <div className="auth-pitch">
+          <div className="pitch-3d">
+            <div className="pitch-surface"></div>
+            <div className="pitch-lines"></div>
+            <div className="pitch-circle"></div>
+            <div className="pitch-glow"></div>
+          </div>
+        </div>
+        <div className="auth-card">
+          <div className="auth-card-head">
+            <div className="auth-eyebrow">Error</div>
+            <div className="auth-title">Pool Not Found</div>
+            <div className="auth-sub">{error}</div>
+          </div>
+          <div className="auth-body">
+            <Link href="/browse" className="btn-full" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+              Browse Public Pools →
+            </Link>
+            <Link href="/" className="btn-outline-full" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+              ← Back to Home
+            </Link>
+          </div>
         </div>
         <style jsx>{`
-          .error-screen {
+          .auth-page {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: var(--ink);
             padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg);
           }
-          .logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2rem;
-            font-weight: 300;
-            letter-spacing: 0.12em;
-            color: var(--gold2);
+          .auth-pitch {
+            position: absolute;
+            inset: 0;
+            perspective: 700px;
+            perspective-origin: 50% 10%;
+            pointer-events: none;
+            overflow: hidden;
+          }
+          .pitch-3d {
+            position: absolute;
+            bottom: -35%;
+            left: 50%;
+            transform: translateX(-50%) rotateX(64deg);
+            width: 900px;
+            height: 620px;
+            animation: pitchFloat 9s ease-in-out infinite;
+          }
+          .pitch-surface {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg,rgba(10, 28, 10, 0.6) 0px,rgba(10, 28, 10, 0.6) 38px,rgba(14, 36, 14, 0.6) 38px,rgba(14, 36, 14, 0.6) 76px);
+            border: 2px solid rgba(255, 255, 255, 0.06);
+          }
+          .pitch-lines {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 49.4%, rgba(255,255,255,0.1) 49.4%, rgba(255,255,255,0.1) 50.6%, transparent 50.6%),linear-gradient(0deg, transparent 49.4%, rgba(255,255,255,0.1) 49.4%, rgba(255,255,255,0.1) 50.6%, transparent 50.6%);
+          }
+          .pitch-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+          }
+          .pitch-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 70% 40% at 50% 60%, rgba(201, 168, 76, 0.05), transparent 70%);
+          }
+          @keyframes pitchFloat {
+            0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); }
+            50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); }
+          }
+          .auth-card {
+            background: var(--bg2);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+          }
+          .auth-card::before {
+            content: '';
+            display: block;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--red), transparent);
+          }
+          .auth-card-head {
+            padding: 1.75rem 1.75rem 0;
+          }
+          .auth-eyebrow {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
-            margin-bottom: 2rem;
+            color: var(--red);
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
           }
-          .error-card {
-            background: var(--ink2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 3rem;
-            text-align: center;
-            max-width: 400px;
+          .auth-eyebrow::before {
+            content: '';
+            display: block;
+            width: 16px;
+            height: 1.5px;
+            background: var(--red);
           }
-          h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.75rem;
-            color: var(--silk);
-            margin-bottom: 1rem;
+          .auth-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--white);
+            line-height: 1;
           }
-          p {
-            color: var(--body);
-            margin-bottom: 2rem;
+          .auth-sub {
+            font-size: 0.8rem;
+            color: var(--f3);
+            margin-top: 0.4rem;
+            line-height: 1.5;
+          }
+          .auth-body {
+            padding: 1.5rem 1.75rem;
+          }
+          .btn-full {
+            width: 100%;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: var(--gold);
+            color: #000;
+            padding: 0.75rem;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s;
+          }
+          .btn-full:hover {
+            background: var(--gold2);
+          }
+          .btn-outline-full {
+            width: 100%;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: transparent;
+            color: var(--f2);
+            padding: 0.7rem;
+            border-radius: 3px;
+            border: 1px solid var(--f4);
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-top: 0.6rem;
+          }
+          .btn-outline-full:hover {
+            border-color: var(--f2);
+            color: var(--white);
           }
         `}</style>
       </div>
     )
   }
 
-  const totalCost = pool.fee_handling === 'on_top' 
-    ? pool.buy_in * 1.05 
-    : pool.buy_in
-
   return (
-    <div className="join-screen">
-      <div className="logo">PickPoolr</div>
-      
-      <div className="join-card">
-        <div className="pool-badge">You're Invited!</div>
-        
-        <h1>{pool.name}</h1>
-        
-        {pool.description && (
-          <p className="pool-description">{pool.description}</p>
-        )}
-        
-        <div className="pool-details">
-          <div className="detail-row">
-            <span className="detail-label">Tournament</span>
-            <span className="detail-value">World Cup 2026</span>
+    <div className="auth-page">
+      {/* Pitch Background Animation */}
+      <div className="auth-pitch">
+        <div className="pitch-3d">
+          <div className="pitch-surface"></div>
+          <div className="pitch-lines"></div>
+          <div className="pitch-circle"></div>
+          <div className="pitch-glow"></div>
+        </div>
+      </div>
+
+      <div className="auth-card">
+        <div className="auth-card-head">
+          <div className="auth-eyebrow">You were invited</div>
+          <div className="auth-title">Join Pool</div>
+          <div className="auth-sub">You've been invited to join a prediction pool</div>
+        </div>
+
+        <div className="auth-body">
+          {/* Pool Preview Card */}
+          <div className="pool-preview-card">
+            <div className="ppc-name">{pool.name}</div>
+            <div className="ppc-tournament">
+              {pool.tournaments?.name || 'World Cup 2026'} — {pool.tournaments?.start_date ? new Date(pool.tournaments.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'} to {pool.tournaments?.end_date ? new Date(pool.tournaments.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'}
+            </div>
+            <div className="ppc-stats">
+              <div className="ppc-stat">
+                <div className="ppc-stat-val">{pool.pool_members?.length || 0}</div>
+                <div className="ppc-stat-label">Players</div>
+              </div>
+              <div className="ppc-stat">
+                <div className="ppc-stat-val">{formatBuyIn(pool.buy_in)}</div>
+                <div className="ppc-stat-label">Buy-in</div>
+              </div>
+              <div className="ppc-stat">
+                <div className="ppc-stat-val">{pool.is_public ? 'Public' : 'Private'}</div>
+                <div className="ppc-stat-label">Visibility</div>
+              </div>
+            </div>
+            <div className="commissioner-row">
+              <div className="commissioner-avatar">
+                {getInitials(pool.commissioner?.first_name, pool.commissioner?.last_name)}
+              </div>
+              <div className="commissioner-info">
+                Hosted by <span className="commissioner-name">{pool.commissioner?.first_name} {pool.commissioner?.last_name?.[0]}.</span>
+              </div>
+            </div>
           </div>
-          <div className="detail-row">
-            <span className="detail-label">Players</span>
-            <span className="detail-value">{memberCount} joined</span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Buy-in</span>
-            <span className="detail-value">{pool.buy_in === 0 ? 'Free' : `$${pool.buy_in}`}</span>
-          </div>
-          {pool.buy_in > 0 && pool.fee_handling === 'on_top' && (
-            <div className="detail-row">
-              <span className="detail-label">Platform Fee (5%)</span>
-              <span className="detail-value">${(pool.buy_in * 0.05).toFixed(2)}</span>
+
+          {error && <div className="error-msg">{error}</div>}
+
+          {!joined ? (
+            <>
+              {user ? (
+                /* Signed in state — just confirm join */
+                <div>
+                  <div className="signed-in-row">
+                    <span className="status-dot"></span>
+                    Signed in as <strong>{user.user_metadata?.first_name || user.email}</strong>
+                  </div>
+                  <button className="btn-full green" onClick={handleJoin} disabled={joining}>
+                    {joining ? 'Joining...' : 'Join Pool →'}
+                  </button>
+                  <button 
+                    className="btn-outline-full"
+                    onClick={async () => {
+                      await supabase.auth.signOut()
+                      setUser(null)
+                    }}
+                  >
+                    Not you? Sign in with a different account
+                  </button>
+                </div>
+              ) : (
+                /* Not signed in state */
+                <div>
+                  <div className="or-divider" style={{ margin: '0 0 1rem' }}>
+                    <div className="or-line"></div>
+                    <div className="or-text">Sign in to join</div>
+                    <div className="or-line"></div>
+                  </div>
+
+                  {loginError && <div className="error-msg">{loginError}</div>}
+
+                  <form onSubmit={handleLoginAndJoin}>
+                    <div className="field">
+                      <label className="field-label">Email address</label>
+                      <input
+                        className="field-input"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="field-label">Password</label>
+                      <input
+                        className="field-input"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="btn-full green" disabled={joining}>
+                      {joining ? 'Signing in...' : 'Sign in & Join Pool →'}
+                    </button>
+                  </form>
+
+                  <div className="or-divider">
+                    <div className="or-line"></div>
+                    <div className="or-text">new to poolr?</div>
+                    <div className="or-line"></div>
+                  </div>
+
+                  <Link 
+                    href={`/register?redirect=${encodeURIComponent(`/join/${code}`)}`}
+                    className="btn-outline-full"
+                    style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+                  >
+                    Create account & join
+                  </Link>
+                </div>
+              )}
+            </>
+          ) : (
+            /* Join success */
+            <div className="join-success">
+              <div className="js-icon">🏆</div>
+              <div className="js-title">You're in!</div>
+              <div className="js-sub">
+                You've joined <strong style={{ color: 'var(--gold)' }}>{pool.name}</strong>. 
+                Submit your picks before the tournament starts when special picks lock.
+              </div>
+              <Link href={`/pool/${pool.id}`} className="btn-full" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+                Go to Pool →
+              </Link>
+              <Link href={`/pool/${pool.id}/picks`} className="btn-outline-full" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+                Submit picks now
+              </Link>
             </div>
           )}
         </div>
-
-        {pool.buy_in > 0 && (
-          <div className="total-box">
-            <span>You'll pay</span>
-            <span className="total-amount">${totalCost.toFixed(2)}</span>
-          </div>
-        )}
-
-        {pool.buy_in > 0 && pool.payment_method === 'external' && pool.payment_instructions && (
-          <div className="payment-instructions">
-            <strong>Payment Instructions:</strong>
-            <p>{pool.payment_instructions}</p>
-          </div>
-        )}
-
-        {error && <div className="error-msg">{error}</div>}
-
-        {alreadyMember ? (
-          <>
-            <div className="already-member">✓ You're already in this pool!</div>
-            <Link href={`/pool/${pool.id}`} className="btn-gold full-width">
-              Go to Pool
-            </Link>
-          </>
-        ) : (
-          <>
-            <button 
-              onClick={handleJoin} 
-              disabled={joining}
-              className="btn-gold full-width"
-            >
-              {joining ? 'Joining...' : user ? 'Join Pool' : 'Sign in to Join'}
-            </button>
-            
-            {!user && (
-              <p className="signin-note">
-                Don't have an account? <Link href={`/register?redirect=/join/${params.code}`}>Sign up</Link>
-              </p>
-            )}
-          </>
-        )}
       </div>
 
       <style jsx>{`
-        .join-screen {
+        .auth-page {
           min-height: 100vh;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: var(--ink);
           padding: 2rem;
+          position: relative;
+          overflow: hidden;
+          background: var(--bg);
         }
 
-        .logo {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2rem;
-          font-weight: 300;
-          letter-spacing: 0.12em;
-          color: var(--gold2);
-          text-transform: uppercase;
-          margin-bottom: 2rem;
+        .auth-pitch {
+          position: absolute;
+          inset: 0;
+          perspective: 700px;
+          perspective-origin: 50% 10%;
+          pointer-events: none;
+          overflow: hidden;
         }
 
-        .join-card {
-          background: var(--ink2);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 2.5rem;
+        .pitch-3d {
+          position: absolute;
+          bottom: -35%;
+          left: 50%;
+          transform: translateX(-50%) rotateX(64deg);
+          width: 900px;
+          height: 620px;
+          animation: pitchFloat 9s ease-in-out infinite;
+        }
+
+        .pitch-surface {
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(
+            0deg,
+            rgba(10, 28, 10, 0.6) 0px,
+            rgba(10, 28, 10, 0.6) 38px,
+            rgba(14, 36, 14, 0.6) 38px,
+            rgba(14, 36, 14, 0.6) 76px
+          );
+          border: 2px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .pitch-lines {
+          position: absolute;
+          inset: 0;
+          background: 
+            linear-gradient(90deg, transparent 49.4%, rgba(255,255,255,0.1) 49.4%, rgba(255,255,255,0.1) 50.6%, transparent 50.6%),
+            linear-gradient(0deg, transparent 49.4%, rgba(255,255,255,0.1) 49.4%, rgba(255,255,255,0.1) 50.6%, transparent 50.6%);
+        }
+
+        .pitch-circle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 200px;
+          height: 200px;
+          border: 1.5px solid rgba(255, 255, 255, 0.1);
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .pitch-glow {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(ellipse 70% 40% at 50% 60%, rgba(201, 168, 76, 0.05), transparent 70%);
+        }
+
+        @keyframes pitchFloat {
+          0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); }
+          50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); }
+        }
+
+        .auth-card {
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 4px;
           width: 100%;
-          max-width: 420px;
+          max-width: 480px;
+          overflow: hidden;
+          position: relative;
+          z-index: 2;
+          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-card::before {
+          content: '';
+          display: block;
+          height: 3px;
+          background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .auth-card-head {
+          padding: 1.75rem 1.75rem 0;
+        }
+
+        .auth-eyebrow {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.68rem;
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin-bottom: 0.35rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .auth-eyebrow::before {
+          content: '';
+          display: block;
+          width: 16px;
+          height: 1.5px;
+          background: var(--gold);
+        }
+
+        .auth-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.8rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          color: var(--white);
+          line-height: 1;
+        }
+
+        .auth-sub {
+          font-size: 0.8rem;
+          color: var(--f3);
+          margin-top: 0.4rem;
+          line-height: 1.5;
+        }
+
+        .auth-body {
+          padding: 1.5rem 1.75rem 1.75rem;
+        }
+
+        .pool-preview-card {
+          background: var(--bg3);
+          border: 1px solid var(--gold-line);
+          border-radius: 4px;
+          padding: 1.25rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .ppc-name {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.3rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: var(--white);
+          margin-bottom: 0.2rem;
+        }
+
+        .ppc-tournament {
+          font-size: 0.78rem;
+          color: var(--f3);
+          margin-bottom: 1rem;
+        }
+
+        .ppc-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0;
+          border: 1px solid var(--line);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .ppc-stat {
+          padding: 0.6rem 0.75rem;
+          border-right: 1px solid var(--line);
           text-align: center;
         }
 
-        .pool-badge {
-          display: inline-block;
-          background: rgba(212, 175, 55, 0.15);
+        .ppc-stat:last-child {
+          border-right: none;
+        }
+
+        .ppc-stat-val {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.1rem;
+          font-weight: 900;
           color: var(--gold);
-          font-size: 0.75rem;
-          font-weight: 600;
-          letter-spacing: 0.1em;
+        }
+
+        .ppc-stat-label {
+          font-size: 0.6rem;
+          color: var(--f4);
           text-transform: uppercase;
-          padding: 0.5rem 1rem;
-          border-radius: 20px;
-          margin-bottom: 1.5rem;
+          letter-spacing: 0.06em;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-weight: 600;
+          margin-top: 2px;
         }
 
-        h1 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2rem;
-          font-weight: 300;
-          color: var(--silk);
-          margin-bottom: 1rem;
-        }
-
-        .pool-description {
-          color: var(--body);
-          font-size: 0.9rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .pool-details {
-          background: var(--ink3);
-          border-radius: 8px;
-          padding: 1.25rem;
-          margin-bottom: 1.5rem;
-          text-align: left;
-        }
-
-        .detail-row {
+        .commissioner-row {
           display: flex;
-          justify-content: space-between;
-          padding: 0.5rem 0;
+          align-items: center;
+          gap: 0.6rem;
+          margin-top: 0.85rem;
+          padding-top: 0.85rem;
+          border-top: 1px solid var(--line);
         }
 
-        .detail-row:not(:last-child) {
-          border-bottom: 1px solid var(--border2);
+        .commissioner-avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: var(--gold);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 900;
+          color: #000;
+          flex-shrink: 0;
         }
 
-        .detail-label {
-          color: var(--body);
-          font-size: 0.9rem;
+        .commissioner-info {
+          font-size: 0.75rem;
+          color: var(--f3);
         }
 
-        .detail-value {
-          color: var(--silk);
-          font-size: 0.9rem;
+        .commissioner-name {
+          color: var(--f1);
           font-weight: 500;
         }
 
-        .total-box {
+        .signed-in-row {
+          font-size: 0.78rem;
+          color: var(--f3);
+          margin-bottom: 1rem;
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          background: rgba(212, 175, 55, 0.1);
-          border: 1px solid var(--gold);
-          border-radius: 8px;
-          padding: 1rem 1.25rem;
-          margin-bottom: 1.5rem;
+          gap: 0.5rem;
         }
 
-        .total-box span:first-child {
-          color: var(--body);
-          font-size: 0.9rem;
+        .signed-in-row strong {
+          color: var(--f1);
         }
 
-        .total-amount {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.75rem;
-          color: var(--gold2);
+        .status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--green);
+          display: inline-block;
         }
 
-        .payment-instructions {
-          background: var(--ink3);
-          border-radius: 8px;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-          text-align: left;
+        .field {
+          margin-bottom: 1rem;
         }
 
-        .payment-instructions strong {
-          display: block;
-          font-size: 0.75rem;
+        .field-label {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--gold);
-          margin-bottom: 0.5rem;
+          color: var(--f2);
+          margin-bottom: 0.4rem;
+          display: block;
         }
 
-        .payment-instructions p {
-          color: var(--body);
+        .field-input {
+          width: 100%;
+          padding: 0.65rem 0.85rem;
+          background: var(--bg3);
+          border: 1px solid var(--f4);
+          border-radius: 3px;
+          color: var(--f1);
+          font-size: 0.88rem;
+          font-family: 'Inter', sans-serif;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+
+        .field-input:focus {
+          border-color: var(--gold);
+        }
+
+        .field-input::placeholder {
+          color: var(--f4);
+        }
+
+        .btn-full {
+          width: 100%;
+          font-family: 'Barlow Condensed', sans-serif;
           font-size: 0.9rem;
-          margin: 0;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          padding: 0.75rem;
+          border-radius: 3px;
+          border: none;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+
+        .btn-full:hover {
+          background: var(--gold2);
+        }
+
+        .btn-full:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .btn-full.green {
+          background: var(--green);
+        }
+
+        .btn-full.green:hover {
+          opacity: 0.9;
+        }
+
+        .btn-outline-full {
+          width: 100%;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: transparent;
+          color: var(--f2);
+          padding: 0.7rem;
+          border-radius: 3px;
+          border: 1px solid var(--f4);
+          cursor: pointer;
+          transition: all 0.15s;
+          margin-top: 0.6rem;
+        }
+
+        .btn-outline-full:hover {
+          border-color: var(--f2);
+          color: var(--white);
+        }
+
+        .or-divider {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin: 1.25rem 0;
+        }
+
+        .or-line {
+          flex: 1;
+          height: 1px;
+          background: var(--line);
+        }
+
+        .or-text {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--f4);
+        }
+
+        .join-success {
+          text-align: center;
+          padding: 0.5rem 0;
+        }
+
+        .js-icon {
+          font-size: 2.5rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .js-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.6rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: var(--white);
+          margin-bottom: 0.4rem;
+        }
+
+        .js-sub {
+          font-size: 0.8rem;
+          color: var(--f3);
+          line-height: 1.6;
+          margin-bottom: 1.25rem;
         }
 
         .error-msg {
-          background: rgba(224, 108, 117, 0.1);
-          border: 1px solid var(--error);
-          color: var(--error);
+          background: rgba(224, 59, 59, 0.1);
+          border: 1px solid var(--red);
+          color: var(--red);
           padding: 0.75rem 1rem;
-          border-radius: 6px;
-          font-size: 0.85rem;
+          border-radius: 4px;
+          font-size: 0.8rem;
           margin-bottom: 1rem;
-          text-align: left;
         }
 
-        .already-member {
-          color: var(--success);
-          font-size: 0.95rem;
-          margin-bottom: 1rem;
-          padding: 1rem;
-          background: rgba(93, 187, 138, 0.1);
-          border-radius: 8px;
-        }
+        @media (max-width: 640px) {
+          .auth-card {
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            max-width: 100%;
+          }
 
-        .full-width {
-          width: 100%;
-        }
+          .auth-page {
+            padding: 0;
+            align-items: flex-start;
+          }
 
-        .signin-note {
-          color: var(--body);
-          font-size: 0.85rem;
-          margin-top: 1rem;
-        }
+          .auth-card-head {
+            padding: 1.5rem 1.25rem 0;
+          }
 
-        .signin-note :global(a) {
-          color: var(--gold);
+          .auth-body {
+            padding: 1.25rem;
+          }
         }
       `}</style>
     </div>
