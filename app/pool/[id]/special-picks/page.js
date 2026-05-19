@@ -634,7 +634,7 @@ export default function SpecialPicksPage() {
         .pr-item:hover { background: rgba(255,255,255,0.04); }
         .pr-item.sel-player { background: rgba(201,168,76,0.08); }
         .pr-flag img { width: 20px; height: 14px; border-radius: 1px; object-fit: cover; }
-        .pr-name { font-size: 0.82rem; font-weight: 500; color: var(--f1); }
+        .pr-name { font-size: 0.82rem; font-weight: 600; color: var(--f1); }
         .pr-team { font-size: 0.7rem; color: var(--f3); }
         .pr-check { margin-left: auto; color: var(--gold); font-weight: 700; }
 

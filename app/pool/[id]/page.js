@@ -612,7 +612,7 @@ export default function PoolDetailPage() {
           align-items: center;
           gap: 0.5rem;
           font-size: 0.82rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--f1);
         }
         .paid-dot {

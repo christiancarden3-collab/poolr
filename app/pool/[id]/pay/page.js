@@ -108,7 +108,7 @@ export default function PaymentPage({ params }) {
           .logo {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2rem;
-            font-weight: 300;
+            font-weight: 600;
             letter-spacing: 0.12em;
             color: var(--gold2);
             text-transform: uppercase;
@@ -185,7 +185,7 @@ export default function PaymentPage({ params }) {
         .logo {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2rem;
-          font-weight: 300;
+          font-weight: 600;
           letter-spacing: 0.12em;
           color: var(--gold2);
           text-transform: uppercase;
@@ -212,7 +212,7 @@ export default function PaymentPage({ params }) {
         h1 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
           margin-bottom: 0.5rem;
         }
@@ -279,7 +279,7 @@ export default function PaymentPage({ params }) {
         .external-payment h3 {
           font-family: 'Outfit', sans-serif;
           font-size: 0.8rem;
-          font-weight: 500;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.05em;
           color: var(--gold);

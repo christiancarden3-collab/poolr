@@ -318,7 +318,7 @@ export default function LoginPage() {
         .auth-foot a {
           color: var(--gold);
           text-decoration: none;
-          font-weight: 500;
+          font-weight: 600;
         }
 
         /* FORM FIELDS */
@@ -470,7 +470,7 @@ export default function LoginPage() {
         }
         .magic-email {
           color: var(--gold);
-          font-weight: 500;
+          font-weight: 600;
         }
 
         @keyframes pitchFloat {

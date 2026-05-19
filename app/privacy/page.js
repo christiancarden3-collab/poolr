@@ -192,7 +192,7 @@ export default function PrivacyPage() {
         .legal-container h1 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 3rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
           margin-bottom: 0.5rem;
         }
@@ -210,7 +210,7 @@ export default function PrivacyPage() {
         section h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.5rem;
-          font-weight: 400;
+          font-weight: 600;
           color: var(--gold);
           margin-bottom: 1rem;
         }
@@ -218,7 +218,7 @@ export default function PrivacyPage() {
         section h3 {
           font-family: 'Outfit', sans-serif;
           font-size: 0.9rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--silk);
           margin: 1.25rem 0 0.5rem;
           text-transform: uppercase;

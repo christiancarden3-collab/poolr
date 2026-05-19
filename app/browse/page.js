@@ -286,7 +286,7 @@ export default function BrowsePage() {
         .pt-row:hover { background: rgba(255,255,255,0.025); }
         .pt-name {
           font-size: 0.88rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--f1);
         }
         .pt-commissioner {

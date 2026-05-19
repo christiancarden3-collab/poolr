@@ -114,7 +114,7 @@ export default function ManagePoolPage({ params }) {
           .logo {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2rem;
-            font-weight: 300;
+            font-weight: 600;
             letter-spacing: 0.12em;
             color: var(--gold2);
             text-transform: uppercase;
@@ -293,7 +293,7 @@ export default function ManagePoolPage({ params }) {
         .manage-header h1 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2.5rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
         }
 
@@ -333,7 +333,7 @@ export default function ManagePoolPage({ params }) {
         .settings-section h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.5rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
           margin-bottom: 1.5rem;
         }
@@ -417,7 +417,7 @@ export default function ManagePoolPage({ params }) {
         .danger-zone h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.5rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--error);
           margin-bottom: 0.5rem;
         }

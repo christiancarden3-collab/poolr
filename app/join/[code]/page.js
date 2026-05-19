@@ -184,7 +184,7 @@ export default function JoinPoolPage() {
         .commissioner-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--line); }
         .commissioner-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 900; color: #000; flex-shrink: 0; }
         .commissioner-info { font-size: 0.75rem; color: var(--f3); }
-        .commissioner-name { color: var(--f1); font-weight: 500; }
+        .commissioner-name { color: var(--f1); font-weight: 600; }
 
         .signed-in-msg { font-size: 0.78rem; color: var(--f3); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .signed-in-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }

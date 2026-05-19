@@ -97,7 +97,7 @@ export default function ManagePaymentsPage({ params }) {
           .logo {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2rem;
-            font-weight: 300;
+            font-weight: 600;
             letter-spacing: 0.12em;
             color: var(--gold2);
             text-transform: uppercase;
@@ -235,7 +235,7 @@ export default function ManagePaymentsPage({ params }) {
         .manage-header h1 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2.5rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
         }
 
@@ -293,7 +293,7 @@ export default function ManagePaymentsPage({ params }) {
         .members-section h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.5rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
           margin-bottom: 1.5rem;
         }
@@ -396,7 +396,7 @@ export default function ManagePaymentsPage({ params }) {
           padding: 0.5rem 1rem;
           border-radius: 6px;
           font-size: 0.8rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           border: none;
           transition: all 0.2s;
@@ -438,7 +438,7 @@ export default function ManagePaymentsPage({ params }) {
         .instructions-section h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.5rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
           margin-bottom: 1rem;
         }

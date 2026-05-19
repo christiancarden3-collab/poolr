@@ -79,7 +79,7 @@ export default function Navbar({ user, showBack, backHref, backLabel }) {
           gap: 0.375rem;
           color: var(--text-secondary);
           font-size: 0.8125rem;
-          font-weight: 500;
+          font-weight: 600;
           text-decoration: none;
           padding: 0.375rem 0.5rem;
           border-radius: 6px;
@@ -127,7 +127,7 @@ export default function Navbar({ user, showBack, backHref, backLabel }) {
         .user-name {
           color: var(--text-secondary);
           font-size: 0.8125rem;
-          font-weight: 500;
+          font-weight: 600;
           max-width: 120px;
           overflow: hidden;
           text-overflow: ellipsis;

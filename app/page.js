@@ -705,7 +705,7 @@ export default function LandingPage() {
         }
         .t-name {
           font-size: 0.82rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--f1);
         }
         .t-name.home {
@@ -841,7 +841,7 @@ export default function LandingPage() {
         }
         .lb-name {
           font-size: 0.82rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--f1);
           display: flex;
           align-items: center;

@@ -86,7 +86,7 @@ function ResetPasswordContent() {
           .auth-header .logo {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2rem;
-            font-weight: 300;
+            font-weight: 600;
             letter-spacing: 0.12em;
             color: var(--gold2);
             text-transform: uppercase;
@@ -95,7 +95,7 @@ function ResetPasswordContent() {
           .auth-header h1 {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2rem;
-            font-weight: 300;
+            font-weight: 600;
             color: var(--success);
             margin-top: 1.5rem;
           }
@@ -178,7 +178,7 @@ function ResetPasswordContent() {
         .auth-header .logo {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2rem;
-          font-weight: 300;
+          font-weight: 600;
           letter-spacing: 0.12em;
           color: var(--gold2);
           text-transform: uppercase;
@@ -187,7 +187,7 @@ function ResetPasswordContent() {
         .auth-header h1 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2rem;
-          font-weight: 300;
+          font-weight: 600;
           color: var(--silk);
           margin-top: 1.5rem;
         }

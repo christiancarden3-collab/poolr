@@ -381,7 +381,7 @@ export default function RegisterPage() {
         .auth-foot a {
           color: var(--gold);
           text-decoration: none;
-          font-weight: 500;
+          font-weight: 600;
         }
 
         /* FORM FIELDS */
@@ -555,7 +555,7 @@ export default function RegisterPage() {
         }
         .magic-email {
           color: var(--gold);
-          font-weight: 500;
+          font-weight: 600;
         }
 
         @keyframes pitchFloat {
