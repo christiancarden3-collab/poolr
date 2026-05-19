@@ -195,29 +195,76 @@ export default function PoolPage({ params }) {
           </div>
         </div>
 
+        {/* Actions */}
+        <div className="actions-section">
+          <h2>Make Your Picks</h2>
+          <div className="actions-grid">
+            <Link href={`/pool/${pool.id}/predictions`} className="action-card primary">
+              <span className="action-icon">⚽</span>
+              <div className="action-content">
+                <h3>Match Predictions</h3>
+                <p>Predict scores for all 104 World Cup matches</p>
+              </div>
+              <span className="action-arrow">→</span>
+            </Link>
+            <div className="action-card disabled">
+              <span className="action-icon">🏆</span>
+              <div className="action-content">
+                <h3>Special Picks</h3>
+                <p>Champion, Golden Boot, MVP</p>
+              </div>
+              <span className="coming-soon-badge">Soon</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Leaderboard */}
+        <div className="leaderboard-section">
+          <div className="section-header">
+            <h2>Leaderboard</h2>
+            <span className="points-info">Points update after each match</span>
+          </div>
+          
+          <div className="leaderboard-list">
+            {members.length === 1 ? (
+              <div className="empty-leaderboard">
+                <p>Invite more players to see the leaderboard!</p>
+              </div>
+            ) : (
+              members.map((member, index) => (
+                <div key={member.id} className={`leaderboard-row ${member.user_id === user?.id ? 'you' : ''}`}>
+                  <div className="rank">
+                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                  </div>
+                  <div className="player-info">
+                    <span className="player-name">
+                      {member.profiles?.name || 'Unknown'}
+                      {member.user_id === user?.id && <span className="you-badge">You</span>}
+                    </span>
+                  </div>
+                  <div className="points">
+                    <span className="points-value">0</span>
+                    <span className="points-label">pts</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Coming soon */}
         <div className="coming-soon-section">
           <h2>Coming Soon</h2>
           <div className="features-grid">
             <div className="feature-card">
-              <span className="feature-icon">⚽</span>
-              <h3>Match Predictions</h3>
-              <p>Predict scores for every World Cup match</p>
-            </div>
-            <div className="feature-card">
-              <span className="feature-icon">🏆</span>
-              <h3>Special Picks</h3>
-              <p>Golden Boot, Champion, MVP predictions</p>
-            </div>
-            <div className="feature-card">
               <span className="feature-icon">📊</span>
-              <h3>Live Leaderboard</h3>
-              <p>Real-time standings as matches are played</p>
+              <h3>Live Scoring</h3>
+              <p>Auto-updates as matches finish</p>
             </div>
             <div className="feature-card">
               <span className="feature-icon">💰</span>
               <h3>Stripe Payments</h3>
-              <p>Secure buy-ins and automatic payouts</p>
+              <p>Secure buy-ins & payouts</p>
             </div>
           </div>
         </div>
@@ -525,6 +572,195 @@ export default function PoolPage({ params }) {
           font-size: 0.75rem;
           color: var(--muted);
           margin: 0;
+        }
+
+        .actions-section {
+          background: var(--ink2);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .actions-section h2 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.5rem;
+          font-weight: 300;
+          color: var(--silk);
+          margin-bottom: 1.5rem;
+        }
+
+        .actions-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .action-card {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1.25rem;
+          background: var(--ink3);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+
+        .action-card.primary {
+          border-color: var(--gold);
+          background: rgba(212, 175, 55, 0.08);
+        }
+
+        .action-card.primary:hover {
+          background: rgba(212, 175, 55, 0.15);
+          transform: translateX(4px);
+        }
+
+        .action-card.disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .action-icon {
+          font-size: 2rem;
+        }
+
+        .action-content {
+          flex: 1;
+        }
+
+        .action-content h3 {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1rem;
+          color: var(--silk);
+          margin-bottom: 0.25rem;
+        }
+
+        .action-content p {
+          font-size: 0.8rem;
+          color: var(--body);
+          margin: 0;
+        }
+
+        .action-arrow {
+          font-size: 1.25rem;
+          color: var(--gold);
+        }
+
+        .coming-soon-badge {
+          font-size: 0.65rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--muted);
+          background: var(--ink2);
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+        }
+
+        .leaderboard-section {
+          background: var(--ink2);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .leaderboard-section .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+
+        .leaderboard-section h2 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.5rem;
+          font-weight: 300;
+          color: var(--silk);
+          margin: 0;
+        }
+
+        .points-info {
+          font-size: 0.75rem;
+          color: var(--muted);
+        }
+
+        .leaderboard-list {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .leaderboard-row {
+          display: flex;
+          align-items: center;
+          padding: 1rem 0;
+          border-bottom: 1px solid var(--border2);
+        }
+
+        .leaderboard-row:last-child {
+          border-bottom: none;
+        }
+
+        .leaderboard-row.you {
+          background: rgba(212, 175, 55, 0.08);
+          margin: 0 -1rem;
+          padding: 1rem;
+          border-radius: 8px;
+        }
+
+        .rank {
+          width: 40px;
+          font-size: 1.1rem;
+          text-align: center;
+        }
+
+        .player-info {
+          flex: 1;
+          margin-left: 0.5rem;
+        }
+
+        .player-name {
+          color: var(--silk);
+          font-size: 0.95rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .you-badge {
+          font-size: 0.65rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--gold);
+          background: rgba(212, 175, 55, 0.2);
+          padding: 0.15rem 0.4rem;
+          border-radius: 3px;
+        }
+
+        .points {
+          display: flex;
+          align-items: baseline;
+          gap: 0.25rem;
+        }
+
+        .points-value {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.5rem;
+          color: var(--gold2);
+        }
+
+        .points-label {
+          font-size: 0.7rem;
+          color: var(--muted);
+          text-transform: uppercase;
+        }
+
+        .empty-leaderboard {
+          text-align: center;
+          padding: 2rem;
+          color: var(--muted);
         }
       `}</style>
     </>

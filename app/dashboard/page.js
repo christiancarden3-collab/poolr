@@ -22,8 +22,43 @@ export default function DashboardPage() {
       return
     }
     setUser(user)
-    // TODO: Fetch user's pools from Supabase
-    setPools([]) // Empty for now
+    
+    // Fetch user's pools
+    const { data: memberships } = await supabase
+      .from('pool_members')
+      .select(`
+        pool_id,
+        role,
+        pools:pool_id (
+          id,
+          name,
+          buy_in,
+          status,
+          created_at
+        )
+      `)
+      .eq('user_id', user.id)
+    
+    if (memberships) {
+      // Get member counts for each pool
+      const poolsWithCounts = await Promise.all(
+        memberships.map(async (m) => {
+          const { count } = await supabase
+            .from('pool_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('pool_id', m.pool_id)
+          
+          return {
+            ...m.pools,
+            role: m.role,
+            playerCount: count || 0,
+            prizePool: (m.pools?.buy_in || 0) * (count || 0) * 0.95,
+          }
+        })
+      )
+      setPools(poolsWithCounts.filter(p => p.id))
+    }
+    
     setLoading(false)
   }
 
