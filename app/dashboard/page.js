@@ -132,7 +132,7 @@ export default function DashboardPage() {
                 <i className="ti ti-ball-football empty-icon"></i>
                 <div className="empty-title">No pools yet</div>
                 <div className="empty-text">Create your first pool or join one to get started</div>
-                <Link href="/create" className="btn-primary" style={{ marginTop: '1rem' }}>+ Create Pool</Link>
+                <Link href="/create" className="btn-primary">+ Create Pool</Link>
               </div>
             ) : (
               <div className="pool-grid">
@@ -643,29 +643,30 @@ export default function DashboardPage() {
         /* EMPTY STATE */
         .empty-state {
           text-align: center;
-          padding: 3rem 1rem;
+          padding: 5rem 2rem;
         }
         .empty-icon {
-          font-size: 3rem;
+          font-size: 4rem;
           color: var(--gold);
-          margin-bottom: 1rem;
-          opacity: 0.6;
+          margin-bottom: 1.5rem;
+          opacity: 0.5;
         }
         .empty-title {
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.4rem;
+          font-size: 1.6rem;
           font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
+          letter-spacing: 0.06em;
           color: var(--white);
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.75rem;
         }
         .empty-text {
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.9rem;
+          font-size: 1rem;
           font-weight: 500;
           letter-spacing: 0.02em;
           color: var(--f3);
+          margin-bottom: 1.5rem;
         }
 
         @media (max-width: 768px) {
