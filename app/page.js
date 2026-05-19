@@ -87,7 +87,7 @@ export default function LandingPage() {
             {/* MATCH PANEL */}
             <div className="match-panel">
               <div className="mp-header">
-                <div className="mp-title">Amigos WC26 — Round of 16</div>
+                <div className="mp-title">Amigos WC26 · Round of 16</div>
                 <div className="mp-live"><span className="live-dot"></span>Live</div>
               </div>
               <div className="match-row">
@@ -166,7 +166,7 @@ export default function LandingPage() {
             <div className="steps-list">
               <div className="step-item"><div className="step-num">01</div><div><div className="step-title">Create your pool</div><p className="step-desc">Choose a tournament, set your buy-in amount, define prize distribution, and configure payment settings. Takes under two minutes.</p></div></div>
               <div className="step-item"><div className="step-num">02</div><div><div className="step-title">Invite your group</div><p className="step-desc">Share your private invite link via WhatsApp, SMS, or email. Players sign up and pay their buy-in instantly through Stripe.</p></div></div>
-              <div className="step-item"><div className="step-num">03</div><div><div className="step-title">Submit picks before kickoff</div><p className="step-desc">Predict scores for each matchday before the deadline. Also submit your special picks — champion, top scorer, and best goalkeeper — before the tournament starts. All picks lock automatically.</p></div></div>
+              <div className="step-item"><div className="step-num">03</div><div><div className="step-title">Submit picks before kickoff</div><p className="step-desc">Predict scores for each matchday before the deadline. Also submit your special picks (champion, top scorer, best goalkeeper) before the tournament starts. All picks lock automatically.</p></div></div>
               <div className="step-item"><div className="step-num">04</div><div><div className="step-title">Watch the standings update live</div><p className="step-desc">Points are calculated automatically as results come in. Winners receive their payout via Stripe when the tournament ends.</p></div></div>
             </div>
           </div>

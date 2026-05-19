@@ -261,7 +261,7 @@ export default function SpecialPicksPage() {
             {/* Lock warning */}
             <div className={`sp-lock-banner ${isLocked ? 'locked' : ''}`}>
               <div>
-                <div className="slb-title">{isLocked ? '🔒 PICKS LOCKED' : '⚠ Locks at first kickoff — Jun 11, 5:00 PM ET'}</div>
+                <div className="slb-title">{isLocked ? '🔒 PICKS LOCKED' : '⚠ Locks at first kickoff · Jun 11, 5:00 PM ET'}</div>
                 <div className="slb-sub">
                   {isLocked 
                     ? 'The tournament has started. Special picks can no longer be changed.'
@@ -370,7 +370,7 @@ export default function SpecialPicksPage() {
             {/* Top Scorer */}
             <div className="sp-card" style={{ marginTop: '2px' }}>
               <div className="sp-head">
-                <div className="sp-title-group"><div className="sp-icon">⚽</div><div className="sp-title">Pichichi — Top Scorer</div></div>
+                <div className="sp-title-group"><div className="sp-icon">⚽</div><div className="sp-title">Pichichi · Top Scorer</div></div>
                 <div className="sp-pts">5 pts</div>
               </div>
               <div className="sp-body">

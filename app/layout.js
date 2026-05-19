@@ -1,11 +1,11 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'PickPoolr — Predict. Compete. Win.',
+  title: 'PickPoolr',
   description: 'Private prediction pools for World Cup 2026. Score picks, chase the leaderboard, split the pot.',
   keywords: 'world cup 2026, prediction pool, quiniela, soccer predictions, football pool, pickpoolr',
   openGraph: {
-    title: 'PickPoolr — Predict. Compete. Win.',
+    title: 'PickPoolr | Predict. Compete. Win.',
     description: 'Private prediction pools for World Cup 2026.',
     type: 'website',
   },
