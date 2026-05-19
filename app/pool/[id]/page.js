@@ -223,7 +223,7 @@ export default function PoolDetailPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         /* TOPBAR */
         .topbar {
           background: var(--bg2);

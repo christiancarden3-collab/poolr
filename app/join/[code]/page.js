@@ -147,7 +147,7 @@ export default function JoinPoolPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 200; }
         .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; text-decoration: none; }
         .nav-logo span { color: var(--gold); }

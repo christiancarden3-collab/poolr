@@ -130,7 +130,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         /* NAV */
         nav {
           background: var(--bg);

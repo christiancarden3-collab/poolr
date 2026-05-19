@@ -70,10 +70,10 @@ export default function DashboardPage() {
       {/* TOPBAR */}
       <div className="topbar">
         <div className="topbar-links">
-          <Link href="/dashboard" className="tb-link active">Dashboard</Link>
-          <span className="tb-link">My Pools</span>
-          <span className="tb-link">World Cup 2026</span>
-          <span className="tb-link">Results</span>
+          <a href="/dashboard" className="tb-link active">Dashboard</a>
+          <a href="/dashboard" className="tb-link">My Pools</a>
+          <a href="#" className="tb-link">World Cup 2026</a>
+          <a href="#" className="tb-link">Results</a>
         </div>
         <div className="topbar-right">
           <div className="user-pill">
@@ -86,13 +86,13 @@ export default function DashboardPage() {
 
       {/* NAV */}
       <nav>
-        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
+        <a href="/" className="nav-logo">Pick<span>Poolr</span></a>
         <div className="nav-items">
-          <Link href="/dashboard" className="nav-item active">Home</Link>
-          <span className="nav-item">My Pools</span>
-          <span className="nav-item">World Cup 2026</span>
+          <a href="/" className="nav-item">Home</a>
+          <a href="/dashboard" className="nav-item active">My Pools</a>
+          <a href="#" className="nav-item">World Cup 2026</a>
         </div>
-        <Link href="/create" className="nav-cta">+ Create Pool</Link>
+        <a href="/create" className="nav-cta">+ Create Pool</a>
       </nav>
 
       {/* TICKER */}
@@ -207,7 +207,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         /* TOPBAR */
         .topbar {
           background: var(--bg2);

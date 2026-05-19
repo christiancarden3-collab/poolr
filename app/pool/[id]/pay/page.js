@@ -96,7 +96,7 @@ export default function PaymentPage({ params }) {
       <div className="loading-screen">
         <div className="logo">Poolr</div>
         <p>Loading...</p>
-        <style jsx>{`
+        <style jsx global>{`
           .loading-screen {
             min-height: 100vh;
             display: flex;
@@ -171,7 +171,7 @@ export default function PaymentPage({ params }) {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         .payment-screen {
           min-height: 100vh;
           display: flex;

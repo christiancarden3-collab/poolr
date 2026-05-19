@@ -193,7 +193,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         /* NAV */
         nav {
           background: var(--bg);

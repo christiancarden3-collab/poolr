@@ -85,7 +85,7 @@ export default function ManagePaymentsPage({ params }) {
       <div className="loading-screen">
         <div className="logo">Poolr</div>
         <p>Loading...</p>
-        <style jsx>{`
+        <style jsx global>{`
           .loading-screen {
             min-height: 100vh;
             display: flex;
@@ -205,7 +205,7 @@ export default function ManagePaymentsPage({ params }) {
         )}
       </main>
 
-      <style jsx>{`
+      <style jsx global>{`
         .manage-nav {
           display: flex;
           align-items: center;

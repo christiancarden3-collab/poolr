@@ -36,7 +36,7 @@ export default function NotFound() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         nav {
           background: var(--bg);
           border-bottom: 3px solid var(--gold);

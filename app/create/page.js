@@ -161,7 +161,7 @@ export default function CreatePoolPage() {
           </div>
         </div>
 
-        <style jsx>{`${wizardStyles}`}</style>
+        <style jsx global>{`${wizardStyles}`}</style>
       </>
     )
   }
@@ -491,7 +491,7 @@ export default function CreatePoolPage() {
         )}
       </div>
 
-      <style jsx>{`${wizardStyles}`}</style>
+      <style jsx global>{`${wizardStyles}`}</style>
     </>
   )
 }
@@ -507,7 +507,7 @@ function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode }) {
         {inviteCode && <div className="preview-row"><div className="preview-label">Invite link</div><div className="preview-val gold small">pickpoolr.com/join/{inviteCode}</div></div>}
         <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyinAmount ? `$${buyinAmount}` : 'Free'}</div></div>
       </div>
-      <style jsx>{`${sidebarStyles}`}</style>
+      <style jsx global>{`${sidebarStyles}`}</style>
     </div>
   )
 }
@@ -534,7 +534,7 @@ function PaymentSidebar({ poolType, buyinAmount, feeType }) {
           <p className="info-text">Only applies to paid Stripe pools. Free pools have zero platform fee.</p>
         </div>
       </div>
-      <style jsx>{`${sidebarStyles}`}</style>
+      <style jsx global>{`${sidebarStyles}`}</style>
     </div>
   )
 }
@@ -552,7 +552,7 @@ function PrizeSidebar({ poolType, buyinAmount, prizes }) {
         <div className="preview-row"><div className="preview-label">🏆 1st Place</div><div className="preview-val gold">{poolType === 'paid' && buyin > 0 ? `$${first.toFixed(0)}` : '—'}</div></div>
         <div className="preview-row"><div className="preview-label">Total pot</div><div className="preview-val">{poolType === 'paid' && buyin > 0 ? `$${pot.toFixed(0)}` : 'Free pool'}</div></div>
       </div>
-      <style jsx>{`${sidebarStyles}`}</style>
+      <style jsx global>{`${sidebarStyles}`}</style>
     </div>
   )
 }
@@ -569,7 +569,7 @@ function NextStepsSidebar() {
           <div className="next-step"><div className="step-n">04</div><div className="step-t">Leaderboard updates live as results come in</div></div>
         </div>
       </div>
-      <style jsx>{`${sidebarStyles}`}</style>
+      <style jsx global>{`${sidebarStyles}`}</style>
     </div>
   )
 }

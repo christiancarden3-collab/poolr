@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         nav {
           background: var(--bg);
           border-bottom: 3px solid var(--gold);
