@@ -72,10 +72,10 @@ export default function DashboardPage() {
           <a href="#" className="tb-link">Results</a>
         </div>
         <div className="topbar-right">
-          <div className="user-pill">
+          <Link href="/profile" className="user-pill">
             <div className="user-avatar">{getUserInitials()}</div>
             {getUserName()}
-          </div>
+          </Link>
           <button className="signout-btn" onClick={handleSignOut}>Sign Out</button>
         </div>
       </div>
@@ -256,7 +256,11 @@ export default function DashboardPage() {
           gap: 0.5rem;
           font-size: 0.78rem;
           color: var(--f2);
+          text-decoration: none;
+          cursor: pointer;
+          transition: color 0.15s;
         }
+        .user-pill:hover { color: var(--gold); }
         .user-avatar {
           width: 26px;
           height: 26px;
