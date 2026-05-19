@@ -271,7 +271,7 @@ export default function PredictionsPage() {
           </div>
           <div className="ph-right">
             <div className="ph-score">{poolMember?.total_points || 0} pts</div>
-            <div className="ph-rank">{poolMember?.rank ? `${poolMember.rank}${poolMember.rank === 1 ? 'st' : poolMember.rank === 2 ? 'nd' : poolMember.rank === 3 ? 'rd' : 'th'} place` : '—'}</div>
+            <div className="ph-rank">{poolMember?.rank ? `${poolMember.rank}${poolMember.rank === 1 ? 'st' : poolMember.rank === 2 ? 'nd' : poolMember.rank === 3 ? 'rd' : 'th'} place` : '-'}</div>
           </div>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function PredictionsPage() {
             {/* Deadline banner */}
             <div className="deadline-banner">
               <div>
-                <div className="db-left">Matchday {matchday} — Picks close {formatDeadline()}</div>
+                <div className="db-left">Matchday {matchday} · Picks close {formatDeadline()}</div>
                 <div className="db-sub">Submit all picks before the first match kicks off</div>
               </div>
               <div className="db-countdown">{getCountdown()}</div>
@@ -375,7 +375,7 @@ export default function PredictionsPage() {
                               value={pick.homeScore ?? ''}
                               onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                             />
-                            <span className="sc-dash">—</span>
+                            <span className="sc-dash">-</span>
                             <input 
                               className={`si ${pick.awayScore !== null && pick.awayScore !== undefined ? 'filled' : ''}`}
                               type="number" 
@@ -448,7 +448,7 @@ export default function PredictionsPage() {
                   </div>
                 </div>
                 <div className="sc-row"><div className="sc-label">Total points</div><div className="sc-val">{poolMember?.total_points || 0}</div></div>
-                <div className="sc-row"><div className="sc-label">Your rank</div><div className="sc-val gold">{poolMember?.rank || '—'}</div></div>
+                <div className="sc-row"><div className="sc-label">Your rank</div><div className="sc-val gold">{poolMember?.rank || '-'}</div></div>
               </div>
             </div>
             <div className="card">

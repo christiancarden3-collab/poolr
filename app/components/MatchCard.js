@@ -35,7 +35,7 @@ export default function MatchCard({
             max="20"
             value={prediction?.homeScore ?? ''}
             onChange={(e) => onUpdatePrediction(match.id, 'homeScore', e.target.value)}
-            placeholder="—"
+            placeholder="-"
             disabled={isLocked}
             className="score-input"
           />
@@ -46,7 +46,7 @@ export default function MatchCard({
             max="20"
             value={prediction?.awayScore ?? ''}
             onChange={(e) => onUpdatePrediction(match.id, 'awayScore', e.target.value)}
-            placeholder="—"
+            placeholder="-"
             disabled={isLocked}
             className="score-input"
           />

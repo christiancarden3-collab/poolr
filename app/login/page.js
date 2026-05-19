@@ -115,7 +115,7 @@ export default function LoginPage() {
                 <div className="magic-icon">✉</div>
                 <div className="magic-title">Check your inbox</div>
                 <div className="magic-sub">
-                  We sent a magic link to <span className="magic-email">{email}</span>. Click it to sign in — no password needed.
+                  We sent a magic link to <span className="magic-email">{email}</span>. Click it to sign in · no password needed.
                 </div>
                 <button className="btn-outline-full" style={{ marginTop: '1rem' }} onClick={() => setShowMagic(false)}>
                   ← Use password instead

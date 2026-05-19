@@ -65,7 +65,7 @@ export default function LandingPage() {
 
         <div className="hero-inner">
           <div className="hero-left">
-            <div className="hero-tag">World Cup 2026 — USA · CAN · MEX</div>
+            <div className="hero-tag">World Cup 2026 · USA · CAN · MEX</div>
             <h1 className="hero-h1">
               <span style={{ display: 'block' }}>Pick<span className="acc">poolr</span></span>
               <span style={{ display: 'block' }} className="out">Predict</span>
@@ -135,7 +135,7 @@ export default function LandingPage() {
                 <div className="lb-col-label right">+/-</div>
               </div>
               <div className="lb-entry"><div className="lb-rank gold">1</div><div className="lb-name">Carlos M.<span className="lb-paid"></span></div><div className="lb-pts">84</div><div className="lb-mv mv-up">+2</div></div>
-              <div className="lb-entry"><div className="lb-rank">2</div><div className="lb-name">Ana R.<span className="lb-paid"></span></div><div className="lb-pts">79</div><div className="lb-mv mv-flat">—</div></div>
+              <div className="lb-entry"><div className="lb-rank">2</div><div className="lb-name">Ana R.<span className="lb-paid"></span></div><div className="lb-pts">79</div><div className="lb-mv mv-flat">-</div></div>
               <div className="lb-entry"><div className="lb-rank">3</div><div className="lb-name">Mike T.<span className="lb-paid"></span></div><div className="lb-pts">77</div><div className="lb-mv mv-dn">−1</div></div>
               <div className="lb-entry"><div className="lb-rank">4</div><div className="lb-name">Valentina S.</div><div className="lb-pts">72</div><div className="lb-mv mv-up">+3</div></div>
             </div>
@@ -152,7 +152,7 @@ export default function LandingPage() {
               <div className="section-head-sub">Everything you need to run a pool</div>
             </div>
             <div className="feat-grid">
-              <div className="feat-card"><div className="feat-card-icon">Access</div><div className="feat-card-name">Private invite pools</div><p className="feat-card-desc">Share a unique link. Only your invitees can join — no public access, no strangers.</p></div>
+              <div className="feat-card"><div className="feat-card-icon">Access</div><div className="feat-card-name">Private invite pools</div><p className="feat-card-desc">Share a unique link. Only your invitees can join · no public access, no strangers.</p></div>
               <div className="feat-card"><div className="feat-card-icon">Rankings</div><div className="feat-card-name">Live leaderboard</div><p className="feat-card-desc">Real-time standings with rank movement. Share a public link to your board.</p></div>
               <div className="feat-card"><div className="feat-card-icon">Picks</div><div className="feat-card-name">Match & special picks</div><p className="feat-card-desc">Predict every scoreline. Also pick champion, top scorer, and best goalkeeper.</p></div>
               <div className="feat-card"><div className="feat-card-icon">Payments</div><div className="feat-card-name">Stripe buy-ins</div><p className="feat-card-desc">Secure in-app payments via Stripe. Funds held in escrow until tournament ends.</p></div>
@@ -214,12 +214,12 @@ export default function LandingPage() {
               <div className="price-box-head"><div className="price-box-label">Standard plan</div></div>
               <div className="price-box-body">
                 <div className="price-amount">Free</div>
-                <div className="price-period">to create and play — always</div>
+                <div className="price-period">to create and play · always</div>
                 <div className="price-divider"></div>
                 <div className="price-item"><div className="price-check"></div><span>No subscription or monthly fee</span></div>
                 <div className="price-item"><div className="price-check"></div><span>Unlimited pools and players</span></div>
                 <div className="price-item"><div className="price-check"></div><span>Secure Stripe payments with escrow</span></div>
-                <div className="price-item"><div className="price-check"></div><span>5% platform fee — absorbed by pot or split among players</span></div>
+                <div className="price-item"><div className="price-check"></div><span>5% platform fee · absorbed by pot or split among players</span></div>
                 <Link href="/create" className="price-cta">Create Your Pool</Link>
                 <div className="price-note">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>

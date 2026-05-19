@@ -29,7 +29,7 @@ export default function PoolDetailPage() {
 
   const mockLeaderboard = [
     { rank: 1, name: 'Carlos M.', points: 84, change: '+2', paid: true },
-    { rank: 2, name: 'Ana R.', points: 79, change: '—', paid: true },
+    { rank: 2, name: 'Ana R.', points: 79, change: '-', paid: true },
     { rank: 3, name: 'You', points: 47, change: '+1', paid: true, isYou: true },
     { rank: 4, name: 'Valentina S.', points: 44, change: '+3', paid: false },
     { rank: 5, name: 'Rafa G.', points: 41, change: '-1', paid: true },
@@ -106,7 +106,7 @@ export default function PoolDetailPage() {
           </div>
           <div className="ph-right">
             <div className="ph-score">{pool?.user_points} pts</div>
-            <div className="ph-rank">{pool?.user_rank}{pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'} place — +8 behind 2nd</div>
+            <div className="ph-rank">{pool?.user_rank}{pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'} place · +8 behind 2nd</div>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function PoolDetailPage() {
             {/* Deadline banner */}
             <div className="deadline-banner">
               <div>
-                <div className="db-left">Matchday 3 — Picks close Jun 25, 3:00 PM ET</div>
+                <div className="db-left">Matchday 3 · Picks close Jun 25, 3:00 PM ET</div>
                 <div className="db-sub">Submit all picks before the first match kicks off</div>
               </div>
               <div className="db-countdown">11:42:07</div>

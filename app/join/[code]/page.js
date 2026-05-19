@@ -92,7 +92,7 @@ export default function JoinPoolPage() {
                 {/* Pool preview */}
                 <div className="pool-preview-card">
                   <div className="ppc-name">{pool?.name}</div>
-                  <div className="ppc-tournament">{pool?.tournament_name} — {pool?.dates}</div>
+                  <div className="ppc-tournament">{pool?.tournament_name} · {pool?.dates}</div>
                   <div className="ppc-stats">
                     <div className="ppc-stat"><div className="ppc-stat-val">{pool?.player_count}</div><div className="ppc-stat-label">Players</div></div>
                     <div className="ppc-stat"><div className="ppc-stat-val">{pool?.buyin}</div><div className="ppc-stat-label">Buy-in</div></div>

@@ -242,7 +242,7 @@ export default function SpecialPicksPage() {
           </div>
           <div className="ph-right">
             <div className="ph-score">{poolMember?.total_points || 0} pts</div>
-            <div className="ph-rank">{poolMember?.rank ? `${poolMember.rank}${poolMember.rank === 1 ? 'st' : poolMember.rank === 2 ? 'nd' : poolMember.rank === 3 ? 'rd' : 'th'} place` : '—'}</div>
+            <div className="ph-rank">{poolMember?.rank ? `${poolMember.rank}${poolMember.rank === 1 ? 'st' : poolMember.rank === 2 ? 'nd' : poolMember.rank === 3 ? 'rd' : 'th'} place` : '-'}</div>
           </div>
         </div>
       </div>
@@ -557,7 +557,7 @@ export default function SpecialPicksPage() {
               </div>
               <div className="card-body">
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.8rem', fontWeight: 900, color: 'var(--red)', lineHeight: 1 }}>Jun 11</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--f3)', marginTop: '4px' }}>5:00 PM ET — First kickoff</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--f3)', marginTop: '4px' }}>5:00 PM ET · First kickoff</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--f4)', marginTop: '8px', lineHeight: 1.5 }}>
                   {isLocked 
                     ? 'Tournament has started. Picks are now locked.'

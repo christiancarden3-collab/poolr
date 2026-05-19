@@ -221,7 +221,7 @@ export default function CreatePoolPage() {
                   <div className="field">
                     <label className="field-label">Tournament</label>
                     <select className="field-input field-select">
-                      <option>FIFA World Cup 2026 — USA, Canada & Mexico</option>
+                      <option>FIFA World Cup 2026 · USA, Canada & Mexico</option>
                     </select>
                     <div className="field-hint">More tournaments coming soon</div>
                   </div>
@@ -329,7 +329,7 @@ export default function CreatePoolPage() {
                   </div>
                   {poolType === 'free' && (
                     <div className="free-note">
-                      <div className="free-note-title">Free pool — zero platform fee</div>
+                      <div className="free-note-title">Free pool · zero platform fee</div>
                       <div className="free-note-desc">No payment processing needed. Players join for free.</div>
                     </div>
                   )}
@@ -403,7 +403,7 @@ export default function CreatePoolPage() {
                       <div className={`option-card center ${prizeType === 'custom' ? 'selected' : ''}`} onClick={() => selectPrize('custom')}>
                         <div className="oc-header center"><div className="oc-title">Custom</div></div>
                         <div className="oc-desc center">Set your own split</div>
-                        <div className="prize-pct muted">— %</div>
+                        <div className="prize-pct muted">· %</div>
                       </div>
                     </div>
                   </div>
@@ -434,7 +434,7 @@ export default function CreatePoolPage() {
                       <div className={`prize-total-val ${prizeTotal === 100 ? 'ok' : 'err'}`}>{prizeTotal}%</div>
                     </div>
                     <div className={`field-hint ${prizeTotal === 100 ? 'ok' : 'err'}`}>
-                      {prizeTotal === 100 ? '✓ Allocations confirmed — must total exactly 100%' : `Must add up to exactly 100% (currently ${prizeTotal}%)`}
+                      {prizeTotal === 100 ? '✓ Allocations confirmed · must total exactly 100%' : `Must add up to exactly 100% (currently ${prizeTotal}%)`}
                     </div>
                   </div>
                 </div>
@@ -461,7 +461,7 @@ export default function CreatePoolPage() {
                   <div className="review-grid">
                     <div>
                       <div className="field-label" style={{ marginBottom: '0.75rem' }}>Pool Details</div>
-                      <div className="preview-row"><div className="preview-label">Name</div><div className="preview-val">{poolName || '—'}</div></div>
+                      <div className="preview-row"><div className="preview-label">Name</div><div className="preview-val">{poolName || '-'}</div></div>
                       <div className="preview-row"><div className="preview-label">Tournament</div><div className="preview-val">World Cup 2026</div></div>
                       <div className="preview-row"><div className="preview-label">Deadline</div><div className="preview-val">1hr before kickoff</div></div>
                     </div>
@@ -475,7 +475,7 @@ export default function CreatePoolPage() {
                 </div>
                 <div className="fc-body" style={{ background: 'rgba(201,168,76,0.04)' }}>
                   <div style={{ fontSize: '0.78rem', color: 'var(--f3)', lineHeight: 1.7 }}>
-                    By creating this pool you agree to our <Link href="/terms" style={{ color: 'var(--gold)' }}>Terms of Service</Link>. As commissioner, you are responsible for your pool&apos;s conduct. PickPoolr is an entertainment platform — not a gambling service.
+                    By creating this pool you agree to our <Link href="/terms" style={{ color: 'var(--gold)' }}>Terms of Service</Link>. As commissioner, you are responsible for your pool&apos;s conduct. PickPoolr is an entertainment platform · not a gambling service.
                   </div>
                 </div>
                 <div className="form-actions">
@@ -523,7 +523,7 @@ function PaymentSidebar({ poolType, buyinAmount, feeType }) {
         <div className="sc-head"><div className="sc-title">Payment Summary</div></div>
         <div className="sc-body">
           <div className="preview-row"><div className="preview-label">Pool type</div><div className={`preview-val ${poolType === 'free' ? 'green' : 'gold'}`}>{poolType === 'free' ? 'Free' : 'Paid'}</div></div>
-          <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyin > 0 ? `$${buyin.toFixed(2)}` : '—'}</div></div>
+          <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyin > 0 ? `$${buyin.toFixed(2)}` : '-'}</div></div>
           <div className="preview-row"><div className="preview-label">Platform fee</div><div className="preview-val">{poolType === 'free' ? 'None' : feeType === 'on_top' ? '+5% on top' : '5% from pot'}</div></div>
           <div className="preview-row highlight"><div className="preview-label">Each player pays</div><div className="preview-val gold">{poolType === 'free' ? 'Free' : `$${total.toFixed(2)}`}</div></div>
         </div>
@@ -549,7 +549,7 @@ function PrizeSidebar({ poolType, buyinAmount, prizes }) {
       <div className="sc-head"><div className="sc-title">Estimated Payouts</div></div>
       <div className="sc-body">
         <div style={{ fontSize: '0.72rem', color: 'var(--f4)', marginBottom: '0.75rem' }}>Based on 10 players</div>
-        <div className="preview-row"><div className="preview-label">🏆 1st Place</div><div className="preview-val gold">{poolType === 'paid' && buyin > 0 ? `$${first.toFixed(0)}` : '—'}</div></div>
+        <div className="preview-row"><div className="preview-label">🏆 1st Place</div><div className="preview-val gold">{poolType === 'paid' && buyin > 0 ? `$${first.toFixed(0)}` : '-'}</div></div>
         <div className="preview-row"><div className="preview-label">Total pot</div><div className="preview-val">{poolType === 'paid' && buyin > 0 ? `$${pot.toFixed(0)}` : 'Free pool'}</div></div>
       </div>
       <style jsx global>{`${sidebarStyles}`}</style>
