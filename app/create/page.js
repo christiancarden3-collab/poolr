@@ -11,6 +11,7 @@ export default function CreatePoolPage() {
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [step, setStep] = useState(1)
+  const [error, setError] = useState('')
 
   // Form state
   const [poolName, setPoolName] = useState('')
@@ -19,9 +20,7 @@ export default function CreatePoolPage() {
   const [visibility, setVisibility] = useState('private')
   const [accessType, setAccessType] = useState('invite')
   const [password, setPassword] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('external')
-  const [paymentInstructions, setPaymentInstructions] = useState('')
-  const [feeHandling, setFeeHandling] = useState('absorbed')
+  const [feeHandling, setFeeHandling] = useState('absorbed') // 'absorbed' or 'on_top'
 
   useEffect(() => {
     checkUser()
@@ -37,14 +36,57 @@ export default function CreatePoolPage() {
     setLoading(false)
   }
 
+  const generateInviteCode = () => {
+    return Math.random().toString(36).substring(2, 8).toUpperCase()
+  }
+
   const handleCreate = async () => {
     setCreating(true)
+    setError('')
     
-    // TODO: Create pool in Supabase
-    // For now, just simulate and redirect
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 1500)
+    try {
+      const inviteCode = generateInviteCode()
+      
+      // Create pool in Supabase
+      const { data: pool, error: poolError } = await supabase
+        .from('pools')
+        .insert({
+          name: poolName,
+          tournament_id: null, // We'll link to tournament later
+          created_by: user.id,
+          buy_in: buyIn,
+          currency: 'USD',
+          visibility: visibility,
+          access_type: visibility === 'private' ? accessType : 'open',
+          password_hash: accessType === 'password' ? password : null, // TODO: hash this
+          invite_code: inviteCode,
+          fee_handling: feeHandling,
+          status: 'draft'
+        })
+        .select()
+        .single()
+
+      if (poolError) throw poolError
+
+      // Add creator as pool member (admin)
+      const { error: memberError } = await supabase
+        .from('pool_members')
+        .insert({
+          pool_id: pool.id,
+          user_id: user.id,
+          role: 'admin',
+          payment_status: 'confirmed' // Creator doesn't need to pay themselves
+        })
+
+      if (memberError) throw memberError
+
+      // Redirect to pool page
+      router.push(`/pool/${pool.id}?created=true`)
+    } catch (err) {
+      console.error('Create pool error:', err)
+      setError(err.message || 'Failed to create pool')
+      setCreating(false)
+    }
   }
 
   if (loading) {
@@ -75,11 +117,16 @@ export default function CreatePoolPage() {
     )
   }
 
+  // Calculate fee amounts
+  const platformFee = buyIn * 0.05
+  const playerPays = feeHandling === 'on_top' ? buyIn + platformFee : buyIn
+  const poolGets = feeHandling === 'absorbed' ? buyIn - platformFee : buyIn
+
   return (
     <>
       <nav className="create-nav">
         <Link href="/dashboard" className="back-link">
-          <i className="ti ti-arrow-left"></i> Back to dashboard
+          ← Back to dashboard
         </Link>
         <div className="logo">Poolr</div>
         <div style={{width: '150px'}}></div>
@@ -98,6 +145,12 @@ export default function CreatePoolPage() {
           <div className="step-line"></div>
           <div className={`step-dot ${step >= 3 ? 'active' : ''}`}>3</div>
         </div>
+
+        {error && (
+          <div className="error-banner">
+            {error}
+          </div>
+        )}
 
         {step === 1 && (
           <div className="create-step">
@@ -127,9 +180,10 @@ export default function CreatePoolPage() {
                 value={buyIn}
                 onChange={(e) => setBuyIn(Number(e.target.value))}
                 min="0"
+                step="5"
                 placeholder="50"
               />
-              <small>Set to $0 for a free pool</small>
+              <small>Set to $0 for a free pool (no payments needed)</small>
             </div>
 
             <button 
@@ -149,19 +203,6 @@ export default function CreatePoolPage() {
             <div className="form-group">
               <label>Visibility</label>
               <div className="radio-group">
-                <label className={`radio-option ${visibility === 'public' ? 'selected' : ''}`}>
-                  <input 
-                    type="radio" 
-                    name="visibility" 
-                    value="public" 
-                    checked={visibility === 'public'}
-                    onChange={() => setVisibility('public')}
-                  />
-                  <div className="radio-content">
-                    <strong>Public</strong>
-                    <span>Listed on browse page, anyone can find and join</span>
-                  </div>
-                </label>
                 <label className={`radio-option ${visibility === 'private' ? 'selected' : ''}`}>
                   <input 
                     type="radio" 
@@ -175,12 +216,25 @@ export default function CreatePoolPage() {
                     <span>Only accessible via invite link or password</span>
                   </div>
                 </label>
+                <label className={`radio-option ${visibility === 'public' ? 'selected' : ''}`}>
+                  <input 
+                    type="radio" 
+                    name="visibility" 
+                    value="public" 
+                    checked={visibility === 'public'}
+                    onChange={() => setVisibility('public')}
+                  />
+                  <div className="radio-content">
+                    <strong>Public</strong>
+                    <span>Listed on browse page, anyone can find and request to join</span>
+                  </div>
+                </label>
               </div>
             </div>
 
             {visibility === 'private' && (
               <div className="form-group">
-                <label>Access Type</label>
+                <label>How do people join?</label>
                 <div className="radio-group">
                   <label className={`radio-option ${accessType === 'invite' ? 'selected' : ''}`}>
                     <input 
@@ -205,7 +259,7 @@ export default function CreatePoolPage() {
                     />
                     <div className="radio-content">
                       <strong>Password Protected</strong>
-                      <span>Require a password to join</span>
+                      <span>Anyone with the password can join</span>
                     </div>
                   </label>
                 </div>
@@ -237,87 +291,69 @@ export default function CreatePoolPage() {
 
             {buyIn > 0 ? (
               <>
+                <div className="payment-info">
+                  <div className="payment-icon">💳</div>
+                  <div className="payment-text">
+                    <strong>Payments via Stripe</strong>
+                    <p>Players pay securely through the app. Winners get paid out automatically.</p>
+                  </div>
+                </div>
+
                 <div className="form-group">
-                  <label>Payment Method</label>
+                  <label>Platform Fee (5%)</label>
                   <div className="radio-group">
-                    <label className={`radio-option ${paymentMethod === 'external' ? 'selected' : ''}`}>
+                    <label className={`radio-option ${feeHandling === 'on_top' ? 'selected' : ''}`}>
                       <input 
                         type="radio" 
-                        name="paymentMethod" 
-                        value="external" 
-                        checked={paymentMethod === 'external'}
-                        onChange={() => setPaymentMethod('external')}
+                        name="feeHandling" 
+                        value="on_top" 
+                        checked={feeHandling === 'on_top'}
+                        onChange={() => setFeeHandling('on_top')}
                       />
                       <div className="radio-content">
-                        <strong>External (Zelle/Venmo)</strong>
-                        <span>You collect payments manually, no platform fee</span>
+                        <strong>Players pay the fee</strong>
+                        <span>Each player pays ${playerPays.toFixed(2)} → Pool gets ${buyIn} per player</span>
                       </div>
                     </label>
-                    <label className={`radio-option ${paymentMethod === 'stripe' ? 'selected' : ''}`}>
+                    <label className={`radio-option ${feeHandling === 'absorbed' ? 'selected' : ''}`}>
                       <input 
                         type="radio" 
-                        name="paymentMethod" 
-                        value="stripe" 
-                        checked={paymentMethod === 'stripe'}
-                        onChange={() => setPaymentMethod('stripe')}
+                        name="feeHandling" 
+                        value="absorbed" 
+                        checked={feeHandling === 'absorbed'}
+                        onChange={() => setFeeHandling('absorbed')}
                       />
                       <div className="radio-content">
-                        <strong>Stripe (Coming Soon)</strong>
-                        <span>In-app payments with automatic payouts, 5% fee</span>
+                        <strong>Fee comes from the pot</strong>
+                        <span>Each player pays ${buyIn} → Pool gets ${poolGets.toFixed(2)} per player</span>
                       </div>
                     </label>
                   </div>
                 </div>
 
-                {paymentMethod === 'external' && (
-                  <div className="form-group">
-                    <label>Payment Instructions</label>
-                    <textarea
-                      value={paymentInstructions}
-                      onChange={(e) => setPaymentInstructions(e.target.value)}
-                      placeholder="e.g., Pay $50 via Zelle to (561) 525-6915. Include your email in the note."
-                      rows={3}
-                    />
+                <div className="fee-breakdown">
+                  <h4>Fee Breakdown</h4>
+                  <div className="fee-row">
+                    <span>Buy-in</span>
+                    <span>${buyIn.toFixed(2)}</span>
                   </div>
-                )}
-
-                {paymentMethod === 'stripe' && (
-                  <div className="form-group">
-                    <label>Fee Handling</label>
-                    <div className="radio-group">
-                      <label className={`radio-option ${feeHandling === 'on_top' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="feeHandling" 
-                          value="on_top" 
-                          checked={feeHandling === 'on_top'}
-                          onChange={() => setFeeHandling('on_top')}
-                        />
-                        <div className="radio-content">
-                          <strong>Players pay fee</strong>
-                          <span>Players pay ${buyIn} + ${(buyIn * 0.05).toFixed(2)} = ${(buyIn * 1.05).toFixed(2)}</span>
-                        </div>
-                      </label>
-                      <label className={`radio-option ${feeHandling === 'absorbed' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="feeHandling" 
-                          value="absorbed" 
-                          checked={feeHandling === 'absorbed'}
-                          onChange={() => setFeeHandling('absorbed')}
-                        />
-                        <div className="radio-content">
-                          <strong>Pot absorbs fee</strong>
-                          <span>Players pay ${buyIn}, pot gets ${(buyIn * 0.95).toFixed(2)} per player</span>
-                        </div>
-                      </label>
-                    </div>
+                  <div className="fee-row">
+                    <span>Platform fee (5%)</span>
+                    <span>${platformFee.toFixed(2)}</span>
                   </div>
-                )}
+                  <div className="fee-row total">
+                    <span>Player pays</span>
+                    <span>${(feeHandling === 'on_top' ? buyIn + platformFee : buyIn).toFixed(2)}</span>
+                  </div>
+                  <div className="fee-row total">
+                    <span>Pool receives</span>
+                    <span>${(feeHandling === 'absorbed' ? buyIn - platformFee : buyIn).toFixed(2)}</span>
+                  </div>
+                </div>
               </>
             ) : (
               <div className="free-pool-notice">
-                <i className="ti ti-check"></i>
+                <span className="check-icon">✓</span>
                 <p>This is a free pool — no payment settings needed!</p>
               </div>
             )}
@@ -334,16 +370,16 @@ export default function CreatePoolPage() {
               </div>
               <div className="summary-row">
                 <span>Buy-in</span>
-                <strong>${buyIn}</strong>
+                <strong>{buyIn === 0 ? 'Free' : `$${buyIn}`}</strong>
               </div>
               <div className="summary-row">
                 <span>Access</span>
-                <strong>{visibility === 'public' ? 'Public' : accessType === 'invite' ? 'Invite Only' : 'Password Protected'}</strong>
+                <strong>{visibility === 'public' ? 'Public' : accessType === 'invite' ? 'Invite Only' : 'Password'}</strong>
               </div>
               {buyIn > 0 && (
                 <div className="summary-row">
-                  <span>Payment</span>
-                  <strong>{paymentMethod === 'external' ? 'Zelle/Venmo' : 'Stripe'}</strong>
+                  <span>Fee handling</span>
+                  <strong>{feeHandling === 'on_top' ? 'Player pays fee' : 'From pot'}</strong>
                 </div>
               )}
             </div>
@@ -371,9 +407,6 @@ export default function CreatePoolPage() {
         .back-link {
           color: var(--body);
           font-size: 0.85rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
           text-decoration: none;
           width: 150px;
         }
@@ -437,6 +470,16 @@ export default function CreatePoolPage() {
           background: var(--border);
         }
 
+        .error-banner {
+          background: rgba(224, 108, 117, 0.1);
+          border: 1px solid var(--error);
+          color: var(--error);
+          padding: 1rem;
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+
         .create-step {
           background: var(--ink2);
           border: 1px solid var(--border);
@@ -461,11 +504,6 @@ export default function CreatePoolPage() {
           color: var(--muted);
           font-size: 0.75rem;
           margin-top: 0.35rem;
-        }
-
-        textarea {
-          resize: vertical;
-          min-height: 80px;
         }
 
         .radio-group {
@@ -534,6 +572,67 @@ export default function CreatePoolPage() {
           flex: 2;
         }
 
+        .payment-info {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          padding: 1.25rem;
+          background: rgba(212, 175, 55, 0.08);
+          border: 1px solid var(--gold);
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
+        }
+
+        .payment-icon {
+          font-size: 1.5rem;
+        }
+
+        .payment-text strong {
+          color: var(--silk);
+          font-size: 0.95rem;
+          display: block;
+          margin-bottom: 0.25rem;
+        }
+
+        .payment-text p {
+          color: var(--body);
+          font-size: 0.8rem;
+          margin: 0;
+        }
+
+        .fee-breakdown {
+          background: var(--ink3);
+          border-radius: 8px;
+          padding: 1.25rem;
+          margin-top: 1.5rem;
+        }
+
+        .fee-breakdown h4 {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 500;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--muted);
+          margin-bottom: 1rem;
+        }
+
+        .fee-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 0.5rem 0;
+          font-size: 0.85rem;
+          color: var(--body);
+        }
+
+        .fee-row.total {
+          border-top: 1px solid var(--border2);
+          margin-top: 0.5rem;
+          padding-top: 0.75rem;
+          color: var(--silk);
+          font-weight: 500;
+        }
+
         .free-pool-notice {
           display: flex;
           align-items: center;
@@ -545,8 +644,13 @@ export default function CreatePoolPage() {
           color: var(--success);
         }
 
-        .free-pool-notice i {
+        .check-icon {
           font-size: 1.5rem;
+          font-weight: bold;
+        }
+
+        .free-pool-notice p {
+          margin: 0;
         }
 
         .pool-summary {
