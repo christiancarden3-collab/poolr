@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <>
       <nav>
-        <Link href="/" className="logo">Poolr</Link>
+        <Link href="/" className="logo">PickPoolr</Link>
         <div className="nav-links">
           <Link href="/terms">Terms</Link>
           <Link href="/login" className="nav-cta">Sign in</Link>
@@ -19,7 +19,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2>1. Introduction</h2>
-          <p>Poolr ("we," "our," "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and protect your information when you use our platform.</p>
+          <p>PickPoolr ("we," "our," "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and protect your information when you use our platform.</p>
         </section>
 
         <section>
@@ -145,12 +145,12 @@ export default function PrivacyPage() {
 
         <section>
           <h2>9. Children's Privacy</h2>
-          <p>Poolr is not intended for users under 18. We do not knowingly collect data from minors. If we learn a minor has provided data, we will delete it promptly.</p>
+          <p>PickPoolr is not intended for users under 18. We do not knowingly collect data from minors. If we learn a minor has provided data, we will delete it promptly.</p>
         </section>
 
         <section>
           <h2>10. International Users</h2>
-          <p>The Platform is operated from the United States. By using Poolr, you consent to the transfer of your information to the US, which may have different data protection laws than your country.</p>
+          <p>The Platform is operated from the United States. By using PickPoolr, you consent to the transfer of your information to the US, which may have different data protection laws than your country.</p>
         </section>
 
         <section>
@@ -173,13 +173,13 @@ export default function PrivacyPage() {
       </main>
 
       <footer>
-        <div className="footer-logo">Poolr</div>
+        <div className="footer-logo">PickPoolr</div>
         <div className="footer-links">
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/contact">Contact</Link>
         </div>
-        <p className="footer-copy">© 2026 Poolr. Not affiliated with FIFA. For entertainment purposes only.</p>
+        <p className="footer-copy">© 2026 PickPoolr. Not affiliated with FIFA. For entertainment purposes only.</p>
       </footer>
 
       <style jsx>{`

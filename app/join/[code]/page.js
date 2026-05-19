@@ -9,6 +9,7 @@ export default function JoinPoolPage({ params }) {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [pool, setPool] = useState(null)
+  const [memberCount, setMemberCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState('')
@@ -37,6 +38,14 @@ export default function JoinPoolPage({ params }) {
     }
 
     setPool(poolData)
+
+    // Get member count
+    const { count } = await supabase
+      .from('pool_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('pool_id', poolData.id)
+    
+    setMemberCount(count || 0)
 
     // Check if user is already a member
     if (currentUser) {
@@ -72,8 +81,9 @@ export default function JoinPoolPage({ params }) {
         .insert({
           pool_id: pool.id,
           user_id: user.id,
-          role: 'member',
-          payment_status: pool.buy_in === 0 ? 'confirmed' : 'pending'
+          payment_status: pool.buy_in === 0 ? 'paid' : 'pending',
+          total_points: 0,
+          rank: null
         })
 
       if (joinError) {
@@ -85,12 +95,8 @@ export default function JoinPoolPage({ params }) {
         throw joinError
       }
 
-      // Redirect to pool page (or payment if buy-in required)
-      if (pool.buy_in > 0) {
-        router.push(`/pool/${pool.id}/pay`)
-      } else {
-        router.push(`/pool/${pool.id}?joined=true`)
-      }
+      // Redirect to pool page
+      router.push(`/pool/${pool.id}?joined=true`)
     } catch (err) {
       console.error('Join error:', err)
       setError(err.message || 'Failed to join pool')
@@ -101,7 +107,7 @@ export default function JoinPoolPage({ params }) {
   if (loading) {
     return (
       <div className="loading-screen">
-        <div className="logo">Poolr</div>
+        <div className="logo">PickPoolr</div>
         <p>Loading pool...</p>
         <style jsx>{`
           .loading-screen {
@@ -129,7 +135,7 @@ export default function JoinPoolPage({ params }) {
   if (error && !pool) {
     return (
       <div className="error-screen">
-        <div className="logo">Poolr</div>
+        <div className="logo">PickPoolr</div>
         <div className="error-card">
           <h1>😕 Pool Not Found</h1>
           <p>{error}</p>
@@ -177,14 +183,22 @@ export default function JoinPoolPage({ params }) {
     )
   }
 
+  const totalCost = pool.fee_handling === 'on_top' 
+    ? pool.buy_in * 1.05 
+    : pool.buy_in
+
   return (
     <div className="join-screen">
-      <div className="logo">Poolr</div>
+      <div className="logo">PickPoolr</div>
       
       <div className="join-card">
         <div className="pool-badge">You're Invited!</div>
         
         <h1>{pool.name}</h1>
+        
+        {pool.description && (
+          <p className="pool-description">{pool.description}</p>
+        )}
         
         <div className="pool-details">
           <div className="detail-row">
@@ -192,13 +206,17 @@ export default function JoinPoolPage({ params }) {
             <span className="detail-value">World Cup 2026</span>
           </div>
           <div className="detail-row">
+            <span className="detail-label">Players</span>
+            <span className="detail-value">{memberCount} joined</span>
+          </div>
+          <div className="detail-row">
             <span className="detail-label">Buy-in</span>
             <span className="detail-value">{pool.buy_in === 0 ? 'Free' : `$${pool.buy_in}`}</span>
           </div>
-          {pool.buy_in > 0 && (
+          {pool.buy_in > 0 && pool.fee_handling === 'on_top' && (
             <div className="detail-row">
-              <span className="detail-label">Platform Fee</span>
-              <span className="detail-value">5% (${(pool.buy_in * 0.05).toFixed(2)})</span>
+              <span className="detail-label">Platform Fee (5%)</span>
+              <span className="detail-value">${(pool.buy_in * 0.05).toFixed(2)}</span>
             </div>
           )}
         </div>
@@ -206,11 +224,14 @@ export default function JoinPoolPage({ params }) {
         {pool.buy_in > 0 && (
           <div className="total-box">
             <span>You'll pay</span>
-            <span className="total-amount">
-              ${pool.fee_handling === 'on_top' 
-                ? (pool.buy_in * 1.05).toFixed(2) 
-                : pool.buy_in.toFixed(2)}
-            </span>
+            <span className="total-amount">${totalCost.toFixed(2)}</span>
+          </div>
+        )}
+
+        {pool.buy_in > 0 && pool.payment_method === 'external' && pool.payment_instructions && (
+          <div className="payment-instructions">
+            <strong>Payment Instructions:</strong>
+            <p>{pool.payment_instructions}</p>
           </div>
         )}
 
@@ -291,7 +312,13 @@ export default function JoinPoolPage({ params }) {
           font-size: 2rem;
           font-weight: 300;
           color: var(--silk);
-          margin-bottom: 2rem;
+          margin-bottom: 1rem;
+        }
+
+        .pool-description {
+          color: var(--body);
+          font-size: 0.9rem;
+          margin-bottom: 1.5rem;
         }
 
         .pool-details {
@@ -299,6 +326,7 @@ export default function JoinPoolPage({ params }) {
           border-radius: 8px;
           padding: 1.25rem;
           margin-bottom: 1.5rem;
+          text-align: left;
         }
 
         .detail-row {
@@ -344,6 +372,29 @@ export default function JoinPoolPage({ params }) {
           color: var(--gold2);
         }
 
+        .payment-instructions {
+          background: var(--ink3);
+          border-radius: 8px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+          text-align: left;
+        }
+
+        .payment-instructions strong {
+          display: block;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--gold);
+          margin-bottom: 0.5rem;
+        }
+
+        .payment-instructions p {
+          color: var(--body);
+          font-size: 0.9rem;
+          margin: 0;
+        }
+
         .error-msg {
           background: rgba(224, 108, 117, 0.1);
           border: 1px solid var(--error);
@@ -374,7 +425,7 @@ export default function JoinPoolPage({ params }) {
           margin-top: 1rem;
         }
 
-        .signin-note a, .signin-note :global(a) {
+        .signin-note :global(a) {
           color: var(--gold);
         }
       `}</style>

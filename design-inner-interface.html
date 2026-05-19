@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PickPoolr — Inner Interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   PICKPOOLR — COMPLETE INNER INTERFACE
+   Pages: Dashboard · Pool Detail · Picks · Special Picks · Leaderboard · Admin
+   Design: ESPN-style dark editorial
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;--bg4:#1e2330;
+  --gold:#c9a84c;--gold2:#e6c76a;--red:#e03b3b;--green:#2cb67d;
+  --white:#fff;--f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;
+  --line:rgba(255,255,255,0.07);--gold-line:rgba(201,168,76,0.3);
+}
+body{background:var(--bg);color:var(--f1);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── NAV ── */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:42px}
+.topbar-links{display:flex;height:100%}
+.tb-link{display:flex;align-items:center;padding:0 1rem;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);text-decoration:none;border-right:1px solid var(--line);cursor:pointer;transition:all 0.15s}
+.tb-link:first-child{border-left:1px solid var(--line)}
+.tb-link:hover,.tb-link.active{color:var(--f1);background:rgba(255,255,255,0.03)}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.user-pill{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;color:var(--f2)}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:900;color:#000}
+nav{background:var(--bg);border-bottom:3px solid var(--gold);display:flex;align-items:center;padding:0 2rem;height:56px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:0.04em;color:var(--white);text-transform:uppercase;margin-right:2rem;padding-right:2rem;border-right:1px solid var(--f4)}
+.nav-logo span{color:var(--gold)}
+.nav-items{display:flex;height:100%}
+.nav-item{display:flex;align-items:center;padding:0 1.25rem;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;cursor:pointer;transition:all 0.15s}
+.nav-item:hover{color:var(--f1)}
+.nav-item.active{color:var(--white);border-bottom-color:var(--gold)}
+.nav-cta{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.5rem 1.25rem;border-radius:2px;text-decoration:none;cursor:pointer;border:none;transition:background 0.15s}
+.nav-cta:hover{background:var(--gold2)}
+
+/* ── PAGE CHROME ── */
+.page-header{background:var(--bg2);border-bottom:1px solid var(--line);padding:1.25rem 2rem}
+.page-header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between}
+.ph-left{}
+.ph-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem}
+.ph-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:var(--white)}
+.ph-meta{font-size:0.78rem;color:var(--f3);margin-top:0.2rem}
+.ph-right{text-align:right}
+.ph-score{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:var(--gold);line-height:1}
+.ph-rank{font-size:0.72rem;color:var(--f3);text-transform:uppercase;letter-spacing:0.06em;font-family:'Barlow Condensed',sans-serif;margin-top:2px}
+
+.tab-nav{background:var(--bg2);border-bottom:1px solid var(--line)}
+.tab-nav-inner{max-width:1100px;margin:0 auto;display:flex}
+.tab{display:flex;align-items:center;gap:0.4rem;padding:0 1.5rem;height:44px;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.15s}
+.tab:hover{color:var(--f1)}
+.tab.active{color:var(--white);border-bottom-color:var(--gold)}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--gold);color:#000;font-size:0.6rem;font-weight:900}
+
+.ticker{background:var(--gold);padding:0 2rem;height:30px;display:flex;align-items:center;gap:1.5rem;overflow:hidden}
+.ticker-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:#000;white-space:nowrap;border-right:1px solid rgba(0,0,0,0.2);padding-right:1.5rem}
+.ticker-items{display:flex;gap:2rem}
+.ticker-item{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#000;white-space:nowrap}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1100px;margin:0 auto;padding:2rem}
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+.three-col{display:grid;grid-template-columns:2fr 1fr;gap:2rem;align-items:start}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:1rem}
+.card-head{background:var(--bg3);padding:0.65rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--white)}
+.card-link{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);cursor:pointer;text-decoration:none}
+.card-body{padding:1rem}
+
+/* ── DASHBOARD — pool cards ── */
+.pool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
+.pool-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color 0.15s}
+.pool-card:hover{border-color:var(--gold)}
+.pc-banner{background:var(--bg3);padding:0.75rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.pc-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:0.03em;color:var(--white)}
+.pc-tournament{font-size:0.72rem;color:var(--f3);margin-top:2px}
+.pc-body{padding:1rem}
+.pc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:0.75rem}
+.pc-stat{padding:0.6rem 0.75rem;border-right:1px solid var(--line);text-align:center}
+.pc-stat:last-child{border-right:none}
+.pc-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;color:var(--gold);line-height:1}
+.pc-stat-label{font-size:0.62rem;color:var(--f4);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;font-family:'Barlow Condensed',sans-serif;font-weight:600}
+.pc-footer{display:flex;align-items:center;justify-content:space-between}
+.pc-status{display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.dot-live{background:var(--red);animation:pulse 1.4s ease infinite}
+.dot-upcoming{background:var(--gold)}
+.dot-done{background:var(--f4)}
+.pc-cta{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.35rem 0.85rem;border-radius:2px;border:none;cursor:pointer}
+.pc-role{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--gold-line)}
+
+/* ── MATCH PICK CARD ── */
+.mpc{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:2px}
+.mpc.submitted{border-color:rgba(44,182,125,0.25)}
+.mpc.locked-card{opacity:0.65}
+.mpc-head{background:var(--bg3);padding:0.4rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.mpc-info{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)}
+.mpc-status{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+.s-open{color:var(--green)}.s-saved{color:var(--green)}.s-live{color:var(--red)}.s-ft{color:var(--f4)}.s-lock{color:var(--f4)}
+.mpc-body{display:grid;grid-template-columns:1fr 170px 1fr;align-items:center;gap:0;padding:0.85rem 1rem}
+.team-side{display:flex;flex-direction:column;align-items:center;gap:0.3rem}
+.team-flag img{width:42px;height:29px;border-radius:3px;object-fit:cover;border:1px solid rgba(255,255,255,0.1)}
+.team-nm{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--f1);text-align:center}
+.score-center{display:flex;flex-direction:column;align-items:center;gap:3px}
+.score-status{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+.score-inputs{display:flex;align-items:center;gap:6px}
+.si{width:50px;height:50px;background:var(--bg3);border:1px solid var(--f4);border-radius:3px;color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:1.7rem;font-weight:900;text-align:center;outline:none;transition:border-color 0.15s;-moz-appearance:textfield}
+.si::-webkit-outer-spin-button,.si::-webkit-inner-spin-button{-webkit-appearance:none}
+.si:focus{border-color:var(--gold)}
+.si.filled{border-color:rgba(44,182,125,0.4);background:rgba(44,182,125,0.04)}
+.si.rdonly{pointer-events:none;color:var(--f2)}
+.sc-dash{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:900;color:var(--f4)}
+.score-display{display:flex;align-items:center;gap:6px}
+.sd-val{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:var(--gold);min-width:30px;text-align:center;line-height:1}
+.sd-val.muted{color:var(--f2)}
+.sd-sep{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:var(--f4)}
+.pts-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(44,182,125,0.12);color:var(--green);border:1px solid rgba(44,182,125,0.25);margin-top:3px}
+.mpc-foot{border-top:1px solid var(--line);padding:0.5rem 1rem;display:flex;align-items:center;justify-content:flex-end;gap:0.6rem;background:rgba(0,0,0,0.15)}
+.btn-save{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.4rem 1.1rem;border-radius:2px;border:none;cursor:pointer}
+.btn-save:hover{background:var(--gold2)}
+.btn-edit{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--f3);border:1px solid var(--f4);padding:0.35rem 0.75rem;border-radius:2px;cursor:pointer}
+.btn-edit:hover{color:var(--f1);border-color:var(--f2)}
+
+/* ── MATCHDAY STRIP ── */
+.md-strip{display:flex;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:1.25rem}
+.md-btn{flex:1;padding:0.45rem 0;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;background:var(--bg2);color:var(--f3);border:none;cursor:pointer;border-right:1px solid var(--line);transition:all 0.15s}
+.md-btn:last-child{border-right:none}
+.md-btn.active{background:var(--gold);color:#000}
+.md-btn.done{color:var(--green)}
+.md-btn.locked{color:var(--f4);cursor:default}
+
+/* ── DEADLINE BANNER ── */
+.deadline-banner{display:flex;align-items:center;justify-content:space-between;background:rgba(201,168,76,0.07);border:1px solid var(--gold-line);border-radius:4px;padding:0.6rem 1rem;margin-bottom:1.25rem}
+.db-left{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold)}
+.db-sub{font-size:0.7rem;color:var(--f3);margin-top:1px}
+.db-countdown{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:900;color:var(--gold);letter-spacing:0.04em}
+
+/* ── LEADERBOARD ── */
+.lb-cols{display:grid;grid-template-columns:36px 16px 1fr 60px 50px 50px;align-items:center;gap:0 0.75rem;padding:0.4rem 1rem;border-bottom:1px solid var(--line)}
+.lb-col-label{font-size:0.6rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)}
+.lb-col-label.r{text-align:right}
+.lb-row{display:grid;grid-template-columns:36px 16px 1fr 60px 50px 50px;align-items:center;gap:0 0.75rem;padding:0.55rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;cursor:default}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:rgba(255,255,255,0.02)}
+.lb-row.you{background:rgba(201,168,76,0.05)}
+.lb-rank{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;text-align:center}
+.rank-gold{color:var(--gold2)}.rank-silver{color:#b0c4de}.rank-bronze{color:#cd7f32}.rank-other{color:var(--f3)}
+.lb-mv{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;text-align:center}
+.mv-up{color:var(--green)}.mv-dn{color:var(--red)}.mv-flat{color:var(--f4)}
+.lb-player{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:500;color:var(--f1)}
+.lb-you-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);background:rgba(201,168,76,0.12);border:1px solid var(--gold-line);padding:0.1rem 0.35rem;border-radius:2px}
+.paid-dot{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
+.lb-pts{font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;color:var(--f1);text-align:right}
+.lb-rd{font-size:0.75rem;color:var(--f3);text-align:right}
+
+/* ── SPECIAL PICKS ── */
+.sp-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:2px}
+.sp-head{background:var(--bg3);padding:0.5rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.sp-title-group{display:flex;align-items:center;gap:0.6rem}
+.sp-icon-wrap{font-size:1rem}
+.sp-title{font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:var(--white)}
+.sp-pts{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--gold-line)}
+.sp-body{padding:1rem}
+.sp-desc{font-size:0.77rem;color:var(--f3);margin-bottom:0.75rem;line-height:1.5}
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem}
+.tg-opt{display:flex;flex-direction:column;align-items:center;gap:0.3rem;padding:0.6rem 0.5rem;border-radius:3px;background:var(--bg3);border:1px solid var(--line);cursor:pointer;transition:all 0.15s}
+.tg-opt:hover{border-color:var(--f3)}
+.tg-opt.sel{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.tg-opt img{width:36px;height:25px;border-radius:2px;object-fit:cover;border:1px solid rgba(255,255,255,0.1)}
+.tg-opt-name{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--f2);text-align:center}
+.tg-opt.sel .tg-opt-name{color:var(--gold)}
+.player-search{width:100%;padding:0.55rem 0.85rem;background:var(--bg3);border:1px solid var(--f4);border-radius:3px;color:var(--f1);font-size:0.82rem;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;margin-bottom:0.5rem}
+.player-search:focus{border-color:var(--gold)}
+.player-search::placeholder{color:var(--f4)}
+.player-results{background:var(--bg3);border:1px solid var(--f4);border-radius:3px;overflow:hidden}
+.pr-item{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s}
+.pr-item:last-child{border-bottom:none}
+.pr-item:hover{background:rgba(255,255,255,0.04)}
+.pr-item.sel-player{background:rgba(201,168,76,0.08)}
+.pr-flag img{width:20px;height:14px;border-radius:1px;object-fit:cover}
+.pr-name{font-size:0.82rem;font-weight:500;color:var(--f1)}
+.pr-team{font-size:0.7rem;color:var(--f3)}
+.pr-pos{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-left:auto;padding:0.1rem 0.4rem;border-radius:2px}
+.pos-gk{background:rgba(201,168,76,0.12);color:var(--gold)}
+.pos-fwd{background:rgba(224,59,59,0.12);color:var(--red)}
+.pos-mid{background:rgba(44,182,125,0.12);color:var(--green)}
+.pos-def{background:rgba(138,135,128,0.2);color:var(--f2)}
+.selected-pick{display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.85rem;background:rgba(201,168,76,0.06);border:1px solid var(--gold-line);border-radius:3px;margin-top:0.5rem}
+.sel-flag img{width:28px;height:19px;border-radius:2px;object-fit:cover}
+.sel-name{font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--white)}
+.sel-team{font-size:0.7rem;color:var(--f3)}
+.sel-change{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--f4);cursor:pointer;text-decoration:underline}
+.sp-foot{border-top:1px solid var(--line);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.sp-foot-note{font-size:0.7rem;color:var(--f4)}
+.sp-foot-note.missing{color:var(--red)}
+.sp-lock-banner{display:flex;align-items:flex-start;gap:0.75rem;background:rgba(201,168,76,0.07);border:1px solid var(--gold-line);border-radius:4px;padding:0.75rem 1rem;margin-bottom:1.25rem}
+.slb-title{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold)}
+.slb-sub{font-size:0.72rem;color:var(--f3);margin-top:3px;line-height:1.5}
+
+/* ── ADMIN ── */
+.admin-match-row{display:grid;grid-template-columns:1fr 50px 36px 50px 1fr auto;align-items:center;gap:0 10px;padding:0.75rem 1rem;border-bottom:1px solid var(--line)}
+.admin-match-row:last-child{border-bottom:none}
+.admin-team{font-size:0.82rem;font-weight:500;color:var(--f1);display:flex;align-items:center;gap:0.5rem}
+.admin-team.right{justify-content:flex-end;flex-direction:row-reverse}
+.admin-flag img{width:24px;height:17px;border-radius:2px;object-fit:cover;border:1px solid rgba(255,255,255,0.08)}
+.admin-si{width:44px;height:38px;background:var(--bg3);border:1px solid var(--f4);border-radius:3px;color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-align:center;outline:none;-moz-appearance:textfield}
+.admin-si:focus{border-color:var(--gold)}
+.admin-si::-webkit-outer-spin-button,.admin-si::-webkit-inner-spin-button{-webkit-appearance:none}
+.admin-sep{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;color:var(--f4);text-align:center}
+.btn-confirm{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;background:var(--green);color:#000;padding:0.35rem 0.85rem;border-radius:2px;border:none;cursor:pointer;white-space:nowrap}
+.btn-confirm:hover{opacity:0.88}
+.confirmed-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:4px}
+.admin-group-label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--f4);padding:0.4rem 1rem;background:var(--bg3);border-bottom:1px solid var(--line)}
+
+/* ── SIDEBAR UTILITIES ── */
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.sc-row:last-child{border-bottom:none}
+.sc-label{font-size:0.75rem;color:var(--f3)}
+.sc-val{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;color:var(--f1)}
+.sc-val.gold{color:var(--gold)}.sc-val.green{color:var(--green)}.sc-val.red{color:var(--red)}
+
+/* ── FORM ELEMENTS ── */
+.field-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f2);margin-bottom:0.4rem;display:block}
+.field-input{width:100%;padding:0.6rem 0.85rem;background:var(--bg3);border:1px solid var(--f4);border-radius:3px;color:var(--f1);font-size:0.85rem;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;margin-bottom:1rem}
+.field-input:focus{border-color:var(--gold)}
+.field-input::placeholder{color:var(--f4)}
+.btn-primary{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.6rem 1.5rem;border-radius:2px;border:none;cursor:pointer}
+.btn-primary:hover{background:var(--gold2)}
+.btn-ghost{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--f3);border:1px solid var(--f4);padding:0.55rem 1.1rem;border-radius:2px;cursor:pointer}
+.btn-ghost:hover{color:var(--f1);border-color:var(--f2)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-links">
+    <span class="tb-link" onclick="showPage('dashboard')">Dashboard</span>
+    <span class="tb-link" onclick="showPage('pool')">My Pools</span>
+    <span class="tb-link">World Cup 2026</span>
+    <span class="tb-link">Results</span>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill"><div class="user-avatar">JD</div>Juan D.</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Pick<span>Poolr</span></div>
+  <div class="nav-items">
+    <span class="nav-item active" id="nav-home" onclick="showPage('dashboard')">Home</span>
+    <span class="nav-item" id="nav-pool" onclick="showPage('pool')">Amigos WC26</span>
+    <span class="nav-item" id="nav-admin" onclick="showPage('admin')">Admin</span>
+  </div>
+  <button class="nav-cta" onclick="showPage('dashboard')">+ Create Pool</button>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-label">Live</div>
+  <div class="ticker-items">
+    <span class="ticker-item">ARG 3 – 1 FRA &nbsp;&#9679;&nbsp; 78'</span>
+    <span class="ticker-item">BRA 2 – 2 GER &nbsp;&#9679;&nbsp; 86'</span>
+    <span class="ticker-item">MEX 1 – 0 ZAF &nbsp;&#9679;&nbsp; FT</span>
+    <span class="ticker-item">ESP 2 – 0 CPV &nbsp;&#9679;&nbsp; HT</span>
+    <span class="ticker-item">ENG 1 – 1 CRO &nbsp;&#9679;&nbsp; 67'</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: DASHBOARD
+════════════════════════════════════════ -->
+<div id="page-dashboard">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="ph-left">
+        <div class="ph-eyebrow">My Account</div>
+        <div class="ph-title">Dashboard</div>
+        <div class="ph-meta">World Cup 2026 — Jun 11 to Jul 19</div>
+      </div>
+      <div class="ph-right">
+        <button class="btn-primary" onclick="showPage('dashboard')">+ Create Pool</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card" style="margin-bottom:2rem">
+      <div class="card-head"><div class="card-title">My Pools</div><span class="card-link">3 active</span></div>
+      <div class="card-body">
+        <div class="pool-grid">
+
+          <!-- Pool 1 -->
+          <div class="pool-card" onclick="showPage('pool')">
+            <div class="pc-banner">
+              <div>
+                <div class="pc-name">Amigos WC26 Pool</div>
+                <div class="pc-tournament">FIFA World Cup 2026</div>
+              </div>
+              <span class="pc-role">Commissioner</span>
+            </div>
+            <div class="pc-body">
+              <div class="pc-stats">
+                <div class="pc-stat"><div class="pc-stat-val">14</div><div class="pc-stat-label">Players</div></div>
+                <div class="pc-stat"><div class="pc-stat-val gold" style="color:var(--gold)">3rd</div><div class="pc-stat-label">Your rank</div></div>
+                <div class="pc-stat"><div class="pc-stat-val">$280</div><div class="pc-stat-label">Pot</div></div>
+              </div>
+              <div class="pc-footer">
+                <div class="pc-status"><span class="status-dot dot-live"></span><span style="color:var(--red)">Live</span></div>
+                <button class="pc-cta">Open Pool</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pool 2 -->
+          <div class="pool-card">
+            <div class="pc-banner">
+              <div>
+                <div class="pc-name">Work Crew WC26</div>
+                <div class="pc-tournament">FIFA World Cup 2026</div>
+              </div>
+              <span class="pc-role" style="background:rgba(44,182,125,0.1);color:var(--green);border-color:rgba(44,182,125,0.25)">Player</span>
+            </div>
+            <div class="pc-body">
+              <div class="pc-stats">
+                <div class="pc-stat"><div class="pc-stat-val">8</div><div class="pc-stat-label">Players</div></div>
+                <div class="pc-stat"><div class="pc-stat-val gold" style="color:var(--gold)">1st</div><div class="pc-stat-label">Your rank</div></div>
+                <div class="pc-stat"><div class="pc-stat-val">Free</div><div class="pc-stat-label">Pot</div></div>
+              </div>
+              <div class="pc-footer">
+                <div class="pc-status"><span class="status-dot dot-live"></span><span style="color:var(--red)">Live</span></div>
+                <button class="pc-cta">Open Pool</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pool 3 — upcoming -->
+          <div class="pool-card">
+            <div class="pc-banner">
+              <div>
+                <div class="pc-name">Family Pool 2026</div>
+                <div class="pc-tournament">FIFA World Cup 2026</div>
+              </div>
+              <span class="pc-role">Commissioner</span>
+            </div>
+            <div class="pc-body">
+              <div class="pc-stats">
+                <div class="pc-stat"><div class="pc-stat-val">5</div><div class="pc-stat-label">Players</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" style="color:var(--f3)">—</div><div class="pc-stat-label">Your rank</div></div>
+                <div class="pc-stat"><div class="pc-stat-val">Free</div><div class="pc-stat-label">Pot</div></div>
+              </div>
+              <div class="pc-footer">
+                <div class="pc-status"><span class="status-dot dot-upcoming"></span><span style="color:var(--gold)">Starting Jun 11</span></div>
+                <button class="pc-cta">Open Pool</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Tournament overview -->
+    <div class="card">
+      <div class="card-head"><div class="card-title">World Cup 2026 — Group Stage</div><span class="card-link">Full schedule</span></div>
+      <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:3px;overflow:hidden">
+        <div style="background:var(--bg);padding:0.75rem;text-align:center"><div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f4);margin-bottom:4px">Start</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--gold)">Jun 11</div></div>
+        <div style="background:var(--bg);padding:0.75rem;text-align:center"><div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f4);margin-bottom:4px">Teams</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--gold)">48</div></div>
+        <div style="background:var(--bg);padding:0.75rem;text-align:center"><div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f4);margin-bottom:4px">Matches</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--gold)">104</div></div>
+        <div style="background:var(--bg);padding:0.75rem;text-align:center"><div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f4);margin-bottom:4px">Final</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;color:var(--gold)">Jul 19</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: POOL (tabs)
+════════════════════════════════════════ -->
+<div id="page-pool" style="display:none">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="ph-left">
+        <div class="ph-eyebrow">My Pools &rsaquo; Amigos WC26 Pool</div>
+        <div class="ph-title">Amigos WC26 Pool</div>
+        <div class="ph-meta">FIFA World Cup 2026 &middot; 14 players &middot; Private &middot; Commissioner: Juan D.</div>
+      </div>
+      <div class="ph-right">
+        <div class="ph-score">47 pts</div>
+        <div class="ph-rank">3rd place &mdash; +8 behind 2nd</div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-nav">
+    <div class="tab-nav-inner">
+      <div class="tab active" id="tab-picks" onclick="showTab('picks')">Match Picks<span class="tab-badge" id="badge-picks">2</span></div>
+      <div class="tab" id="tab-special" onclick="showTab('special')">Special Picks</div>
+      <div class="tab" id="tab-lb" onclick="showTab('lb')">Leaderboard</div>
+      <div class="tab" id="tab-settings" onclick="showTab('settings')">Settings</div>
+    </div>
+  </div>
+
+  <!-- ── TAB: PICKS ── -->
+  <div id="tab-content-picks">
+    <div class="wrap">
+      <div class="two-col">
+        <div>
+          <div class="md-strip">
+            <button class="md-btn done" onclick="activeMd(this)">MD 1</button>
+            <button class="md-btn done" onclick="activeMd(this)">MD 2</button>
+            <button class="md-btn active" onclick="activeMd(this)">MD 3</button>
+            <button class="md-btn" onclick="activeMd(this)">MD 4</button>
+            <button class="md-btn locked">MD 5</button>
+            <button class="md-btn locked">MD 6</button>
+            <button class="md-btn locked">R32</button>
+            <button class="md-btn locked">R16</button>
+            <button class="md-btn locked">QF</button>
+            <button class="md-btn locked">SF</button>
+            <button class="md-btn locked">F</button>
+          </div>
+          <div class="deadline-banner">
+            <div><div class="db-left">Matchday 3 &mdash; Picks close Jun 25, 3:00 PM ET</div><div class="db-sub">Submit all picks before the first match kicks off</div></div>
+            <div class="db-countdown" id="countdown">11:42:07</div>
+          </div>
+
+          <!-- MATCH 1 — open -->
+          <div class="mpc">
+            <div class="mpc-head">
+              <div class="mpc-info">Group A &middot; Jun 25 &middot; 3:00 PM ET &middot; Estadio Azteca</div>
+              <div class="mpc-status s-open">Open</div>
+            </div>
+            <div class="mpc-body">
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/ar.png" alt="ARG"></div><div class="team-nm">Argentina</div></div>
+              <div class="score-center">
+                <div class="score-status s-open">Pick your score</div>
+                <div class="score-inputs">
+                  <input class="si" type="number" min="0" max="20" placeholder="0" id="m1h" oninput="this.classList.toggle('filled',this.value!=='')">
+                  <span class="sc-dash">—</span>
+                  <input class="si" type="number" min="0" max="20" placeholder="0" id="m1a" oninput="this.classList.toggle('filled',this.value!=='')">
+                </div>
+              </div>
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/fr.png" alt="FRA"></div><div class="team-nm">France</div></div>
+            </div>
+            <div class="mpc-foot"><button class="btn-edit">Clear</button><button class="btn-save">Save Pick</button></div>
+          </div>
+
+          <!-- MATCH 2 — saved -->
+          <div class="mpc submitted">
+            <div class="mpc-head">
+              <div class="mpc-info">Group C &middot; Jun 25 &middot; 6:00 PM ET &middot; AT&T Stadium</div>
+              <div class="mpc-status s-saved">&#10003; Saved</div>
+            </div>
+            <div class="mpc-body">
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/br.png" alt="BRA"></div><div class="team-nm">Brazil</div></div>
+              <div class="score-center">
+                <div class="score-display"><span class="sd-val">2</span><span class="sd-sep">–</span><span class="sd-val">1</span></div>
+                <div style="font-size:0.65rem;color:var(--f4);margin-top:3px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase">Your pick</div>
+              </div>
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/de.png" alt="GER"></div><div class="team-nm">Germany</div></div>
+            </div>
+            <div class="mpc-foot"><div style="font-size:0.7rem;color:var(--f3)">Saved Jun 24 at 9:12 PM</div><button class="btn-edit">Edit</button></div>
+          </div>
+
+          <!-- MATCH 3 — live with pts -->
+          <div class="mpc locked-card">
+            <div class="mpc-head">
+              <div class="mpc-info">Group D &middot; Jun 25 &middot; 9:00 PM ET &middot; SoFi Stadium</div>
+              <div class="mpc-status s-live" style="display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.4s ease infinite;display:inline-block;flex-shrink:0"></span>Live 78'</div>
+            </div>
+            <div class="mpc-body">
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/mx.png" alt="MEX"></div><div class="team-nm">Mexico</div></div>
+              <div class="score-center">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);margin-bottom:2px">Live 1 – 0</div>
+                <div class="score-display"><span class="sd-val">1</span><span class="sd-sep">–</span><span class="sd-val">0</span></div>
+                <div style="font-size:0.65rem;color:var(--f4);margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase">Your pick</div>
+                <span class="pts-badge" style="margin-top:3px">+1 pt so far</span>
+              </div>
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/za.png" alt="ZAF"></div><div class="team-nm">South Africa</div></div>
+            </div>
+          </div>
+
+          <!-- MATCH 4 — FT scored -->
+          <div class="mpc locked-card">
+            <div class="mpc-head">
+              <div class="mpc-info">Group H &middot; Jun 24 &middot; Completed</div>
+              <div class="mpc-status s-ft">FT</div>
+            </div>
+            <div class="mpc-body">
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/es.png" alt="ESP"></div><div class="team-nm">Spain</div></div>
+              <div class="score-center">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4);margin-bottom:2px">Final 2 – 0</div>
+                <div class="score-display"><span class="sd-val muted">2</span><span class="sd-sep">–</span><span class="sd-val muted">1</span></div>
+                <div style="font-size:0.65rem;color:var(--f4);margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase">Your pick</div>
+                <span class="pts-badge">+1 pt</span>
+              </div>
+              <div class="team-side"><div class="team-flag"><img src="https://flagcdn.com/w80/nl.png" alt="NED"></div><div class="team-nm">Netherlands</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR PICKS -->
+        <div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Matchday 3 Progress</div></div>
+            <div class="card-body">
+              <div class="sc-row"><div class="sc-label">Picks submitted</div><div class="sc-val green">2 / 4</div></div>
+              <div class="sc-row"><div class="sc-label">Points this matchday</div><div class="sc-val gold">2</div></div>
+              <div class="sc-row"><div class="sc-label">Total points</div><div class="sc-val">47</div></div>
+              <div class="sc-row"><div class="sc-label">Your rank</div><div class="sc-val gold">3rd / 14</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Scoring</div></div>
+            <div class="card-body">
+              <div class="sc-row"><div class="sc-label">Exact scoreline</div><div class="sc-val gold">3 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Correct winner + 1 score</div><div class="sc-val gold">2 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Correct result only</div><div class="sc-val gold">1 pt</div></div>
+              <div class="sc-row" style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--line)"><div class="sc-label">Champion pick</div><div class="sc-val gold">10 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Runner-up pick</div><div class="sc-val gold">7 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Top scorer pick</div><div class="sc-val gold">5 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Best goalkeeper pick</div><div class="sc-val gold">5 pts</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: SPECIAL PICKS ── -->
+  <div id="tab-content-special" style="display:none">
+    <div class="wrap">
+      <div class="two-col">
+        <div>
+          <div class="sp-lock-banner">
+            <div>
+              <div class="slb-title">&#9888; Locks at first kickoff &mdash; Jun 11, 5:00 PM ET</div>
+              <div class="slb-sub">All special picks lock permanently when the tournament begins. Submit before the deadline to earn bonus points. No changes after kickoff.</div>
+            </div>
+          </div>
+
+          <!-- Champion -->
+          <div class="sp-card">
+            <div class="sp-head">
+              <div class="sp-title-group"><div class="sp-icon-wrap">&#127942;</div><div class="sp-title">Champion</div></div>
+              <div class="sp-pts">10 pts</div>
+            </div>
+            <div class="sp-body">
+              <div class="sp-desc">Pick the team that wins the 2026 World Cup.</div>
+              <div class="team-grid">
+                <div class="tg-opt sel" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/ar.png" alt="ARG"><div class="tg-opt-name">Argentina</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/fr.png" alt="FRA"><div class="tg-opt-name">France</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/es.png" alt="ESP"><div class="tg-opt-name">Spain</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/gb-eng.png" alt="ENG"><div class="tg-opt-name">England</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/br.png" alt="BRA"><div class="tg-opt-name">Brazil</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/pt.png" alt="POR"><div class="tg-opt-name">Portugal</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/de.png" alt="GER"><div class="tg-opt-name">Germany</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/nl.png" alt="NED"><div class="tg-opt-name">Netherlands</div></div>
+              </div>
+            </div>
+            <div class="sp-foot"><div class="sp-foot-note">Selected: <strong style="color:var(--gold)">Argentina</strong></div><button class="btn-save">Save</button></div>
+          </div>
+
+          <!-- Runner-up -->
+          <div class="sp-card" style="margin-top:2px">
+            <div class="sp-head">
+              <div class="sp-title-group"><div class="sp-icon-wrap">&#129352;</div><div class="sp-title">Runner-Up</div></div>
+              <div class="sp-pts">7 pts</div>
+            </div>
+            <div class="sp-body">
+              <div class="sp-desc">Pick the team that reaches the final but finishes second.</div>
+              <div class="team-grid">
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/ar.png" alt="ARG"><div class="tg-opt-name">Argentina</div></div>
+                <div class="tg-opt sel" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/fr.png" alt="FRA"><div class="tg-opt-name">France</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/es.png" alt="ESP"><div class="tg-opt-name">Spain</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/gb-eng.png" alt="ENG"><div class="tg-opt-name">England</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/br.png" alt="BRA"><div class="tg-opt-name">Brazil</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/pt.png" alt="POR"><div class="tg-opt-name">Portugal</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/de.png" alt="GER"><div class="tg-opt-name">Germany</div></div>
+                <div class="tg-opt" onclick="selTeam(this)"><img src="https://flagcdn.com/w40/nl.png" alt="NED"><div class="tg-opt-name">Netherlands</div></div>
+              </div>
+            </div>
+            <div class="sp-foot"><div class="sp-foot-note">Selected: <strong style="color:var(--gold)">France</strong></div><button class="btn-save">Save</button></div>
+          </div>
+
+          <!-- Pichichi -->
+          <div class="sp-card" style="margin-top:2px">
+            <div class="sp-head">
+              <div class="sp-title-group"><div class="sp-icon-wrap">&#9917;</div><div class="sp-title">Pichichi — Top Scorer</div></div>
+              <div class="sp-pts">5 pts</div>
+            </div>
+            <div class="sp-body">
+              <div class="sp-desc">Pick the player who scores the most goals. Ties broken by assists, then fewer matches played.</div>
+              <input class="player-search" type="text" placeholder="Search player name or country..." id="search-scorer" oninput="filterPlayers('scorer',this.value)">
+              <div class="player-results" id="results-scorer">
+                <!-- populated by JS -->
+              </div>
+              <div class="selected-pick" id="sel-scorer">
+                <div class="sel-flag"><img src="https://flagcdn.com/w40/fr.png" alt="FRA"></div>
+                <div><div class="sel-name">Kylian Mbappé</div><div class="sel-team">France &middot; FWD</div></div>
+                <div class="sel-change" onclick="clearPick('scorer')">Change</div>
+              </div>
+            </div>
+            <div class="sp-foot"><div class="sp-foot-note">Selected: <strong style="color:var(--gold)">K. Mbappé</strong></div><button class="btn-save">Save</button></div>
+          </div>
+
+          <!-- Best Goalkeeper -->
+          <div class="sp-card" style="margin-top:2px">
+            <div class="sp-head">
+              <div class="sp-title-group"><div class="sp-icon-wrap">&#129354;</div><div class="sp-title">Best Goalkeeper</div></div>
+              <div class="sp-pts">5 pts</div>
+            </div>
+            <div class="sp-body">
+              <div class="sp-desc">Pick the goalkeeper awarded the Golden Glove at the end of the tournament.</div>
+              <input class="player-search" type="text" placeholder="Search goalkeeper name or country..." id="search-gk" oninput="filterPlayers('gk',this.value)">
+              <div class="player-results" id="results-gk">
+                <!-- populated by JS -->
+              </div>
+              <div class="selected-pick" id="sel-gk" style="display:none"></div>
+            </div>
+            <div class="sp-foot"><div class="sp-foot-note missing" id="gk-note">&#9888; No pick saved yet</div><button class="btn-save">Save</button></div>
+          </div>
+        </div>
+
+        <!-- Special picks sidebar -->
+        <div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Special Picks Status</div></div>
+            <div class="card-body">
+              <div class="sc-row"><div class="sc-label">Champion</div><div class="sc-val green">&#10003; Argentina</div></div>
+              <div class="sc-row"><div class="sc-label">Runner-up</div><div class="sc-val green">&#10003; France</div></div>
+              <div class="sc-row"><div class="sc-label">Top scorer</div><div class="sc-val green">&#10003; Mbappé</div></div>
+              <div class="sc-row"><div class="sc-label" style="color:var(--red)">Goalkeeper</div><div class="sc-val red">&#9888; Missing</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Points Available</div></div>
+            <div class="card-body">
+              <div class="sc-row"><div class="sc-label">Champion</div><div class="sc-val gold">10 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Runner-up</div><div class="sc-val gold">7 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Top scorer</div><div class="sc-val gold">5 pts</div></div>
+              <div class="sc-row"><div class="sc-label">Best goalkeeper</div><div class="sc-val gold">5 pts</div></div>
+              <div class="sc-row" style="border-top:1px solid var(--line);margin-top:0.5rem;padding-top:0.5rem"><div class="sc-label" style="font-weight:600">Total</div><div class="sc-val gold" style="font-size:1.1rem">27 pts</div></div>
+            </div>
+          </div>
+          <div class="card" style="border-color:rgba(224,59,59,0.2)">
+            <div class="card-head" style="background:rgba(224,59,59,0.08);border-color:rgba(224,59,59,0.15)"><div class="card-title" style="color:var(--red)">Deadline</div></div>
+            <div class="card-body">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;color:var(--red);line-height:1">Jun 11</div>
+              <div style="font-size:0.75rem;color:var(--f3);margin-top:4px">5:00 PM ET — First kickoff</div>
+              <div style="font-size:0.72rem;color:var(--f4);margin-top:8px;line-height:1.5">All special picks lock the moment the first match starts. No exceptions.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: LEADERBOARD ── -->
+  <div id="tab-content-lb" style="display:none">
+    <div class="wrap">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Full Standings — Amigos WC26 Pool</div>
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <span style="font-size:0.72rem;color:var(--f3)">14 players</span>
+            <span class="card-link">Share link</span>
+          </div>
+        </div>
+        <div class="lb-cols">
+          <div class="lb-col-label" style="text-align:center">#</div>
+          <div class="lb-col-label" style="text-align:center">+/-</div>
+          <div class="lb-col-label">Player</div>
+          <div class="lb-col-label r">Total</div>
+          <div class="lb-col-label r">Picks</div>
+          <div class="lb-col-label r">Special</div>
+        </div>
+        <div id="lb-rows"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: SETTINGS ── -->
+  <div id="tab-content-settings" style="display:none">
+    <div class="wrap">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Pool Settings</div><span style="font-size:0.72rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">Commissioner only</span></div>
+            <div class="card-body">
+              <label class="field-label">Pool Name</label>
+              <input class="field-input" type="text" value="Amigos WC26 Pool">
+              <label class="field-label">Description</label>
+              <input class="field-input" type="text" value="The original crew. No excuses.">
+              <label class="field-label">Invite Link</label>
+              <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+                <input class="field-input" style="margin-bottom:0;flex:1" type="text" value="pickpoolr.com/join/amigos26" readonly>
+                <button class="btn-ghost" onclick="alert('Copied!')">Copy</button>
+              </div>
+              <button class="btn-primary">Save Changes</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Payment Status</div></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:0 1rem;margin-bottom:0.5rem">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)">Player</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)">Amount</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)">Status</div>
+              </div>
+              <div id="payment-rows"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Pool Info</div></div>
+            <div class="card-body">
+              <div class="sc-row"><div class="sc-label">Tournament</div><div class="sc-val">WC 2026</div></div>
+              <div class="sc-row"><div class="sc-label">Players</div><div class="sc-val">14 / unlimited</div></div>
+              <div class="sc-row"><div class="sc-label">Pool type</div><div class="sc-val">Free</div></div>
+              <div class="sc-row"><div class="sc-label">Privacy</div><div class="sc-val green">Private</div></div>
+              <div class="sc-row"><div class="sc-label">Prize</div><div class="sc-val gold">Winner takes all</div></div>
+              <div class="sc-row"><div class="sc-label">Created</div><div class="sc-val">May 15, 2026</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: ADMIN
+════════════════════════════════════════ -->
+<div id="page-admin" style="display:none">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="ph-left">
+        <div class="ph-eyebrow">Admin Panel</div>
+        <div class="ph-title">Enter Results</div>
+        <div class="ph-meta">FIFA World Cup 2026 — Scores entered here auto-score all pools instantly</div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Matchday 3 — Jun 25, 2026</div>
+        <div style="display:flex;gap:0.5rem">
+          <select style="background:var(--bg3);border:1px solid var(--f4);color:var(--f1);padding:0.3rem 0.6rem;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;outline:none">
+            <option>Matchday 3</option>
+            <option>Matchday 1</option>
+            <option>Matchday 2</option>
+          </select>
+          <button class="btn-primary" style="padding:0.35rem 1rem;font-size:0.78rem">Save All</button>
+        </div>
+      </div>
+      <div id="admin-matches"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA — All 48 teams + key players
+══════════════════════════════════════════ */
+const TEAMS = [
+  // Group A
+  {code:'mx',name:'Mexico',group:'A',conf:'CONCACAF'},
+  {code:'za',name:'South Africa',group:'A',conf:'CAF'},
+  {code:'kr',name:'South Korea',group:'A',conf:'AFC'},
+  {code:'cz',name:'Czechia',group:'A',conf:'UEFA'},
+  // Group B
+  {code:'ca',name:'Canada',group:'B',conf:'CONCACAF'},
+  {code:'ch',name:'Switzerland',group:'B',conf:'UEFA'},
+  {code:'qa',name:'Qatar',group:'B',conf:'AFC'},
+  {code:'ba',name:'Bosnia & Herz.',group:'B',conf:'UEFA'},
+  // Group C
+  {code:'br',name:'Brazil',group:'C',conf:'CONMEBOL'},
+  {code:'ma',name:'Morocco',group:'C',conf:'CAF'},
+  {code:'ht',name:'Haiti',group:'C',conf:'CONCACAF'},
+  {code:'gb-sct',name:'Scotland',group:'C',conf:'UEFA'},
+  // Group D
+  {code:'us',name:'USA',group:'D',conf:'CONCACAF'},
+  {code:'py',name:'Paraguay',group:'D',conf:'CONMEBOL'},
+  {code:'au',name:'Australia',group:'D',conf:'AFC'},
+  {code:'tr',name:'Türkiye',group:'D',conf:'UEFA'},
+  // Group E
+  {code:'de',name:'Germany',group:'E',conf:'UEFA'},
+  {code:'cw',name:'Curaçao',group:'E',conf:'CONCACAF'},
+  {code:'ci',name:'Ivory Coast',group:'E',conf:'CAF'},
+  {code:'ec',name:'Ecuador',group:'E',conf:'CONMEBOL'},
+  // Group F
+  {code:'nl',name:'Netherlands',group:'F',conf:'UEFA'},
+  {code:'jp',name:'Japan',group:'F',conf:'AFC'},
+  {code:'se',name:'Sweden',group:'F',conf:'UEFA'},
+  {code:'tn',name:'Tunisia',group:'F',conf:'CAF'},
+  // Group G
+  {code:'be',name:'Belgium',group:'G',conf:'UEFA'},
+  {code:'eg',name:'Egypt',group:'G',conf:'CAF'},
+  {code:'ir',name:'Iran',group:'G',conf:'AFC'},
+  {code:'nz',name:'New Zealand',group:'G',conf:'OFC'},
+  // Group H
+  {code:'es',name:'Spain',group:'H',conf:'UEFA'},
+  {code:'cv',name:'Cape Verde',group:'H',conf:'CAF'},
+  {code:'sa',name:'Saudi Arabia',group:'H',conf:'AFC'},
+  {code:'uy',name:'Uruguay',group:'H',conf:'CONMEBOL'},
+  // Group I — Group of Death
+  {code:'fr',name:'France',group:'I',conf:'UEFA'},
+  {code:'sn',name:'Senegal',group:'I',conf:'CAF'},
+  {code:'no',name:'Norway',group:'I',conf:'UEFA'},
+  {code:'iq',name:'Iraq',group:'I',conf:'AFC'},
+  // Group J
+  {code:'ar',name:'Argentina',group:'J',conf:'CONMEBOL'},
+  {code:'dz',name:'Algeria',group:'J',conf:'CAF'},
+  {code:'at',name:'Austria',group:'J',conf:'UEFA'},
+  {code:'jo',name:'Jordan',group:'J',conf:'AFC'},
+  // Group K
+  {code:'pt',name:'Portugal',group:'K',conf:'UEFA'},
+  {code:'cd',name:'DR Congo',group:'K',conf:'CAF'},
+  {code:'uz',name:'Uzbekistan',group:'K',conf:'AFC'},
+  {code:'co',name:'Colombia',group:'K',conf:'CONMEBOL'},
+  // Group L
+  {code:'gb-eng',name:'England',group:'L',conf:'UEFA'},
+  {code:'hr',name:'Croatia',group:'L',conf:'UEFA'},
+  {code:'gh',name:'Ghana',group:'L',conf:'CAF'},
+  {code:'pa',name:'Panama',group:'L',conf:'CONCACAF'},
+];
+
+const PLAYERS = [
+  // Argentina
+  {name:'Emiliano Martínez',team:'ar',teamName:'Argentina',pos:'GK'},
+  {name:'Gerónimo Rulli',team:'ar',teamName:'Argentina',pos:'GK'},
+  {name:'Lionel Messi',team:'ar',teamName:'Argentina',pos:'FWD'},
+  {name:'Julián Álvarez',team:'ar',teamName:'Argentina',pos:'FWD'},
+  {name:'Lautaro Martínez',team:'ar',teamName:'Argentina',pos:'FWD'},
+  {name:'Enzo Fernández',team:'ar',teamName:'Argentina',pos:'MID'},
+  {name:'Alexis Mac Allister',team:'ar',teamName:'Argentina',pos:'MID'},
+  {name:'Rodrigo De Paul',team:'ar',teamName:'Argentina',pos:'MID'},
+  {name:'Cristian Romero',team:'ar',teamName:'Argentina',pos:'DEF'},
+  {name:'Lisandro Martínez',team:'ar',teamName:'Argentina',pos:'DEF'},
+  // France
+  {name:'Mike Maignan',team:'fr',teamName:'France',pos:'GK'},
+  {name:'Alphonse Areola',team:'fr',teamName:'France',pos:'GK'},
+  {name:'Kylian Mbappé',team:'fr',teamName:'France',pos:'FWD'},
+  {name:'Antoine Griezmann',team:'fr',teamName:'France',pos:'FWD'},
+  {name:'Ousmane Dembélé',team:'fr',teamName:'France',pos:'FWD'},
+  {name:'Marcus Thuram',team:'fr',teamName:'France',pos:'FWD'},
+  {name:'Aurélien Tchouaméni',team:'fr',teamName:'France',pos:'MID'},
+  {name:'Adrien Rabiot',team:'fr',teamName:'France',pos:'MID'},
+  {name:'William Saliba',team:'fr',teamName:'France',pos:'DEF'},
+  {name:'Jules Koundé',team:'fr',teamName:'France',pos:'DEF'},
+  // Spain
+  {name:'Unai Simón',team:'es',teamName:'Spain',pos:'GK'},
+  {name:'David Raya',team:'es',teamName:'Spain',pos:'GK'},
+  {name:'Lamine Yamal',team:'es',teamName:'Spain',pos:'FWD'},
+  {name:'Nico Williams',team:'es',teamName:'Spain',pos:'FWD'},
+  {name:'Álvaro Morata',team:'es',teamName:'Spain',pos:'FWD'},
+  {name:'Pedri',team:'es',teamName:'Spain',pos:'MID'},
+  {name:'Rodri',team:'es',teamName:'Spain',pos:'MID'},
+  {name:'Gavi',team:'es',teamName:'Spain',pos:'MID'},
+  // England
+  {name:'Jordan Pickford',team:'gb-eng',teamName:'England',pos:'GK'},
+  {name:'Nick Pope',team:'gb-eng',teamName:'England',pos:'GK'},
+  {name:'Harry Kane',team:'gb-eng',teamName:'England',pos:'FWD'},
+  {name:'Bukayo Saka',team:'gb-eng',teamName:'England',pos:'FWD'},
+  {name:'Marcus Rashford',team:'gb-eng',teamName:'England',pos:'FWD'},
+  {name:'Jude Bellingham',team:'gb-eng',teamName:'England',pos:'MID'},
+  {name:'Declan Rice',team:'gb-eng',teamName:'England',pos:'MID'},
+  {name:'Phil Foden',team:'gb-eng',teamName:'England',pos:'MID'},
+  // Brazil
+  {name:'Alisson Becker',team:'br',teamName:'Brazil',pos:'GK'},
+  {name:'Ederson',team:'br',teamName:'Brazil',pos:'GK'},
+  {name:'Vinícius Júnior',team:'br',teamName:'Brazil',pos:'FWD'},
+  {name:'Rodrygo',team:'br',teamName:'Brazil',pos:'FWD'},
+  {name:'Raphinha',team:'br',teamName:'Brazil',pos:'FWD'},
+  {name:'Bruno Guimarães',team:'br',teamName:'Brazil',pos:'MID'},
+  {name:'Lucas Paquetá',team:'br',teamName:'Brazil',pos:'MID'},
+  // Portugal
+  {name:'Diogo Costa',team:'pt',teamName:'Portugal',pos:'GK'},
+  {name:'Rui Patrício',team:'pt',teamName:'Portugal',pos:'GK'},
+  {name:'Cristiano Ronaldo',team:'pt',teamName:'Portugal',pos:'FWD'},
+  {name:'Rafael Leão',team:'pt',teamName:'Portugal',pos:'FWD'},
+  {name:'Gonçalo Ramos',team:'pt',teamName:'Portugal',pos:'FWD'},
+  {name:'Bruno Fernandes',team:'pt',teamName:'Portugal',pos:'MID'},
+  {name:'Bernardo Silva',team:'pt',teamName:'Portugal',pos:'MID'},
+  {name:'Rúben Dias',team:'pt',teamName:'Portugal',pos:'DEF'},
+  // Germany
+  {name:'Manuel Neuer',team:'de',teamName:'Germany',pos:'GK'},
+  {name:'Marc-André ter Stegen',team:'de',teamName:'Germany',pos:'GK'},
+  {name:'Florian Wirtz',team:'de',teamName:'Germany',pos:'MID'},
+  {name:'Jamal Musiala',team:'de',teamName:'Germany',pos:'MID'},
+  {name:'Kai Havertz',team:'de',teamName:'Germany',pos:'FWD'},
+  {name:'Leroy Sané',team:'de',teamName:'Germany',pos:'FWD'},
+  {name:'Niclas Füllkrug',team:'de',teamName:'Germany',pos:'FWD'},
+  {name:'Antonio Rüdiger',team:'de',teamName:'Germany',pos:'DEF'},
+  // Netherlands
+  {name:'Bart Verbruggen',team:'nl',teamName:'Netherlands',pos:'GK'},
+  {name:'Virgil van Dijk',team:'nl',teamName:'Netherlands',pos:'DEF'},
+  {name:'Cody Gakpo',team:'nl',teamName:'Netherlands',pos:'FWD'},
+  {name:'Memphis Depay',team:'nl',teamName:'Netherlands',pos:'FWD'},
+  {name:'Xavi Simons',team:'nl',teamName:'Netherlands',pos:'FWD'},
+  {name:'Frenkie de Jong',team:'nl',teamName:'Netherlands',pos:'MID'},
+  // Norway
+  {name:'Ørjan Nyland',team:'no',teamName:'Norway',pos:'GK'},
+  {name:'Erling Haaland',team:'no',teamName:'Norway',pos:'FWD'},
+  {name:'Alexander Sørloth',team:'no',teamName:'Norway',pos:'FWD'},
+  {name:'Martin Ødegaard',team:'no',teamName:'Norway',pos:'MID'},
+  // Belgium
+  {name:'Thibaut Courtois',team:'be',teamName:'Belgium',pos:'GK'},
+  {name:'Senne Lammens',team:'be',teamName:'Belgium',pos:'GK'},
+  {name:'Romelu Lukaku',team:'be',teamName:'Belgium',pos:'FWD'},
+  {name:'Jeremy Doku',team:'be',teamName:'Belgium',pos:'FWD'},
+  {name:'Kevin De Bruyne',team:'be',teamName:'Belgium',pos:'MID'},
+  // Morocco
+  {name:'Yassine Bounou',team:'ma',teamName:'Morocco',pos:'GK'},
+  {name:'Hakim Ziyech',team:'ma',teamName:'Morocco',pos:'FWD'},
+  {name:'Youssef En-Nesyri',team:'ma',teamName:'Morocco',pos:'FWD'},
+  {name:'Achraf Hakimi',team:'ma',teamName:'Morocco',pos:'DEF'},
+  // Colombia
+  {name:'David Ospina',team:'co',teamName:'Colombia',pos:'GK'},
+  {name:'Luis Díaz',team:'co',teamName:'Colombia',pos:'FWD'},
+  {name:'James Rodríguez',team:'co',teamName:'Colombia',pos:'MID'},
+  {name:'Jhon Durán',team:'co',teamName:'Colombia',pos:'FWD'},
+  // Uruguay
+  {name:'Sergio Rochet',team:'uy',teamName:'Uruguay',pos:'GK'},
+  {name:'Darwin Núñez',team:'uy',teamName:'Uruguay',pos:'FWD'},
+  {name:'Federico Valverde',team:'uy',teamName:'Uruguay',pos:'MID'},
+  {name:'Manuel Ugarte',team:'uy',teamName:'Uruguay',pos:'MID'},
+  // USA
+  {name:'Matt Turner',team:'us',teamName:'USA',pos:'GK'},
+  {name:'Christian Pulisic',team:'us',teamName:'USA',pos:'FWD'},
+  {name:'Folarin Balogun',team:'us',teamName:'USA',pos:'FWD'},
+  {name:'Tyler Adams',team:'us',teamName:'USA',pos:'MID'},
+  {name:'Yunus Musah',team:'us',teamName:'USA',pos:'MID'},
+  // Canada
+  {name:'Maxime Crépeau',team:'ca',teamName:'Canada',pos:'GK'},
+  {name:'Alphonso Davies',team:'ca',teamName:'Canada',pos:'FWD'},
+  {name:'Jonathan David',team:'ca',teamName:'Canada',pos:'FWD'},
+  // Mexico
+  {name:'Raúl Rangel',team:'mx',teamName:'Mexico',pos:'GK'},
+  {name:'Guillermo Ochoa',team:'mx',teamName:'Mexico',pos:'GK'},
+  {name:'Santiago Giménez',team:'mx',teamName:'Mexico',pos:'FWD'},
+  {name:'Hirving Lozano',team:'mx',teamName:'Mexico',pos:'FWD'},
+  {name:'Edson Álvarez',team:'mx',teamName:'Mexico',pos:'MID'},
+  // Japan
+  {name:'Shuichi Gonda',team:'jp',teamName:'Japan',pos:'GK'},
+  {name:'Kaoru Mitoma',team:'jp',teamName:'Japan',pos:'FWD'},
+  {name:'Takumi Minamino',team:'jp',teamName:'Japan',pos:'FWD'},
+  {name:'Wataru Endo',team:'jp',teamName:'Japan',pos:'MID'},
+  // South Korea
+  {name:'Kim Seung-gyu',team:'kr',teamName:'South Korea',pos:'GK'},
+  {name:'Son Heung-min',team:'kr',teamName:'South Korea',pos:'FWD'},
+  {name:'Kim Min-jae',team:'kr',teamName:'South Korea',pos:'DEF'},
+  // Iran
+  {name:'Alireza Beiranvand',team:'ir',teamName:'Iran',pos:'GK'},
+  {name:'Mehdi Taremi',team:'ir',teamName:'Iran',pos:'FWD'},
+  {name:'Sardar Azmoun',team:'ir',teamName:'Iran',pos:'FWD'},
+  // Senegal
+  {name:'Édouard Mendy',team:'sn',teamName:'Senegal',pos:'GK'},
+  {name:'Sadio Mané',team:'sn',teamName:'Senegal',pos:'FWD'},
+  {name:'Ismaïla Sarr',team:'sn',teamName:'Senegal',pos:'FWD'},
+  // Croatia
+  {name:'Dominik Livaković',team:'hr',teamName:'Croatia',pos:'GK'},
+  {name:'Luka Modrić',team:'hr',teamName:'Croatia',pos:'MID'},
+  {name:'Joško Gvardiol',team:'hr',teamName:'Croatia',pos:'DEF'},
+  // Sweden
+  {name:'Robin Olsen',team:'se',teamName:'Sweden',pos:'GK'},
+  {name:'Alexander Isak',team:'se',teamName:'Sweden',pos:'FWD'},
+  {name:'Viktor Gyökeres',team:'se',teamName:'Sweden',pos:'FWD'},
+  // Switzerland
+  {name:'Yann Sommer',team:'ch',teamName:'Switzerland',pos:'GK'},
+  {name:'Gregor Kobel',team:'ch',teamName:'Switzerland',pos:'GK'},
+  {name:'Granit Xhaka',team:'ch',teamName:'Switzerland',pos:'MID'},
+  {name:'Breel Embolo',team:'ch',teamName:'Switzerland',pos:'FWD'},
+  // Austria
+  {name:'Patrick Pentz',team:'at',teamName:'Austria',pos:'GK'},
+  {name:'David Alaba',team:'at',teamName:'Austria',pos:'DEF'},
+  {name:'Marko Arnautovic',team:'at',teamName:'Austria',pos:'FWD'},
+  {name:'Marcel Sabitzer',team:'at',teamName:'Austria',pos:'MID'},
+  // Ghana
+  {name:'Lawrence Ati-Zigi',team:'gh',teamName:'Ghana',pos:'GK'},
+  {name:'Mohammed Kudus',team:'gh',teamName:'Ghana',pos:'FWD'},
+  {name:'Thomas Partey',team:'gh',teamName:'Ghana',pos:'MID'},
+  // Egypt
+  {name:'Mohamed El-Shenawy',team:'eg',teamName:'Egypt',pos:'GK'},
+  {name:'Mohamed Salah',team:'eg',teamName:'Egypt',pos:'FWD'},
+  // Ivory Coast
+  {name:'Yahia Fofana',team:'ci',teamName:'Ivory Coast',pos:'GK'},
+  {name:'Sébastien Haller',team:'ci',teamName:'Ivory Coast',pos:'FWD'},
+  {name:'Franck Kessié',team:'ci',teamName:'Ivory Coast',pos:'MID'},
+  // Ecuador
+  {name:'Hernán Galíndez',team:'ec',teamName:'Ecuador',pos:'GK'},
+  {name:'Moisés Caicedo',team:'ec',teamName:'Ecuador',pos:'MID'},
+  {name:'Enner Valencia',team:'ec',teamName:'Ecuador',pos:'FWD'},
+  // Algeria
+  {name:"Raïs M'Bolhi",team:'dz',teamName:'Algeria',pos:'GK'},
+  {name:'Riyad Mahrez',team:'dz',teamName:'Algeria',pos:'FWD'},
+  {name:'Ismaël Bennacer',team:'dz',teamName:'Algeria',pos:'MID'},
+  // Türkiye
+  {name:'Uğurcan Çakır',team:'tr',teamName:'Türkiye',pos:'GK'},
+  {name:'Arda Güler',team:'tr',teamName:'Türkiye',pos:'MID'},
+  {name:'Hakan Çalhanoğlu',team:'tr',teamName:'Türkiye',pos:'MID'},
+  // Tunisia
+  {name:'Aymen Dahmen',team:'tn',teamName:'Tunisia',pos:'GK'},
+  {name:'Hannibal Mejbri',team:'tn',teamName:'Tunisia',pos:'MID'},
+  // Saudi Arabia
+  {name:'Mohammed Al-Owais',team:'sa',teamName:'Saudi Arabia',pos:'GK'},
+  {name:'Salem Al-Dawsari',team:'sa',teamName:'Saudi Arabia',pos:'FWD'},
+  // Australia
+  {name:'Mathew Ryan',team:'au',teamName:'Australia',pos:'GK'},
+  {name:'Mathew Leckie',team:'au',teamName:'Australia',pos:'FWD'},
+  {name:'Jackson Irvine',team:'au',teamName:'Australia',pos:'MID'},
+  // Scotland
+  {name:'Craig Gordon',team:'gb-sct',teamName:'Scotland',pos:'GK'},
+  {name:'Andrew Robertson',team:'gb-sct',teamName:'Scotland',pos:'DEF'},
+  {name:'John McGinn',team:'gb-sct',teamName:'Scotland',pos:'MID'},
+  // Paraguay
+  {name:'Antony Silva',team:'py',teamName:'Paraguay',pos:'GK'},
+  {name:'Miguel Almirón',team:'py',teamName:'Paraguay',pos:'MID'},
+  // Panama
+  {name:'Luis Mejía',team:'pa',teamName:'Panama',pos:'GK'},
+  // Jordan
+  {name:'Yazeed Abo Laila',team:'jo',teamName:'Jordan',pos:'GK'},
+  {name:'Musa Al-Taamari',team:'jo',teamName:'Jordan',pos:'MID'},
+  // DR Congo
+  {name:'Joël Kiassumbua',team:'cd',teamName:'DR Congo',pos:'GK'},
+  {name:'Yannick Carrasco',team:'cd',teamName:'DR Congo',pos:'MID'},
+  // Uzbekistan
+  {name:'Utkir Yusupov',team:'uz',teamName:'Uzbekistan',pos:'GK'},
+  {name:'Eldor Shomurodov',team:'uz',teamName:'Uzbekistan',pos:'FWD'},
+  // Others
+  {name:'Eloy Room',team:'cw',teamName:'Curaçao',pos:'GK'},
+  {name:'Yassine Bounou',team:'ma',teamName:'Morocco',pos:'GK'},
+  {name:'Ronwen Williams',team:'za',teamName:'South Africa',pos:'GK'},
+  {name:'Stefan Marinovic',team:'nz',teamName:'New Zealand',pos:'GK'},
+  {name:'Chris Wood',team:'nz',teamName:'New Zealand',pos:'FWD'},
+  {name:'Jalal Hassan',team:'iq',teamName:'Iraq',pos:'GK'},
+  {name:'Aymen Hussein',team:'iq',teamName:'Iraq',pos:'FWD'},
+  {name:'Vozinha',team:'cv',teamName:'Cape Verde',pos:'GK'},
+  {name:'Garry Rodrigues',team:'cv',teamName:'Cape Verde',pos:'FWD'},
+  {name:'Meshaal Barsham',team:'qa',teamName:'Qatar',pos:'GK'},
+  {name:'Almoez Ali',team:'qa',teamName:'Qatar',pos:'FWD'},
+  {name:'Josué Duverger',team:'ht',teamName:'Haiti',pos:'GK'},
+  {name:'Ronwen Williams',team:'za',teamName:'South Africa',pos:'GK'},
+  {name:'Percy Tau',team:'za',teamName:'South Africa',pos:'FWD'},
+];
+
+const LEADERBOARD = [
+  {rank:1,prev:3,name:'Carlos M.',pts:84,picks:67,special:17,paid:true},
+  {rank:2,prev:2,name:'Ana R.',pts:79,picks:62,special:17,paid:true},
+  {rank:3,prev:4,name:'You',pts:72,picks:55,special:17,paid:true,you:true},
+  {rank:4,prev:1,name:'Valentina S.',pts:71,picks:54,special:17,paid:true},
+  {rank:5,prev:5,name:'Rafa G.',pts:68,picks:51,special:17,paid:true},
+  {rank:6,prev:7,name:'Miguel A.',pts:65,picks:53,special:12,paid:false},
+  {rank:7,prev:6,name:'Sofia R.',pts:61,picks:49,special:12,paid:true},
+  {rank:8,prev:8,name:'Luis P.',pts:58,picks:46,special:12,paid:false},
+  {rank:9,prev:10,name:'Maria J.',pts:54,picks:42,special:12,paid:true},
+  {rank:10,prev:9,name:'Diego C.',pts:51,picks:39,special:12,paid:false},
+  {rank:11,prev:11,name:'Camila T.',pts:47,picks:35,special:12,paid:true},
+  {rank:12,prev:12,name:'Andrés V.',pts:44,picks:32,special:12,paid:false},
+  {rank:13,prev:13,name:'Elena M.',pts:38,picks:26,special:12,paid:true},
+  {rank:14,prev:14,name:'Pablo N.',pts:31,picks:19,special:12,paid:false},
+];
+
+const MATCHDAY3 = [
+  {home:{code:'mx',name:'Mexico'},away:{code:'za',name:'South Africa'},group:'A',time:'3:00 PM ET'},
+  {home:{code:'kr',name:'South Korea'},away:{code:'cz',name:'Czechia'},group:'A',time:'3:00 PM ET'},
+  {home:{code:'br',name:'Brazil'},away:{code:'ht',name:'Haiti'},group:'C',time:'6:00 PM ET'},
+  {home:{code:'ma',name:'Morocco'},away:{code:'gb-sct',name:'Scotland'},group:'C',time:'6:00 PM ET'},
+  {home:{code:'us',name:'USA'},away:{code:'au',name:'Australia'},group:'D',time:'9:00 PM ET'},
+  {home:{code:'py',name:'Paraguay'},away:{code:'tr',name:'Türkiye'},group:'D',time:'9:00 PM ET'},
+];
+
+/* ══ RENDER FUNCTIONS ══ */
+
+function buildLeaderboard(){
+  const el=document.getElementById('lb-rows');
+  if(!el)return;
+  el.innerHTML=LEADERBOARD.map(p=>{
+    const mv=p.prev-p.rank;
+    const mvStr=mv>0?`+${mv}`:mv<0?`${mv}`:'—';
+    const mvClass=mv>0?'mv-up':mv<0?'mv-dn':'mv-flat';
+    const rankClass=p.rank===1?'rank-gold':p.rank===2?'rank-silver':p.rank===3?'rank-bronze':'rank-other';
+    return `<div class="lb-row${p.you?' you':''}">
+      <div class="lb-rank ${rankClass}">${p.rank}</div>
+      <div class="lb-mv ${mvClass}">${mvStr}</div>
+      <div class="lb-player">${p.you?`<span class="lb-you-tag">You</span>`:''}${p.name}${p.paid?`<span class="paid-dot" title="Paid"></span>`:''}</div>
+      <div class="lb-pts">${p.pts}</div>
+      <div class="lb-rd">${p.picks}</div>
+      <div class="lb-rd">${p.special}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildAdminMatches(){
+  const el=document.getElementById('admin-matches');
+  if(!el)return;
+  let html='';
+  let lastGroup='';
+  MATCHDAY3.forEach((m,i)=>{
+    if(m.group!==lastGroup){
+      html+=`<div class="admin-group-label">Group ${m.group} &middot; ${m.time}</div>`;
+      lastGroup=m.group;
+    }
+    html+=`<div class="admin-match-row">
+      <div class="admin-team"><div class="admin-flag"><img src="https://flagcdn.com/w40/${m.home.code}.png" alt="${m.home.code}"></div>${m.home.name}</div>
+      <input class="admin-si" type="number" min="0" max="20" placeholder="—" id="ah${i}">
+      <div class="admin-sep">–</div>
+      <input class="admin-si" type="number" min="0" max="20" placeholder="—" id="aa${i}">
+      <div class="admin-team right">${m.away.name}<div class="admin-flag"><img src="https://flagcdn.com/w40/${m.away.code}.png" alt="${m.away.code}"></div></div>
+      <button class="btn-confirm" onclick="confirmResult(${i},this)">Save</button>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function buildPaymentRows(){
+  const el=document.getElementById('payment-rows');
+  if(!el)return;
+  const players=[
+    {name:'Carlos M.',paid:true},{name:'Ana R.',paid:true},{name:'You',paid:true},
+    {name:'Valentina S.',paid:true},{name:'Rafa G.',paid:false},{name:'Miguel A.',paid:false},
+    {name:'Sofia R.',paid:true},{name:'Luis P.',paid:false},
+  ];
+  el.innerHTML=players.map(p=>`
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:0 1rem;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center">
+      <div style="font-size:0.82rem;color:var(--f1)">${p.name}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;color:var(--f3)">Free</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${p.paid?'var(--green)':'var(--red)'}">
+        ${p.paid?'&#10003; Joined':'Pending'}
+      </div>
+    </div>`).join('');
+}
+
+function filterPlayers(type,query){
+  const pos=type==='gk'?['GK']:['FWD','MID'];
+  const q=query.toLowerCase().trim();
+  const results=PLAYERS.filter(p=>
+    pos.includes(p.pos) &&
+    (p.name.toLowerCase().includes(q)||p.teamName.toLowerCase().includes(q))
+  ).slice(0,6);
+  const posClass={'GK':'pos-gk','FWD':'pos-fwd','MID':'pos-mid','DEF':'pos-def'};
+  const el=document.getElementById(`results-${type}`);
+  if(!el)return;
+  if(!q||!results.length){el.innerHTML='';return;}
+  el.innerHTML=results.map(p=>`
+    <div class="pr-item" onclick="selectPlayer('${type}','${p.name}','${p.team}','${p.teamName}','${p.pos}')">
+      <div class="pr-flag"><img src="https://flagcdn.com/w40/${p.team}.png" alt="${p.team}"></div>
+      <div><div class="pr-name">${p.name}</div><div class="pr-team">${p.teamName}</div></div>
+      <span class="pr-pos ${posClass[p.pos]}">${p.pos}</span>
+    </div>`).join('');
+}
+
+function selectPlayer(type,name,team,teamName,pos){
+  const el=document.getElementById(`sel-${type}`);
+  if(!el)return;
+  el.style.display='flex';
+  el.innerHTML=`
+    <div class="sel-flag"><img src="https://flagcdn.com/w40/${team}.png" alt="${team}"></div>
+    <div><div class="sel-name">${name}</div><div class="sel-team">${teamName} &middot; ${pos}</div></div>
+    <div class="sel-change" onclick="clearPick('${type}')">Change</div>`;
+  document.getElementById(`results-${type}`).innerHTML='';
+  document.getElementById(`search-${type}`).value='';
+  if(type==='gk'){document.getElementById('gk-note').textContent=`Selected: ${name}`;document.getElementById('gk-note').className='sp-foot-note';}
+}
+
+function clearPick(type){
+  const el=document.getElementById(`sel-${type}`);
+  if(el)el.style.display='none';
+  const search=document.getElementById(`search-${type}`);
+  if(search)search.value='';
+  if(type==='gk'){document.getElementById('gk-note').textContent='⚠ No pick saved yet';document.getElementById('gk-note').className='sp-foot-note missing';}
+}
+
+function selTeam(el){
+  el.closest('.team-grid').querySelectorAll('.tg-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function confirmResult(i,btn){
+  const h=document.getElementById(`ah${i}`).value;
+  const a=document.getElementById(`aa${i}`).value;
+  if(h===''||a===''){alert('Enter both scores');return;}
+  btn.outerHTML=`<div class="confirmed-badge">&#10003; ${h}–${a} Saved</div>`;
+}
+
+function activeMd(el){
+  if(el.classList.contains('locked'))return;
+  document.querySelectorAll('.md-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ══ NAVIGATION ══ */
+function showPage(page){
+  document.getElementById('page-dashboard').style.display='none';
+  document.getElementById('page-pool').style.display='none';
+  document.getElementById('page-admin').style.display='none';
+  document.getElementById('page-'+page).style.display='block';
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navMap={dashboard:'nav-home',pool:'nav-pool',admin:'nav-admin'};
+  const navEl=document.getElementById(navMap[page]);
+  if(navEl)navEl.classList.add('active');
+  if(page==='pool')buildLeaderboard();
+  if(page==='admin'){buildAdminMatches();}
+  buildPaymentRows();
+}
+
+function showTab(tab){
+  ['picks','special','lb','settings'].forEach(t=>{
+    const el=document.getElementById(`tab-content-${t}`);
+    if(el)el.style.display=t===tab?'block':'none';
+    const tabEl=document.getElementById(`tab-${t}`);
+    if(tabEl)tabEl.classList.toggle('active',t===tab);
+  });
+  if(tab==='lb')buildLeaderboard();
+}
+
+/* ══ COUNTDOWN ══ */
+function tick(){
+  const el=document.getElementById('countdown');if(!el)return;
+  const p=el.textContent.split(':').map(Number);
+  let s=p[0]*3600+p[1]*60+p[2]-1;if(s<0)s=0;
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  el.textContent=[h,m,sc].map(v=>String(v).padStart(2,'0')).join(':');
+  if(s<1800)el.style.color='var(--red)';
+}
+setInterval(tick,1000);
+
+/* ══ INIT ══ */
+buildLeaderboard();
+buildPaymentRows();
+</script>
+</body>
+</html>

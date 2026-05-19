@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PickPoolr — Missing Pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   PICKPOOLR — LOGIN · REGISTER · JOIN · BROWSE · 404
+   All pages share the same design system
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;--bg4:#1e2330;
+  --gold:#c9a84c;--gold2:#e6c76a;--red:#e03b3b;--green:#2cb67d;
+  --white:#fff;--f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;
+  --line:rgba(255,255,255,0.07);--gold-line:rgba(201,168,76,0.3);
+}
+body{background:var(--bg);color:var(--f1);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── SHARED NAV ── */
+nav{background:var(--bg);border-bottom:3px solid var(--gold);display:flex;align-items:center;padding:0 2rem;height:56px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:0.04em;color:var(--white);text-transform:uppercase;text-decoration:none}
+.nav-logo span{color:var(--gold)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:0.75rem}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);text-decoration:none;cursor:pointer;transition:color 0.15s}
+.nav-link:hover{color:var(--f1)}
+.nav-cta{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.45rem 1.1rem;border-radius:2px;text-decoration:none;border:none;cursor:pointer;transition:background 0.15s}
+.nav-cta:hover{background:var(--gold2)}
+.nav-ghost{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--f4);color:var(--f2);padding:0.42rem 1.1rem;border-radius:2px;text-decoration:none;cursor:pointer;transition:all 0.15s}
+.nav-ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── SHARED FORM CARD ── */
+.auth-page{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;overflow:hidden}
+.auth-pitch{position:absolute;inset:0;perspective:700px;perspective-origin:50% 10%;pointer-events:none;overflow:hidden}
+.pitch-3d{position:absolute;bottom:-35%;left:50%;transform:translateX(-50%) rotateX(64deg);width:900px;height:620px;animation:pitchFloat 9s ease-in-out infinite}
+.pitch-surface{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(10,28,10,0.6) 0px,rgba(10,28,10,0.6) 38px,rgba(14,36,14,0.6) 38px,rgba(14,36,14,0.6) 76px);border:2px solid rgba(255,255,255,0.06)}
+.pitch-lines{position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.4%,rgba(255,255,255,0.1) 49.4%,rgba(255,255,255,0.1) 50.6%,transparent 50.6%),linear-gradient(0deg,transparent 49.4%,rgba(255,255,255,0.1) 49.4%,rgba(255,255,255,0.1) 50.6%,transparent 50.6%)}
+.pitch-circle{position:absolute;top:50%;left:50%;width:200px;height:200px;border:1.5px solid rgba(255,255,255,0.1);border-radius:50%;transform:translate(-50%,-50%)}
+.pitch-glow{position:absolute;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 60%,rgba(201,168,76,0.05),transparent 70%)}
+
+.auth-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;width:100%;max-width:420px;overflow:hidden;position:relative;z-index:2;box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+.auth-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.auth-card-head{padding:1.75rem 1.75rem 0}
+.auth-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.5rem}
+.auth-eyebrow::before{content:'';display:block;width:16px;height:1.5px;background:var(--gold)}
+.auth-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:var(--white);line-height:1}
+.auth-sub{font-size:0.8rem;color:var(--f3);margin-top:0.4rem;line-height:1.5}
+.auth-body{padding:1.5rem 1.75rem}
+.auth-foot{padding:0 1.75rem 1.5rem;border-top:1px solid var(--line);padding-top:1.25rem;text-align:center;font-size:0.78rem;color:var(--f3)}
+.auth-foot a{color:var(--gold);text-decoration:none;font-weight:500}
+
+/* Form fields */
+.field{margin-bottom:1rem}
+.field:last-of-type{margin-bottom:0}
+.field-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f2);margin-bottom:0.4rem;display:block}
+.field-input{width:100%;padding:0.65rem 0.85rem;background:var(--bg3);border:1px solid var(--f4);border-radius:3px;color:var(--f1);font-size:0.88rem;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+.field-input:focus{border-color:var(--gold)}
+.field-input::placeholder{color:var(--f4)}
+.field-input.error{border-color:var(--red)}
+.field-error{font-size:0.72rem;color:var(--red);margin-top:0.3rem;display:none}
+.field-input.error+.field-error{display:block}
+.field-hint{font-size:0.72rem;color:var(--f4);margin-top:0.3rem}
+
+.btn-full{width:100%;font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.75rem;border-radius:3px;border:none;cursor:pointer;transition:background 0.15s;margin-top:1.25rem}
+.btn-full:hover{background:var(--gold2)}
+.btn-full.green{background:var(--green)}
+.btn-full.green:hover{opacity:0.9}
+.btn-outline-full{width:100%;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:transparent;color:var(--f2);padding:0.7rem;border-radius:3px;border:1px solid var(--f4);cursor:pointer;transition:all 0.15s;margin-top:0.6rem}
+.btn-outline-full:hover{border-color:var(--f2);color:var(--white)}
+
+/* Divider */
+.or-divider{display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0}
+.or-line{flex:1;height:1px;background:var(--line)}
+.or-text{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4)}
+
+/* Magic link sent state */
+.magic-sent{text-align:center;padding:1rem 0}
+.magic-icon{font-size:2.5rem;margin-bottom:0.75rem}
+.magic-title{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:900;text-transform:uppercase;color:var(--white);margin-bottom:0.4rem}
+.magic-sub{font-size:0.8rem;color:var(--f3);line-height:1.6}
+.magic-email{color:var(--gold);font-weight:500}
+
+/* ── PAGE TABS (to switch between pages in this demo) ── */
+.demo-tabs{background:var(--bg2);border-bottom:1px solid var(--line);padding:0 2rem;display:flex;gap:0;overflow-x:auto}
+.demo-tab{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);padding:0.65rem 1.25rem;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all 0.15s}
+.demo-tab:hover{color:var(--f1)}
+.demo-tab.active{color:var(--white);border-bottom-color:var(--gold)}
+
+/* ── JOIN POOL ── */
+.join-wrap{max-width:500px;margin:0 auto}
+.pool-preview-card{background:var(--bg3);border:1px solid var(--gold-line);border-radius:4px;padding:1.25rem;margin-bottom:1.25rem}
+.ppc-name{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;text-transform:uppercase;color:var(--white);margin-bottom:0.2rem}
+.ppc-tournament{font-size:0.78rem;color:var(--f3);margin-bottom:1rem}
+.ppc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.ppc-stat{padding:0.6rem 0.75rem;border-right:1px solid var(--line);text-align:center}
+.ppc-stat:last-child{border-right:none}
+.ppc-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;color:var(--gold)}
+.ppc-stat-label{font-size:0.6rem;color:var(--f4);text-transform:uppercase;letter-spacing:0.06em;font-family:'Barlow Condensed',sans-serif;font-weight:600;margin-top:2px}
+.commissioner-row{display:flex;align-items:center;gap:0.6rem;margin-top:0.85rem;padding-top:0.85rem;border-top:1px solid var(--line)}
+.commissioner-avatar{width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:900;color:#000;flex-shrink:0}
+.commissioner-info{font-size:0.75rem;color:var(--f3)}
+.commissioner-name{color:var(--f1);font-weight:500}
+.join-success{text-align:center;padding:0.5rem 0}
+.js-icon{font-size:2.5rem;margin-bottom:0.75rem}
+.js-title{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:900;text-transform:uppercase;color:var(--white);margin-bottom:0.4rem}
+.js-sub{font-size:0.8rem;color:var(--f3);line-height:1.6;margin-bottom:1.25rem}
+
+/* ── BROWSE PUBLIC POOLS ── */
+.browse-page{max-width:1100px;margin:0 auto;padding:2rem}
+.page-header-browse{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.5rem}
+.ph-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:var(--white)}
+.ph-sub{font-size:0.82rem;color:var(--f3);margin-top:0.2rem}
+.filters{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.filter-select{background:var(--bg2);border:1px solid var(--f4);color:var(--f2);padding:0.4rem 0.75rem;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.04em;outline:none;cursor:pointer;transition:border-color 0.15s}
+.filter-select:focus{border-color:var(--gold)}
+.filter-search{background:var(--bg2);border:1px solid var(--f4);color:var(--f1);padding:0.4rem 0.85rem;border-radius:3px;font-size:0.82rem;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;min-width:220px}
+.filter-search:focus{border-color:var(--gold)}
+.filter-search::placeholder{color:var(--f4)}
+.pools-table{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.pt-head{display:grid;grid-template-columns:2fr 1.2fr 0.8fr 0.8fr 0.8fr 120px;gap:0 1rem;padding:0.5rem 1.25rem;border-bottom:1px solid var(--line);background:var(--bg3)}
+.pt-col{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--f4)}
+.pt-col.r{text-align:right}
+.pt-row{display:grid;grid-template-columns:2fr 1.2fr 0.8fr 0.8fr 0.8fr 120px;gap:0 1rem;padding:0.75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;transition:background 0.15s;cursor:pointer}
+.pt-row:last-child{border-bottom:none}
+.pt-row:hover{background:rgba(255,255,255,0.025)}
+.pt-name{font-size:0.88rem;font-weight:500;color:var(--f1)}
+.pt-commissioner{font-size:0.72rem;color:var(--f3);margin-top:2px}
+.pt-tournament{font-size:0.78rem;color:var(--f2);display:flex;align-items:center;gap:0.4rem}
+.pt-flag img{width:18px;height:13px;border-radius:1px;object-fit:cover}
+.pt-val{font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:700;color:var(--f2)}
+.pt-val.r{text-align:right}
+.pt-val.gold{color:var(--gold)}
+.pt-status{display:flex;align-items:center;gap:0.35rem;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+.status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-live{background:var(--red);animation:pulse 1.4s ease infinite}
+.dot-upcoming{background:var(--gold)}
+.btn-join-sm{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.35rem 0.85rem;border-radius:2px;border:none;cursor:pointer;transition:background 0.15s;white-space:nowrap}
+.btn-join-sm:hover{background:var(--gold2)}
+.btn-joined{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--green);border:1px solid rgba(44,182,125,0.3);padding:0.32rem 0.85rem;border-radius:2px;cursor:default}
+
+/* ── 404 ── */
+.error-page{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;overflow:hidden}
+.error-card{text-align:center;position:relative;z-index:2;max-width:480px}
+.error-num{font-family:'Barlow Condensed',sans-serif;font-size:clamp(6rem,18vw,12rem);font-weight:900;line-height:1;color:transparent;-webkit-text-stroke:2px var(--gold);letter-spacing:-0.02em}
+.error-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;text-transform:uppercase;letter-spacing:0.04em;color:var(--white);margin-top:0.5rem}
+.error-sub{font-size:0.9rem;color:var(--f3);line-height:1.7;margin:0.75rem auto 2rem;max-width:340px}
+.error-actions{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap}
+.btn-err-primary{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.7rem 1.75rem;border-radius:2px;text-decoration:none;border:none;cursor:pointer;transition:background 0.15s}
+.btn-err-primary:hover{background:var(--gold2)}
+.btn-err-ghost{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:transparent;color:var(--f2);border:1px solid var(--f4);padding:0.68rem 1.5rem;border-radius:2px;cursor:pointer;text-decoration:none;transition:all 0.15s}
+.btn-err-ghost:hover{border-color:var(--f2);color:var(--white)}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:640px){
+  nav{padding:0 1rem}
+  .nav-logo{font-size:1.6rem;margin-right:0;padding-right:0;border-right:none}
+  .nav-link{display:none}
+  .auth-card{border-radius:0;border-left:none;border-right:none;max-width:100%}
+  .auth-page{padding:0;align-items:flex-start}
+  .auth-card-head{padding:1.5rem 1.25rem 0}
+  .auth-body{padding:1.25rem}
+  .auth-foot{padding:0 1.25rem 1.5rem;padding-top:1rem}
+  .browse-page{padding:1rem}
+  .pt-head,.pt-row{grid-template-columns:1fr auto 80px}
+  .pt-col:nth-child(n+3):not(:last-child),.pt-val:nth-child(n+3):not(:last-child){display:none}
+  .filters{gap:0.4rem}
+  .filter-search{min-width:100%;order:-1}
+  .pools-table{border-radius:0;border-left:none;border-right:none}
+  .demo-tabs{padding:0 1rem}
+  .browse-page .page-header-browse{flex-direction:column;align-items:flex-start;gap:0.75rem}
+}
+
+@keyframes pitchFloat{0%,100%{transform:translateX(-50%) rotateX(64deg) translateY(0)}50%{transform:translateX(-50%) rotateX(64deg) translateY(-14px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Pick<span>Poolr</span></a>
+  <div class="nav-right">
+    <span class="nav-link" onclick="showPage('login')">Sign In</span>
+    <button class="nav-cta" onclick="showPage('register')">Create Account</button>
+  </div>
+</nav>
+
+<!-- PAGE SWITCHER TABS (design reference only) -->
+<div class="demo-tabs">
+  <div class="demo-tab active" onclick="showPage('login')">Login</div>
+  <div class="demo-tab" onclick="showPage('register')">Register</div>
+  <div class="demo-tab" onclick="showPage('join')">Join Pool</div>
+  <div class="demo-tab" onclick="showPage('browse')">Browse Pools</div>
+  <div class="demo-tab" onclick="showPage('404')">404 Page</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: LOGIN
+════════════════════════════════════════ -->
+<div id="page-login">
+  <div class="auth-page">
+    <div class="auth-pitch">
+      <div class="pitch-3d">
+        <div class="pitch-surface"></div>
+        <div class="pitch-lines"></div>
+        <div class="pitch-circle"></div>
+        <div class="pitch-glow"></div>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-card::before"></div>
+      <div class="auth-card-head">
+        <div class="auth-eyebrow">Welcome back</div>
+        <div class="auth-title">Sign In</div>
+        <div class="auth-sub">Sign in to manage your pools and submit picks</div>
+      </div>
+      <div class="auth-body">
+        <!-- Email / password form -->
+        <div id="login-form">
+          <div class="field">
+            <label class="field-label">Email address</label>
+            <input class="field-input" type="email" placeholder="you@example.com" id="login-email">
+          </div>
+          <div class="field">
+            <label class="field-label" style="display:flex;align-items:center;justify-content:space-between">
+              Password
+              <span style="font-size:0.7rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer" onclick="showPage('forgot')">Forgot?</span>
+            </label>
+            <input class="field-input" type="password" placeholder="••••••••" id="login-pass">
+          </div>
+          <button class="btn-full" onclick="handleLogin()">Sign In &rarr;</button>
+          <div class="or-divider"><div class="or-line"></div><div class="or-text">or</div><div class="or-line"></div></div>
+          <button class="btn-outline-full" onclick="showMagicLink('login')">&#9993; Sign in with magic link</button>
+        </div>
+
+        <!-- Magic link sent state (hidden by default) -->
+        <div id="login-magic" style="display:none">
+          <div class="magic-sent">
+            <div class="magic-icon">&#9993;</div>
+            <div class="magic-title">Check your inbox</div>
+            <div class="magic-sub">We sent a magic link to <span class="magic-email" id="magic-email-display">you@example.com</span>. Click it to sign in — no password needed.</div>
+          </div>
+          <button class="btn-outline-full" style="margin-top:1rem" onclick="resetMagic('login')">&#8592; Use password instead</button>
+        </div>
+      </div>
+      <div class="auth-foot">
+        Don't have an account? <a href="#" onclick="showPage('register')">Create one &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: REGISTER
+════════════════════════════════════════ -->
+<div id="page-register" style="display:none">
+  <div class="auth-page">
+    <div class="auth-pitch">
+      <div class="pitch-3d">
+        <div class="pitch-surface"></div>
+        <div class="pitch-lines"></div>
+        <div class="pitch-circle"></div>
+        <div class="pitch-glow"></div>
+      </div>
+    </div>
+    <div class="auth-card" style="max-width:440px">
+      <div class="auth-card-head">
+        <div class="auth-eyebrow">World Cup 2026</div>
+        <div class="auth-title">Create Account</div>
+        <div class="auth-sub">Join free. Create or join prediction pools in seconds.</div>
+      </div>
+      <div class="auth-body">
+        <div id="register-form">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+            <div class="field">
+              <label class="field-label">First name</label>
+              <input class="field-input" type="text" placeholder="Juan">
+            </div>
+            <div class="field">
+              <label class="field-label">Last name</label>
+              <input class="field-input" type="text" placeholder="García">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Email address</label>
+            <input class="field-input" type="email" placeholder="you@example.com" id="reg-email">
+          </div>
+          <div class="field">
+            <label class="field-label">Password</label>
+            <input class="field-input" type="password" placeholder="At least 8 characters" id="reg-pass">
+            <div class="field-hint">Minimum 8 characters</div>
+          </div>
+          <div class="field">
+            <label class="field-label">Preferred language</label>
+            <select class="field-input" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8780' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 0.75rem center">
+              <option>English</option>
+              <option>Español</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:0.6rem;margin-top:0.25rem">
+            <input type="checkbox" id="terms-check" style="margin-top:3px;accent-color:var(--gold);cursor:pointer;flex-shrink:0">
+            <label for="terms-check" style="font-size:0.75rem;color:var(--f3);line-height:1.5;cursor:pointer">I agree to the <a href="#" style="color:var(--gold)">Terms of Service</a> and <a href="#" style="color:var(--gold)">Privacy Policy</a>. I confirm I am 18 years or older.</label>
+          </div>
+          <button class="btn-full" onclick="handleRegister()" style="margin-top:1.1rem">Create Account &rarr;</button>
+          <div class="or-divider"><div class="or-line"></div><div class="or-text">or</div><div class="or-line"></div></div>
+          <button class="btn-outline-full" onclick="showMagicLink('register')">&#9993; Sign up with magic link</button>
+        </div>
+        <div id="register-magic" style="display:none">
+          <div class="magic-sent">
+            <div class="magic-icon">&#9993;</div>
+            <div class="magic-title">Check your inbox</div>
+            <div class="magic-sub">We sent a confirmation link to <span class="magic-email">you@example.com</span>. Click it to activate your account.</div>
+          </div>
+          <button class="btn-outline-full" style="margin-top:1rem" onclick="resetMagic('register')">&#8592; Use password instead</button>
+        </div>
+      </div>
+      <div class="auth-foot">
+        Already have an account? <a href="#" onclick="showPage('login')">Sign in &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: FORGOT PASSWORD
+════════════════════════════════════════ -->
+<div id="page-forgot" style="display:none">
+  <div class="auth-page">
+    <div class="auth-pitch">
+      <div class="pitch-3d">
+        <div class="pitch-surface"></div>
+        <div class="pitch-lines"></div>
+        <div class="pitch-circle"></div>
+        <div class="pitch-glow"></div>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-card-head">
+        <div class="auth-eyebrow">Account recovery</div>
+        <div class="auth-title">Reset Password</div>
+        <div class="auth-sub">Enter your email and we'll send you a reset link</div>
+      </div>
+      <div class="auth-body">
+        <div id="forgot-form">
+          <div class="field">
+            <label class="field-label">Email address</label>
+            <input class="field-input" type="email" placeholder="you@example.com" id="forgot-email">
+          </div>
+          <button class="btn-full" onclick="handleForgot()">Send Reset Link &rarr;</button>
+          <button class="btn-outline-full" onclick="showPage('login')">&#8592; Back to sign in</button>
+        </div>
+        <div id="forgot-sent" style="display:none">
+          <div class="magic-sent">
+            <div class="magic-icon">&#9993;</div>
+            <div class="magic-title">Reset link sent</div>
+            <div class="magic-sub">Check your inbox for a password reset link. It expires in 1 hour.</div>
+          </div>
+          <button class="btn-outline-full" style="margin-top:1rem" onclick="showPage('login')">&#8592; Back to sign in</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: JOIN POOL (/join/[code])
+════════════════════════════════════════ -->
+<div id="page-join" style="display:none">
+  <div class="auth-page">
+    <div class="auth-pitch">
+      <div class="pitch-3d">
+        <div class="pitch-surface"></div>
+        <div class="pitch-lines"></div>
+        <div class="pitch-circle"></div>
+        <div class="pitch-glow"></div>
+      </div>
+    </div>
+    <div class="auth-card" style="max-width:480px">
+      <div class="auth-card-head">
+        <div class="auth-eyebrow">You were invited</div>
+        <div class="auth-title">Join Pool</div>
+        <div class="auth-sub">You've been invited to join a prediction pool</div>
+      </div>
+      <div class="auth-body" id="join-body">
+        <!-- Pool preview -->
+        <div class="pool-preview-card">
+          <div class="ppc-name">Amigos WC26 Pool</div>
+          <div class="ppc-tournament">FIFA World Cup 2026 &mdash; Jun 11 to Jul 19</div>
+          <div class="ppc-stats">
+            <div class="ppc-stat"><div class="ppc-stat-val">14</div><div class="ppc-stat-label">Players</div></div>
+            <div class="ppc-stat"><div class="ppc-stat-val">Free</div><div class="ppc-stat-label">Buy-in</div></div>
+            <div class="ppc-stat"><div class="ppc-stat-val">Private</div><div class="ppc-stat-label">Visibility</div></div>
+          </div>
+          <div class="commissioner-row">
+            <div class="commissioner-avatar">JD</div>
+            <div class="commissioner-info">Hosted by <span class="commissioner-name">Juan D.</span></div>
+          </div>
+        </div>
+
+        <!-- Signed in state — just confirm join -->
+        <div id="join-signed-in">
+          <div style="font-size:0.78rem;color:var(--f3);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>
+            Signed in as <strong style="color:var(--f1)">Juan D.</strong>
+          </div>
+          <button class="btn-full green" onclick="handleJoin()">Join Pool &rarr;</button>
+          <button class="btn-outline-full" style="margin-top:0.6rem">Not you? Sign in with a different account</button>
+        </div>
+
+        <!-- Not signed in state -->
+        <div id="join-not-signed-in" style="display:none">
+          <div class="or-divider" style="margin:0 0 1rem"><div class="or-line"></div><div class="or-text">Sign in to join</div><div class="or-line"></div></div>
+          <div class="field">
+            <label class="field-label">Email address</label>
+            <input class="field-input" type="email" placeholder="you@example.com">
+          </div>
+          <div class="field">
+            <label class="field-label">Password</label>
+            <input class="field-input" type="password" placeholder="••••••••">
+          </div>
+          <button class="btn-full green">Sign in &amp; Join Pool &rarr;</button>
+          <div class="or-divider"><div class="or-line"></div><div class="or-text">new to poolr?</div><div class="or-line"></div></div>
+          <button class="btn-outline-full">Create account &amp; join</button>
+        </div>
+      </div>
+
+      <!-- Join success -->
+      <div id="join-success" style="display:none">
+        <div class="auth-body">
+          <div class="join-success">
+            <div class="js-icon">&#127942;</div>
+            <div class="js-title">You're in!</div>
+            <div class="js-sub">You've joined <strong style="color:var(--gold)">Amigos WC26 Pool</strong>. Submit your picks before Jun 11 when special picks lock.</div>
+            <button class="btn-full">Go to Pool &rarr;</button>
+            <button class="btn-outline-full">Submit picks now</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: BROWSE PUBLIC POOLS
+════════════════════════════════════════ -->
+<div id="page-browse" style="display:none">
+  <div class="browse-page">
+    <div class="page-header-browse">
+      <div>
+        <div class="ph-title">Browse Public Pools</div>
+        <div class="ph-sub">Find and join open prediction pools for World Cup 2026</div>
+      </div>
+      <button class="nav-cta" onclick="showPage('login')">+ Create Pool</button>
+    </div>
+
+    <div class="filters">
+      <input class="filter-search" type="text" placeholder="Search pool name or commissioner..." oninput="filterPools(this.value)">
+      <select class="filter-select" onchange="filterPools()">
+        <option value="">All tournaments</option>
+        <option value="wc2026">World Cup 2026</option>
+      </select>
+      <select class="filter-select">
+        <option value="">All buy-ins</option>
+        <option value="free">Free only</option>
+        <option value="paid">Paid only</option>
+      </select>
+      <select class="filter-select">
+        <option value="">Any status</option>
+        <option value="open">Open to join</option>
+        <option value="live">Live now</option>
+      </select>
+    </div>
+
+    <div class="pools-table">
+      <div class="pt-head">
+        <div class="pt-col">Pool name</div>
+        <div class="pt-col">Tournament</div>
+        <div class="pt-col r">Players</div>
+        <div class="pt-col r">Buy-in</div>
+        <div class="pt-col">Status</div>
+        <div class="pt-col"></div>
+      </div>
+      <div id="pools-list"></div>
+    </div>
+
+    <div style="text-align:center;padding:1.5rem 0;font-size:0.78rem;color:var(--f3)" id="browse-empty" style="display:none">
+      No pools match your search. <span style="color:var(--gold);cursor:pointer" onclick="document.querySelector('.filter-search').value='';buildPools()">Clear filters</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: 404
+════════════════════════════════════════ -->
+<div id="page-404" style="display:none">
+  <div class="error-page">
+    <div class="auth-pitch">
+      <div class="pitch-3d">
+        <div class="pitch-surface"></div>
+        <div class="pitch-lines"></div>
+        <div class="pitch-circle"></div>
+        <div class="pitch-glow"></div>
+      </div>
+    </div>
+    <div class="error-card">
+      <div class="error-num">404</div>
+      <div class="error-title">Page not found</div>
+      <div class="error-sub">The page you're looking for doesn't exist, or the pool invite link may have expired. Double-check the URL or head back home.</div>
+      <div class="error-actions">
+        <button class="btn-err-primary" onclick="showPage('login')">Go Home</button>
+        <button class="btn-err-ghost" onclick="showPage('browse')">Browse Pools</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ PUBLIC POOLS DATA ══ */
+const PUBLIC_POOLS = [
+  {name:'La Quiniela Oficial',commissioner:'Pedro M.',tournament:'World Cup 2026',players:31,max:50,buyin:'Free',status:'live',joined:false},
+  {name:'WC2026 Open Championship',commissioner:'Sarah K.',tournament:'World Cup 2026',players:87,max:null,buyin:'$10',status:'live',joined:false},
+  {name:'Americas Rivalry Pool',commissioner:'Carlos R.',tournament:'World Cup 2026',players:22,max:30,buyin:'Free',status:'live',joined:true},
+  {name:'European HQ Picks',commissioner:'Emma T.',tournament:'World Cup 2026',players:18,max:25,buyin:'$5',status:'live',joined:false},
+  {name:'Reddit Soccer WC26',commissioner:'FootballFan99',tournament:'World Cup 2026',players:142,max:null,buyin:'Free',status:'live',joined:false},
+  {name:'Global Prediction League',commissioner:'Aisha N.',tournament:'World Cup 2026',players:56,max:100,buyin:'$20',status:'upcoming',joined:false},
+  {name:'South American Special',commissioner:'Diego V.',tournament:'World Cup 2026',players:9,max:20,buyin:'Free',status:'upcoming',joined:false},
+  {name:'Expats United WC26',commissioner:'Mike O.',tournament:'World Cup 2026',players:14,max:null,buyin:'$15',status:'upcoming',joined:false},
+];
+
+function buildPools(query){
+  const el=document.getElementById('pools-list');
+  const empty=document.getElementById('browse-empty');
+  if(!el)return;
+  const q=(query||'').toLowerCase().trim();
+  const filtered=PUBLIC_POOLS.filter(p=>
+    !q||p.name.toLowerCase().includes(q)||p.commissioner.toLowerCase().includes(q)
+  );
+  if(!filtered.length){
+    el.innerHTML='';
+    if(empty)empty.style.display='block';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  el.innerHTML=filtered.map(p=>`
+    <div class="pt-row">
+      <div>
+        <div class="pt-name">${p.name}</div>
+        <div class="pt-commissioner">by ${p.commissioner}${p.max?` &middot; ${p.players}/${p.max} players`:''}</div>
+      </div>
+      <div class="pt-tournament"><div class="pt-flag"><img src="https://flagcdn.com/w40/us.png" alt="WC26"></div>WC 2026</div>
+      <div class="pt-val r">${p.players}</div>
+      <div class="pt-val${p.buyin==='Free'?' gold':''} r">${p.buyin}</div>
+      <div class="pt-status">
+        <span class="status-dot ${p.status==='live'?'dot-live':'dot-upcoming'}"></span>
+        <span style="color:${p.status==='live'?'var(--red)':'var(--gold)'}">${p.status==='live'?'Live':'Starting Jun 11'}</span>
+      </div>
+      <div>
+        ${p.joined
+          ?`<span class="btn-joined">&#10003; Joined</span>`
+          :`<button class="btn-join-sm" onclick="joinPool(this,'${p.name}')">Join Pool</button>`}
+      </div>
+    </div>`).join('');
+}
+
+function filterPools(query){buildPools(query);}
+
+function joinPool(btn,name){
+  btn.textContent='Joining...';
+  btn.style.opacity='0.7';
+  setTimeout(()=>{btn.outerHTML=`<span class="btn-joined">&#10003; Joined</span>`;},800);
+}
+
+/* ══ AUTH HANDLERS ══ */
+function handleLogin(){
+  const email=document.getElementById('login-email').value;
+  if(!email){document.getElementById('login-email').classList.add('error');return;}
+  // In real app: Supabase auth.signInWithPassword
+  alert('Signing in... (connect to Supabase auth.signInWithPassword)');
+}
+
+function handleRegister(){
+  const pass=document.getElementById('reg-pass').value;
+  const email=document.getElementById('reg-email').value;
+  if(!email||!pass||pass.length<8){alert('Please fill all fields correctly.');return;}
+  // In real app: Supabase auth.signUp
+  alert('Creating account... (connect to Supabase auth.signUp)');
+}
+
+function handleForgot(){
+  const email=document.getElementById('forgot-email').value;
+  if(!email){return;}
+  document.getElementById('forgot-form').style.display='none';
+  document.getElementById('forgot-sent').style.display='block';
+  // In real app: Supabase auth.resetPasswordForEmail(email)
+}
+
+function showMagicLink(page){
+  const email=document.getElementById(page==='login'?'login-email':'reg-email').value||'your email';
+  document.getElementById(`${page}-form`).style.display='none';
+  document.getElementById(`${page}-magic`).style.display='block';
+  const el=document.getElementById('magic-email-display');
+  if(el)el.textContent=email;
+  // In real app: Supabase auth.signInWithOtp({ email })
+}
+
+function resetMagic(page){
+  document.getElementById(`${page}-form`).style.display='block';
+  document.getElementById(`${page}-magic`).style.display='none';
+}
+
+function handleJoin(){
+  document.getElementById('join-body').style.display='none';
+  document.getElementById('join-success').style.display='block';
+}
+
+/* ══ PAGE NAV ══ */
+const pages=['login','register','forgot','join','browse','404'];
+function showPage(page){
+  pages.forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    if(el)el.style.display=p===page?'block':'none';
+  });
+  document.querySelectorAll('.demo-tab').forEach((t,i)=>{
+    const map=['login','register','join','browse','404'];
+    t.classList.toggle('active',map[i]===page);
+  });
+  const nr=document.querySelector('.nav-right');
+  if(page==='login'||page==='register'){
+    nr.innerHTML=page==='login'
+      ?`<span class="nav-link" onclick="showPage('register')">Create Account</span><button class="nav-ghost" onclick="showPage('browse')">Browse Pools</button>`
+      :`<span class="nav-link" onclick="showPage('login')">Sign In</span><button class="nav-ghost" onclick="showPage('browse')">Browse Pools</button>`;
+  }
+  if(page==='browse')buildPools();
+}
+
+// Init
+buildPools();
+</script>
+</body>
+</html>

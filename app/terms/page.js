@@ -6,7 +6,7 @@ export default function TermsPage() {
   return (
     <>
       <nav>
-        <Link href="/" className="logo">Poolr</Link>
+        <Link href="/" className="logo">PickPoolr</Link>
         <div className="nav-links">
           <Link href="/privacy">Privacy</Link>
           <Link href="/login" className="nav-cta">Sign in</Link>
@@ -19,13 +19,13 @@ export default function TermsPage() {
 
         <section>
           <h2>1. Agreement to Terms</h2>
-          <p>By accessing or using Poolr ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.</p>
+          <p>By accessing or using PickPoolr ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.</p>
         </section>
 
         <section>
           <h2>2. Eligibility</h2>
           <ul>
-            <li>You must be <strong>at least 18 years old</strong> to use Poolr.</li>
+            <li>You must be <strong>at least 18 years old</strong> to use PickPoolr.</li>
             <li>You must have the legal capacity to enter binding agreements.</li>
             <li>You must comply with all applicable laws in your jurisdiction regarding prediction pools and contests.</li>
           </ul>
@@ -90,7 +90,7 @@ export default function TermsPage() {
 
           <h3>6.1 Platform Fee</h3>
           <ul>
-            <li>Poolr charges a <strong>5% service fee</strong> on prize pools using Stripe payments.</li>
+            <li>PickPoolr charges a <strong>5% service fee</strong> on prize pools using Stripe payments.</li>
             <li>Commissioners choose whether the fee is added to player buy-ins or absorbed by the prize pool.</li>
             <li>External payment pools (Zelle/Venmo) do not incur Platform fees.</li>
           </ul>
@@ -128,7 +128,7 @@ export default function TermsPage() {
         <section>
           <h2>8. Intellectual Property</h2>
           <ul>
-            <li>The Platform, including all content, features, and functionality, is owned by Poolr and protected by copyright, trademark, and other intellectual property laws.</li>
+            <li>The Platform, including all content, features, and functionality, is owned by PickPoolr and protected by copyright, trademark, and other intellectual property laws.</li>
             <li>You may not copy, modify, distribute, or create derivative works without permission.</li>
           </ul>
         </section>
@@ -136,7 +136,7 @@ export default function TermsPage() {
         <section>
           <h2>9. Disclaimers</h2>
           <ul>
-            <li>Poolr is a <strong>social prediction game platform</strong>, not a gambling service.</li>
+            <li>PickPoolr is a <strong>social prediction game platform</strong>, not a gambling service.</li>
             <li>The Platform does not guarantee any winnings or prizes.</li>
             <li>Participation is for entertainment purposes only.</li>
             <li>The Platform is provided "AS IS" without warranties of any kind.</li>
@@ -148,16 +148,16 @@ export default function TermsPage() {
           <h2>10. Limitation of Liability</h2>
           <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW:</p>
           <ul>
-            <li>Poolr is not liable for any indirect, incidental, special, consequential, or punitive damages.</li>
-            <li>Poolr is not liable for lost profits, data, or opportunities.</li>
-            <li>Our total liability shall not exceed the fees you paid to Poolr in the 12 months preceding the claim.</li>
-            <li>Poolr is not responsible for Commissioner misconduct or failure to distribute prizes.</li>
+            <li>PickPoolr is not liable for any indirect, incidental, special, consequential, or punitive damages.</li>
+            <li>PickPoolr is not liable for lost profits, data, or opportunities.</li>
+            <li>Our total liability shall not exceed the fees you paid to PickPoolr in the 12 months preceding the claim.</li>
+            <li>PickPoolr is not responsible for Commissioner misconduct or failure to distribute prizes.</li>
           </ul>
         </section>
 
         <section>
           <h2>11. Indemnification</h2>
-          <p>You agree to indemnify and hold harmless Poolr, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from:</p>
+          <p>You agree to indemnify and hold harmless PickPoolr, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from:</p>
           <ul>
             <li>Your use of the Platform</li>
             <li>Your violation of these Terms</li>
@@ -208,13 +208,13 @@ export default function TermsPage() {
       </main>
 
       <footer>
-        <div className="footer-logo">Poolr</div>
+        <div className="footer-logo">PickPoolr</div>
         <div className="footer-links">
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/contact">Contact</Link>
         </div>
-        <p className="footer-copy">© 2026 Poolr. Not affiliated with FIFA. For entertainment purposes only.</p>
+        <p className="footer-copy">© 2026 PickPoolr. Not affiliated with FIFA. For entertainment purposes only.</p>
       </footer>
 
       <style jsx>{`
