@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect')
@@ -305,5 +305,13 @@ export default function RegisterPage() {
         }
       `}</style>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div style={{minHeight: '100vh', background: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)'}}>Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
   )
 }
