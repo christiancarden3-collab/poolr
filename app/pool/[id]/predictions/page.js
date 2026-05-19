@@ -1,31 +1,214 @@
 'use client'
 
-import { useState } from 'next'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-
-const mockMatches = [
-  { id: 1, home: 'Argentina', away: 'France', homeFlag: 'ar', awayFlag: 'fr', group: 'A', date: 'Jun 25', time: '3:00 PM ET', venue: 'MetLife Stadium', status: 'open', homePick: null, awayPick: null },
-  { id: 2, home: 'Brazil', away: 'Germany', homeFlag: 'br', awayFlag: 'de', group: 'C', date: 'Jun 25', time: '6:00 PM ET', venue: 'SoFi Stadium', status: 'saved', homePick: 2, awayPick: 1, savedAt: 'Jun 24 at 9:12 PM' },
-  { id: 3, home: 'Mexico', away: 'Portugal', homeFlag: 'mx', awayFlag: 'pt', group: 'D', date: 'Jun 25', time: '9:00 PM ET', venue: 'AT&T Stadium', status: 'live', liveTime: "67'", liveScore: '1 – 0', homePick: 1, awayPick: 0, pts: '+1 pt so far' },
-  { id: 4, home: 'Spain', away: 'Netherlands', homeFlag: 'es', awayFlag: 'nl', group: 'H', date: 'Jun 24', time: 'Completed', venue: 'Rose Bowl', status: 'ft', finalScore: '2 – 0', homePick: 2, awayPick: 1, pts: '+1 pt' },
-]
+import { useParams, useRouter } from 'next/navigation'
+import { supabase, getCurrentUser } from '@/lib/supabase'
 
 export default function PredictionsPage() {
   const params = useParams()
-  const [matchday, setMatchday] = useState(3)
-  const [matches, setMatches] = useState(mockMatches)
+  const router = useRouter()
+  const [matchday, setMatchday] = useState(1)
+  const [matches, setMatches] = useState([])
+  const [picks, setPicks] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState({})
+  const [user, setUser] = useState(null)
+  const [poolMember, setPoolMember] = useState(null)
+  const [pool, setPool] = useState(null)
+  const [deadline, setDeadline] = useState(null)
+
+  // Load data on mount and matchday change
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Get current user
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        router.push('/login')
+        return
+      }
+      setUser(currentUser)
+
+      // Load pool info
+      const { data: poolData } = await supabase
+        .from('pools')
+        .select('*')
+        .eq('id', params.id)
+        .single()
+      
+      if (poolData) setPool(poolData)
+
+      // Get pool membership
+      const { data: memberData } = await supabase
+        .from('pool_members')
+        .select('*')
+        .eq('pool_id', params.id)
+        .eq('user_id', currentUser.id)
+        .single()
+      
+      if (memberData) setPoolMember(memberData)
+
+      // Fetch matches for this matchday
+      const response = await fetch(`/api/matches?matchday=${matchday}`)
+      const data = await response.json()
+      
+      if (data.success && data.matches) {
+        setMatches(data.matches)
+        
+        // Find earliest match time for deadline
+        if (data.matches.length > 0) {
+          const earliestMatch = data.matches.reduce((earliest, match) => 
+            new Date(match.matchTime) < new Date(earliest.matchTime) ? match : earliest
+          )
+          setDeadline(new Date(earliestMatch.matchTime))
+        }
+      }
+
+      // Load existing picks for this user
+      if (memberData && data.matches) {
+        const matchIds = data.matches.map(m => m.id)
+        const { data: existingPicks } = await supabase
+          .from('match_picks')
+          .select('*')
+          .eq('pool_member_id', memberData.id)
+          .in('match_id', matchIds)
+
+        if (existingPicks) {
+          const picksMap = {}
+          existingPicks.forEach(pick => {
+            picksMap[pick.match_id] = {
+              homeScore: pick.home_score,
+              awayScore: pick.away_score,
+              saved: true,
+              savedAt: pick.submitted_at,
+              pointsEarned: pick.points_earned,
+            }
+          })
+          setPicks(picksMap)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [matchday, params.id, router])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleScoreChange = (matchId, side, value) => {
-    setMatches(matches.map(m => 
-      m.id === matchId ? { ...m, [`${side}Pick`]: value === '' ? null : parseInt(value) } : m
-    ))
+    const numValue = value === '' ? null : parseInt(value)
+    setPicks(prev => ({
+      ...prev,
+      [matchId]: {
+        ...prev[matchId],
+        [`${side}Score`]: numValue,
+        saved: false,
+      }
+    }))
   }
 
-  const handleSave = (matchId) => {
-    setMatches(matches.map(m => 
-      m.id === matchId ? { ...m, status: 'saved', savedAt: 'Just now' } : m
-    ))
+  const handleSave = async (matchId) => {
+    const pick = picks[matchId]
+    if (pick?.homeScore === null || pick?.awayScore === null || pick?.homeScore === undefined || pick?.awayScore === undefined) {
+      alert('Please enter both scores')
+      return
+    }
+
+    setSaving(prev => ({ ...prev, [matchId]: true }))
+    
+    try {
+      // Upsert the pick
+      const { error } = await supabase
+        .from('match_picks')
+        .upsert({
+          pool_member_id: poolMember.id,
+          match_id: matchId,
+          home_score: pick.homeScore,
+          away_score: pick.awayScore,
+          locked: false,
+          submitted_at: new Date().toISOString(),
+        }, {
+          onConflict: 'pool_member_id,match_id'
+        })
+
+      if (error) throw error
+
+      setPicks(prev => ({
+        ...prev,
+        [matchId]: {
+          ...prev[matchId],
+          saved: true,
+          savedAt: 'Just now',
+        }
+      }))
+    } catch (error) {
+      console.error('Error saving pick:', error)
+      alert('Failed to save pick: ' + error.message)
+    } finally {
+      setSaving(prev => ({ ...prev, [matchId]: false }))
+    }
+  }
+
+  const handleClear = (matchId) => {
+    setPicks(prev => ({
+      ...prev,
+      [matchId]: {
+        homeScore: null,
+        awayScore: null,
+        saved: false,
+      }
+    }))
+  }
+
+  const getMatchStatus = (match) => {
+    const now = new Date()
+    const matchTime = new Date(match.matchTime)
+    const pick = picks[match.id]
+
+    if (match.status === 'completed') return 'ft'
+    if (match.status === 'live') return 'live'
+    if (matchTime <= now) return 'locked'
+    if (pick?.saved) return 'saved'
+    return 'open'
+  }
+
+  const formatDeadline = () => {
+    if (!deadline) return 'Loading...'
+    return deadline.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'America/New_York'
+    }) + ' ET'
+  }
+
+  const getCountdown = () => {
+    if (!deadline) return '--:--:--'
+    const now = new Date()
+    const diff = deadline - now
+    if (diff <= 0) return 'LOCKED'
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  // Count submitted picks
+  const submittedCount = matches.filter(m => picks[m.id]?.saved).length
+  const totalMatches = matches.length
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: 'var(--f3)' }}>
+        Loading matches...
+      </div>
+    )
   }
 
   return (
@@ -35,7 +218,7 @@ export default function PredictionsPage() {
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
-          <Link href={`/pool/${params.id}`} className="nav-item active">Amigos WC26</Link>
+          <Link href={`/pool/${params.id}`} className="nav-item active">{pool?.name || 'Pool'}</Link>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>
@@ -44,13 +227,13 @@ export default function PredictionsPage() {
       <div className="page-header">
         <div className="page-header-inner">
           <div className="ph-left">
-            <div className="ph-eyebrow">My Pools › Amigos WC26 Pool</div>
+            <div className="ph-eyebrow">My Pools › {pool?.name}</div>
             <div className="ph-title">Match Picks</div>
-            <div className="ph-meta">FIFA World Cup 2026 · 14 players</div>
+            <div className="ph-meta">FIFA World Cup 2026 · Matchday {matchday}</div>
           </div>
           <div className="ph-right">
-            <div className="ph-score">47 pts</div>
-            <div className="ph-rank">3rd place</div>
+            <div className="ph-score">{poolMember?.total_points || 0} pts</div>
+            <div className="ph-rank">{poolMember?.rank ? `${poolMember.rank}${poolMember.rank === 1 ? 'st' : poolMember.rank === 2 ? 'nd' : poolMember.rank === 3 ? 'rd' : 'th'} place` : '—'}</div>
           </div>
         </div>
       </div>
@@ -58,9 +241,9 @@ export default function PredictionsPage() {
       {/* TAB NAV */}
       <div className="tab-nav">
         <div className="tab-nav-inner">
-          <span className="tab active">Match Picks<span className="tab-badge">2</span></span>
+          <span className="tab active">Match Picks{submittedCount < totalMatches && <span className="tab-badge">{totalMatches - submittedCount}</span>}</span>
           <Link href={`/pool/${params.id}/special-picks`} className="tab">Special Picks</Link>
-          <span className="tab">Leaderboard</span>
+          <Link href={`/pool/${params.id}`} className="tab">Leaderboard</Link>
         </div>
       </div>
 
@@ -70,103 +253,149 @@ export default function PredictionsPage() {
           <div>
             {/* Matchday strip */}
             <div className="md-strip">
-              {['MD 1', 'MD 2', 'MD 3', 'MD 4', 'MD 5', 'MD 6', 'R16', 'QF', 'SF', 'F'].map((md, i) => (
-                <button 
-                  key={md}
-                  className={`md-btn ${i + 1 === matchday ? 'active' : ''} ${i < 2 ? 'done' : ''} ${i > 5 ? 'locked' : ''}`}
-                  onClick={() => i <= 5 && setMatchday(i + 1)}
-                >
-                  {md}
-                </button>
-              ))}
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((md) => {
+                const labels = ['MD 1', 'MD 2', 'MD 3', 'R32', 'R16', 'QF', 'SF', 'F']
+                return (
+                  <button 
+                    key={md}
+                    className={`md-btn ${md === matchday ? 'active' : ''} ${md < matchday ? 'done' : ''}`}
+                    onClick={() => setMatchday(md)}
+                  >
+                    {labels[md - 1]}
+                  </button>
+                )
+              })}
             </div>
 
             {/* Deadline banner */}
             <div className="deadline-banner">
               <div>
-                <div className="db-left">Matchday {matchday} — Picks close Jun 25, 3:00 PM ET</div>
+                <div className="db-left">Matchday {matchday} — Picks close {formatDeadline()}</div>
                 <div className="db-sub">Submit all picks before the first match kicks off</div>
               </div>
-              <div className="db-countdown">11:42:07</div>
+              <div className="db-countdown">{getCountdown()}</div>
             </div>
 
-            {/* Match cards */}
-            {matches.map(match => (
-              <div key={match.id} className={`mpc ${match.status === 'saved' ? 'submitted' : ''} ${['live', 'ft'].includes(match.status) ? 'locked-card' : ''}`}>
-                <div className="mpc-head">
-                  <div className="mpc-info">Group {match.group} · {match.date} · {match.time} · {match.venue}</div>
-                  <div className={`mpc-status s-${match.status}`}>
-                    {match.status === 'open' && 'Open'}
-                    {match.status === 'saved' && '✓ Saved'}
-                    {match.status === 'live' && <><span className="live-dot"></span>Live {match.liveTime}</>}
-                    {match.status === 'ft' && 'FT'}
+            {/* No matches message */}
+            {matches.length === 0 && (
+              <div className="card">
+                <div className="card-body" style={{ textAlign: 'center', padding: '3rem' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⚽</div>
+                  <div style={{ color: 'var(--f2)', marginBottom: '0.5rem' }}>No matches for Matchday {matchday}</div>
+                  <div style={{ color: 'var(--f4)', fontSize: '0.85rem' }}>
+                    {matchday > 3 ? 'Knockout matches will appear after group stage' : 'Try running the seed script first'}
                   </div>
                 </div>
-                <div className="mpc-body">
-                  <div className="team-side">
-                    <div className="team-flag"><img src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt="" /></div>
-                    <div className="team-nm">{match.home}</div>
-                  </div>
-                  <div className="score-center">
-                    {match.status === 'live' && <div className="live-label">Live {match.liveScore}</div>}
-                    {match.status === 'ft' && <div className="ft-label">Final {match.finalScore}</div>}
-                    
-                    {match.status === 'open' ? (
-                      <>
-                        <div className="score-status">Pick your score</div>
-                        <div className="score-inputs">
-                          <input 
-                            className={`si ${match.homePick !== null ? 'filled' : ''}`}
-                            type="number" 
-                            min="0" 
-                            max="20" 
-                            placeholder="0"
-                            value={match.homePick ?? ''}
-                            onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                          />
-                          <span className="sc-dash">—</span>
-                          <input 
-                            className={`si ${match.awayPick !== null ? 'filled' : ''}`}
-                            type="number" 
-                            min="0" 
-                            max="20" 
-                            placeholder="0"
-                            value={match.awayPick ?? ''}
-                            onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="score-display">
-                          <span className={`sd-val ${['live', 'ft'].includes(match.status) ? 'muted' : ''}`}>{match.homePick}</span>
-                          <span className="sd-sep">–</span>
-                          <span className={`sd-val ${['live', 'ft'].includes(match.status) ? 'muted' : ''}`}>{match.awayPick}</span>
-                        </div>
-                        <div className="pick-label">Your pick</div>
-                        {match.pts && <span className="pts-badge">{match.pts}</span>}
-                      </>
-                    )}
-                  </div>
-                  <div className="team-side">
-                    <div className="team-flag"><img src={`https://flagcdn.com/w80/${match.awayFlag}.png`} alt="" /></div>
-                    <div className="team-nm">{match.away}</div>
-                  </div>
-                </div>
-                {match.status === 'open' && (
-                  <div className="mpc-foot">
-                    <button className="btn-edit">Clear</button>
-                    <button className="btn-save" onClick={() => handleSave(match.id)}>Save Pick</button>
-                  </div>
-                )}
-                {match.status === 'saved' && (
-                  <div className="mpc-foot">
-                    <div style={{ fontSize: '0.7rem', color: 'var(--f3)' }}>Saved {match.savedAt}</div>
-                    <button className="btn-edit">Edit</button>
-                  </div>
-                )}
               </div>
-            ))}
+            )}
+
+            {/* Match cards */}
+            {matches.map(match => {
+              const status = getMatchStatus(match)
+              const pick = picks[match.id] || {}
+              const isLocked = ['live', 'ft', 'locked'].includes(status)
+              
+              return (
+                <div key={match.id} className={`mpc ${status === 'saved' ? 'submitted' : ''} ${isLocked ? 'locked-card' : ''}`}>
+                  <div className="mpc-head">
+                    <div className="mpc-info">
+                      {match.group ? `Group ${match.group} · ` : ''}{match.date} · {match.time}
+                    </div>
+                    <div className={`mpc-status s-${status}`}>
+                      {status === 'open' && 'Open'}
+                      {status === 'saved' && '✓ Saved'}
+                      {status === 'live' && <><span className="live-dot"></span>Live</>}
+                      {status === 'ft' && 'FT'}
+                      {status === 'locked' && '🔒 Locked'}
+                    </div>
+                  </div>
+                  <div className="mpc-body">
+                    <div className="team-side">
+                      <div className="team-flag">
+                        <img src={`https://flagcdn.com/w80/${match.homeTeam.flag}.png`} alt="" />
+                      </div>
+                      <div className="team-nm">{match.homeTeam.name}</div>
+                    </div>
+                    <div className="score-center">
+                      {status === 'live' && (
+                        <div className="live-label">Live {match.homeScore} – {match.awayScore}</div>
+                      )}
+                      {status === 'ft' && (
+                        <div className="ft-label">Final {match.homeScore} – {match.awayScore}</div>
+                      )}
+                      
+                      {!isLocked ? (
+                        <>
+                          <div className="score-status">Pick your score</div>
+                          <div className="score-inputs">
+                            <input 
+                              className={`si ${pick.homeScore !== null && pick.homeScore !== undefined ? 'filled' : ''}`}
+                              type="number" 
+                              min="0" 
+                              max="20" 
+                              placeholder="0"
+                              value={pick.homeScore ?? ''}
+                              onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                            />
+                            <span className="sc-dash">—</span>
+                            <input 
+                              className={`si ${pick.awayScore !== null && pick.awayScore !== undefined ? 'filled' : ''}`}
+                              type="number" 
+                              min="0" 
+                              max="20" 
+                              placeholder="0"
+                              value={pick.awayScore ?? ''}
+                              onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                            />
+                          </div>
+                        </>
+                      ) : pick.homeScore !== undefined ? (
+                        <>
+                          <div className="score-display">
+                            <span className={`sd-val ${isLocked ? 'muted' : ''}`}>{pick.homeScore}</span>
+                            <span className="sd-sep">–</span>
+                            <span className={`sd-val ${isLocked ? 'muted' : ''}`}>{pick.awayScore}</span>
+                          </div>
+                          <div className="pick-label">Your pick</div>
+                          {pick.pointsEarned > 0 && <span className="pts-badge">+{pick.pointsEarned} pts</span>}
+                        </>
+                      ) : (
+                        <div className="pick-label" style={{ color: 'var(--red)' }}>No pick submitted</div>
+                      )}
+                    </div>
+                    <div className="team-side">
+                      <div className="team-flag">
+                        <img src={`https://flagcdn.com/w80/${match.awayTeam.flag}.png`} alt="" />
+                      </div>
+                      <div className="team-nm">{match.awayTeam.name}</div>
+                    </div>
+                  </div>
+                  {status === 'open' && (
+                    <div className="mpc-foot">
+                      <button className="btn-edit" onClick={() => handleClear(match.id)}>Clear</button>
+                      <button 
+                        className="btn-save" 
+                        onClick={() => handleSave(match.id)}
+                        disabled={saving[match.id]}
+                      >
+                        {saving[match.id] ? 'Saving...' : 'Save Pick'}
+                      </button>
+                    </div>
+                  )}
+                  {status === 'saved' && !isLocked && (
+                    <div className="mpc-foot">
+                      <div style={{ fontSize: '0.7rem', color: 'var(--f3)' }}>
+                        Saved {typeof pick.savedAt === 'string' ? pick.savedAt : new Date(pick.savedAt).toLocaleString()}
+                      </div>
+                      <button className="btn-edit" onClick={() => setPicks(prev => ({
+                        ...prev,
+                        [match.id]: { ...prev[match.id], saved: false }
+                      }))}>Edit</button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
           {/* Sidebar */}
@@ -174,25 +403,29 @@ export default function PredictionsPage() {
             <div className="card">
               <div className="card-head"><div className="card-title">Matchday {matchday} Progress</div></div>
               <div className="card-body">
-                <div className="sc-row"><div className="sc-label">Picks submitted</div><div className="sc-val green">2 / 4</div></div>
-                <div className="sc-row"><div className="sc-label">Points this matchday</div><div className="sc-val gold">2</div></div>
-                <div className="sc-row"><div className="sc-label">Total points</div><div className="sc-val">47</div></div>
-                <div className="sc-row"><div className="sc-label">Your rank</div><div className="sc-val gold">3rd / 14</div></div>
+                <div className="sc-row">
+                  <div className="sc-label">Picks submitted</div>
+                  <div className={`sc-val ${submittedCount === totalMatches ? 'green' : ''}`}>
+                    {submittedCount} / {totalMatches}
+                  </div>
+                </div>
+                <div className="sc-row"><div className="sc-label">Total points</div><div className="sc-val">{poolMember?.total_points || 0}</div></div>
+                <div className="sc-row"><div className="sc-label">Your rank</div><div className="sc-val gold">{poolMember?.rank || '—'}</div></div>
               </div>
             </div>
             <div className="card">
               <div className="card-head"><div className="card-title">Scoring</div></div>
               <div className="card-body">
                 <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
-                <div className="sc-row"><div className="sc-label">Correct winner + 1 score</div><div className="sc-val gold">2 pts</div></div>
                 <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
+                <div className="sc-row"><div className="sc-label">Knockout multiplier</div><div className="sc-val gold">1.5x – 3x</div></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <style jsx global>{`
+      <style jsx>{`
         nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 200; }
         .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; margin-right: 2rem; padding-right: 2rem; border-right: 1px solid var(--f4); text-decoration: none; }
         .nav-logo span { color: var(--gold); }
@@ -243,6 +476,7 @@ export default function PredictionsPage() {
         .s-saved { color: var(--green); }
         .s-live { color: var(--red); }
         .s-ft { color: var(--f4); }
+        .s-locked { color: var(--f4); }
         .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: pulse 1.4s ease infinite; }
 
         .mpc-body { display: grid; grid-template-columns: 1fr 170px 1fr; align-items: center; gap: 0; padding: 0.85rem 1rem; }
@@ -271,6 +505,7 @@ export default function PredictionsPage() {
         .mpc-foot { border-top: 1px solid var(--line); padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; background: rgba(0,0,0,0.15); }
         .btn-save { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold); color: #000; padding: 0.4rem 1.1rem; border-radius: 2px; border: none; cursor: pointer; }
         .btn-save:hover { background: var(--gold2); }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-edit { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; color: var(--f3); border: 1px solid var(--f4); padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; }
         .btn-edit:hover { color: var(--f1); border-color: var(--f2); }
 

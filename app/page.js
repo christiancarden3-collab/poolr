@@ -32,7 +32,7 @@ export default function LandingPage() {
           <a href="/" className="nav-item active">Home</a>
           <a href="/dashboard" className="nav-item">My Pools</a>
           <a href="#" className="nav-item">World Cup 2026</a>
-          <a href="#" className="nav-item">Results</a>
+          <a href="/results" className="nav-item">Results</a>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>
