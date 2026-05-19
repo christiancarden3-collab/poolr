@@ -109,7 +109,7 @@ export default function DashboardPage() {
           <div className="ph-left">
             <div className="ph-eyebrow">My Account</div>
             <div className="ph-title">Dashboard</div>
-            <div className="ph-meta">World Cup 2026 — Jun 11 to Jul 19</div>
+            <div className="ph-meta">World Cup 2026 · Jun 11 to Jul 19</div>
           </div>
           <div className="ph-right">
             <Link href="/create" className="btn-primary">+ Create Pool</Link>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
               <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--f3)' }}>Loading...</div>
             ) : displayPools.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">🏆</div>
+                <i className="ti ti-ball-football empty-icon"></i>
                 <div className="empty-title">No pools yet</div>
                 <div className="empty-text">Create your first pool or join one to get started</div>
                 <Link href="/create" className="btn-primary" style={{ marginTop: '1rem' }}>+ Create Pool</Link>
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="pc-stat">
                           <div className="pc-stat-val" style={{ color: pool.user_rank ? 'var(--gold)' : 'var(--f3)' }}>
-                            {pool.user_rank ? `${pool.user_rank}${pool.user_rank === 1 ? 'st' : pool.user_rank === 2 ? 'nd' : pool.user_rank === 3 ? 'rd' : 'th'}` : '—'}
+                            {pool.user_rank ? `${pool.user_rank}${pool.user_rank === 1 ? 'st' : pool.user_rank === 2 ? 'nd' : pool.user_rank === 3 ? 'rd' : 'th'}` : '-'}
                           </div>
                           <div className="pc-stat-label">Your rank</div>
                         </div>
@@ -184,7 +184,7 @@ export default function DashboardPage() {
         {/* Tournament overview */}
         <div className="card">
           <div className="card-head">
-            <div className="card-title">World Cup 2026 — Group Stage</div>
+            <div className="card-title">World Cup 2026 · Group Stage</div>
             <span className="card-link">Full schedule</span>
           </div>
           <div className="card-body">
@@ -647,7 +647,9 @@ export default function DashboardPage() {
         }
         .empty-icon {
           font-size: 3rem;
+          color: var(--gold);
           margin-bottom: 1rem;
+          opacity: 0.6;
         }
         .empty-title {
           font-family: 'Barlow Condensed', sans-serif;
@@ -659,7 +661,10 @@ export default function DashboardPage() {
           margin-bottom: 0.5rem;
         }
         .empty-text {
-          font-size: 0.85rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.9rem;
+          font-weight: 500;
+          letter-spacing: 0.02em;
           color: var(--f3);
         }
 
