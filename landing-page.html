@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poolr — Predict. Compete. Win.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  /* ============================================================
+     POOLR — LANDING PAGE
+     Design: Dark luxury editorial
+     Fonts: Cormorant Garamond (headings) + Outfit (body)
+     Colors: Deep navy + Gold accent + Cream text
+     ============================================================ */
+
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:    #08090d;   /* page background */
+    --ink2:   #13161f;   /* card / panel background */
+    --ink3:   #1e2330;   /* deep card background */
+    --gold:   #d4af37;   /* primary gold accent */
+    --gold2:  #e8cc6e;   /* lighter gold (hover, large display) */
+    --silk:   #f5f2ec;   /* primary text — bright cream */
+    --body:   #ddd9d0;   /* body copy — warm light gray */
+    --muted:  #aaa8a5;   /* tertiary — separators, timestamps */
+    --border: rgba(212,175,55,0.25);    /* gold-tinted borders */
+    --border2: rgba(255,255,255,0.10);  /* subtle white borders */
+  }
+
+  body {
+    background: var(--ink);
+    color: var(--silk);
+    font-family: 'Outfit', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ─────────────────────────────────────────────────── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 3rem;
+    border-bottom: 1px solid var(--border2);
+    background: rgba(8,9,13,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: var(--gold2);
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+  }
+  .nav-links a {
+    color: var(--body);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--silk); }
+
+  /* Language toggle */
+  .nav-lang {
+    display: flex;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .lang-btn {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #ffffff;           /* always white — never inherit dark */
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .lang-btn.active {
+    background: var(--gold);
+    color: #08090d;
+    font-weight: 700;
+  }
+  .lang-btn:not(.active):hover { background: rgba(255,255,255,0.10); }
+
+  .nav-cta {
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 0.5rem 1.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--ink); }
+
+  /* ── HERO ────────────────────────────────────────────────── */
+  .hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 3D pitch */
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    perspective: 900px;
+    perspective-origin: 50% 40%;
+  }
+  .pitch-3d {
+    position: absolute;
+    bottom: -8%;
+    left: 50%;
+    transform: translateX(-50%) rotateX(58deg);
+    width: 780px;
+    height: 560px;
+    transform-style: preserve-3d;
+    animation: pitchFloat 8s ease-in-out infinite;
+  }
+  .pitch-surface {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(13,26,13,0.88) 0px, rgba(13,26,13,0.88) 36px,
+      rgba(17,32,17,0.88) 36px, rgba(17,32,17,0.88) 72px
+    );
+    border: 2px solid rgba(255,255,255,0.10);
+  }
+  .pitch-lines {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 49.5%, rgba(255,255,255,0.15) 49.5%, rgba(255,255,255,0.15) 50.5%, transparent 50.5%),
+      linear-gradient(0deg,  transparent 49.5%, rgba(255,255,255,0.15) 49.5%, rgba(255,255,255,0.15) 50.5%, transparent 50.5%);
+  }
+  .pitch-circle {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 180px; height: 180px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .pitch-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(212,175,55,0.07), transparent 70%);
+  }
+
+  /* Ambient orbs */
+  .ambient-orb { position: absolute; border-radius: 50%; animation: orbPulse 6s ease-in-out infinite; }
+  .orb-1 { width:400px; height:400px; top:-120px; left:-100px; background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%); }
+  .orb-2 { width:300px; height:300px; top:-60px;  right:-80px; background: radial-gradient(circle, rgba(100,120,255,0.03) 0%, transparent 70%); animation-delay: 3s; }
+
+  /* Hero text */
+  .hero-kicker {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: fadeUp 0.8s ease both;
+    position: relative;
+    z-index: 2;
+  }
+  .hero-kicker::before,
+  .hero-kicker::after { content: ''; display: block; width: 32px; height: 1px; background: var(--gold); opacity: 0.5; }
+
+  .hero-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4.5rem, 13vw, 10rem);
+    font-weight: 300;
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+    animation: fadeUp 0.8s 0.1s ease both;
+    position: relative;
+    z-index: 2;
+  }
+  .hero-headline .line { display: block; }
+  .pre    { color: #f5f2ec; font-style: normal; }        /* "Pre" — explicit white */
+  .dict   { color: var(--gold2); font-style: italic; }   /* "dict" — gold italic */
+  .compete {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--gold);              /* outline-only gold */
+  }
+  .win { color: #f5f2ec; }
+
+  .hero-sub {
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--body);
+    line-height: 1.8;
+    max-width: 420px;
+    margin: 2rem auto 0;
+    letter-spacing: 0.02em;
+    animation: fadeUp 0.8s 0.2s ease both;
+    position: relative;
+    z-index: 2;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 2.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.3s ease both;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Buttons */
+  .btn-gold {
+    background: var(--gold);
+    color: #08090d;
+    padding: 0.85rem 2.25rem;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.2s;
+    display: inline-block;
+    font-family: 'Outfit', sans-serif;
+  }
+  .btn-gold:hover { transform: translateY(-3px); background: var(--gold2); color: #08090d; }
+
+  .btn-outline {
+    border: 1px solid rgba(245,242,236,0.30);
+    color: #f5f2ec;
+    padding: 0.85rem 2.25rem;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 400;
+    text-decoration: none;
+    transition: border-color 0.3s, color 0.3s;
+    display: inline-block;
+    font-family: 'Outfit', sans-serif;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── APP MOCKUP ──────────────────────────────────────────── */
+  .mockup-section {
+    padding: 0 2rem 5rem;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+  .app-window {
+    width: 100%;
+    max-width: 720px;
+    background: var(--ink2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transform: perspective(1200px) rotateX(4deg);
+    animation: windowFloat 7s ease-in-out infinite;
+    box-shadow: 0 60px 120px rgba(0,0,0,0.5);
+  }
+  .window-bar {
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border2);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .window-url {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 5px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.72rem;
+    color: var(--body);
+    margin: 0 0.75rem;
+    font-family: 'Outfit', sans-serif;
+  }
+  .pool-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pool-name  { font-size: 0.9rem; font-weight: 500; color: var(--silk); }
+  .pool-meta  { font-size: 0.75rem; color: var(--body); font-weight: 300; margin-top: 3px; }
+  .pot-amount { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--gold2); text-align: right; }
+  .pot-label  { font-size: 0.68rem; color: var(--body); letter-spacing: 0.06em; text-transform: uppercase; text-align: right; }
+
+  /* Match rows */
+  .match-list { padding: 0.5rem 0; }
+  /* Match row — 5-column grid: name | flag | score | flag | name */
+  .match-item {
+    display: grid;
+    grid-template-columns: 1fr 36px 120px 36px 1fr;
+    align-items: center;
+    column-gap: 12px;
+    padding: 1.1rem 1.75rem;
+    border-bottom: 1px solid var(--border2);
+  }
+  .match-item:last-child { border-bottom: none; }
+  .team-home  { display: flex; align-items: center; justify-content: flex-end; font-size: 0.88rem; font-weight: 400; color: var(--silk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .flag-home  { display: flex; align-items: center; justify-content: flex-end; }
+  .score-block{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+  .flag-away  { display: flex; align-items: center; justify-content: flex-start; }
+  .team-away  { display: flex; align-items: center; justify-content: flex-start; font-size: 0.88rem; font-weight: 400; color: var(--silk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .flag-img   { width: 32px; height: 22px; border-radius: 3px; object-fit: cover; border: 1px solid rgba(255,255,255,0.12); display: block; flex-shrink: 0; }
+  .score-nums { display: flex; align-items: center; gap: 6px; }
+  .score-num  { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 300; color: var(--gold); width: 28px; text-align: center; line-height: 1; }
+  .score-sep  { font-size: 0.9rem; color: var(--muted); line-height: 1; }
+  .match-status { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 4px; justify-content: center; }
+  .match-status.done { color: var(--muted); }
+  .live-ring  { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: ring 1.8s ease infinite; flex-shrink: 0; }
+
+  /* Leaderboard */
+  .lb-section  { border-top: 1px solid var(--border2); padding: 1rem 1.5rem; }
+  .lb-header   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+  .lb-title    { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--body); }
+  .lb-viewall  { font-size: 0.7rem; color: var(--gold); }
+  .lb-row      { display: grid; grid-template-columns: 28px 1fr auto auto; align-items: center; gap: 0.5rem 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank     { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 300; color: var(--gold); text-align: center; }
+  .lb-rank.top { color: var(--gold2); }
+  .lb-player   { font-size: 0.84rem; font-weight: 400; color: var(--silk); }
+  .lb-pts      { font-size: 0.82rem; color: var(--body); font-weight: 400; }
+  .mv          { font-size: 0.7rem; font-weight: 600; min-width: 28px; text-align: right; }
+  .mv-up       { color: #5dbb8a; }
+  .mv-dn       { color: #e06c75; }
+  .mv-flat     { color: var(--muted); }
+  .paid-dot    { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #5dbb8a; margin-left: 5px; vertical-align: middle; }
+
+  /* ── SECTIONS ────────────────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border2); }
+  .section { padding: 5rem 3rem; max-width: 1100px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .section-eyebrow::after { content: ''; display: block; width: 24px; height: 1px; background: var(--gold); opacity: 0.5; }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.5rem,5vw,3.75rem); font-weight: 300; line-height: 1.05; margin-bottom: 0.75rem; color: var(--silk); }
+  .section-sub   { color: var(--body); font-size: 0.93rem; font-weight: 300; line-height: 1.8; max-width: 440px; }
+
+  /* Features */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 3.5rem;
+  }
+  .feat { padding: 2.5rem 2rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background 0.3s; }
+  .feat:nth-child(3n)       { border-right: none; }
+  .feat:nth-last-child(-n+3){ border-bottom: none; }
+  .feat:hover { background: rgba(255,255,255,0.03); }
+  .feat-icon  { width:44px; height:44px; border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; }
+  .feat-icon svg { width:20px; height:20px; stroke:var(--gold); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .check-mark svg { width:9px; height:9px; stroke:var(--gold); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .stripe-note svg { width:13px; height:13px; stroke:var(--gold); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .feat-name  { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--silk); }
+  .feat-desc  { font-size: 0.82rem; color: var(--body); font-weight: 300; line-height: 1.75; }
+
+  /* Steps */
+  .steps-row { display: grid; grid-template-columns: repeat(4,1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 3.5rem; }
+  .step { padding: 2.5rem 1.75rem; border-right: 1px solid var(--border); transition: background 0.3s; }
+  .step:last-child { border-right: none; }
+  .step:hover { background: rgba(255,255,255,0.03); }
+  .step-n     { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: var(--gold); line-height: 1; margin-bottom: 1.25rem; opacity: 0.65; }
+  .step-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--silk); }
+  .step-desc  { font-size: 0.8rem; color: var(--body); font-weight: 300; line-height: 1.75; }
+
+  /* Pricing */
+  .pricing-wrap { padding: 5rem 3rem; max-width: 680px; margin: 0 auto; text-align: center; }
+  .price-card {
+    background: var(--ink2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 3.5rem;
+    margin-top: 3rem;
+    position: relative;
+    overflow: hidden;
+    transform: perspective(800px) rotateX(2deg);
+    transition: transform 0.4s;
+  }
+  .price-card:hover { transform: perspective(800px) rotateX(0deg) translateY(-4px); }
+  .price-card::before { content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .price-num     { font-family: 'Cormorant Garamond', serif; font-size: 5.5rem; font-weight: 300; color: var(--gold2); line-height: 1; }
+  .price-tag     { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--body); margin-top: 0.5rem; font-weight: 400; }
+  .price-divider { border: none; border-top: 1px solid var(--border2); margin: 2.5rem 0; }
+  .price-feature { display: flex; align-items: flex-start; gap: 0.75rem; text-align: left; padding: 0.5rem 0; font-size: 0.86rem; font-weight: 300; color: var(--body); line-height: 1.6; }
+  .check-mark    { width:17px; height:17px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; color:var(--gold); }
+
+  /* Footer */
+  footer { border-top: 1px solid var(--border2); padding: 3rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; justify-content: space-between; }
+  .footer-logo  { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); }
+  .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--body); text-decoration: none; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 400; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--silk); }
+  .footer-copy  { width: 100%; font-size: 0.72rem; color: var(--muted); font-weight: 300; }
+  .stripe-note  { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); border-radius: 4px; padding: 0.35rem 0.85rem; font-size: 0.72rem; color: var(--body); margin-top: 1.5rem; }
+
+  /* ── ANIMATIONS ──────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pitchFloat {
+    0%,100% { transform: translateX(-50%) rotateX(58deg) translateY(0); }
+    50%     { transform: translateX(-50%) rotateX(58deg) translateY(-12px); }
+  }
+  @keyframes windowFloat {
+    0%,100% { transform: perspective(1200px) rotateX(4deg) translateY(0); }
+    50%     { transform: perspective(1200px) rotateX(3deg) translateY(-8px); }
+  }
+  @keyframes orbPulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.6; transform: scale(1.1); }
+  }
+  @keyframes ring {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.3; }
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links a { display: none; }
+    .section { padding: 3rem 1.5rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .feat { border-right: none !important; }
+    .steps-row { grid-template-columns: 1fr 1fr; }
+    .step:nth-child(2n) { border-right: none; }
+    .pricing-wrap { padding: 3rem 1.5rem; }
+    footer { padding: 2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NAV
+════════════════════════════════════════════════════════════ -->
+<nav>
+  <div class="logo">Poolr</div>
+  <div class="nav-links">
+    <a href="#how-it-works" data-en="How it works" data-es="Cómo funciona">How it works</a>
+    <a href="#features"     data-en="Features"      data-es="Funciones">Features</a>
+    <a href="#pricing"      data-en="Pricing"        data-es="Precios">Pricing</a>
+    <div class="nav-lang">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn"        onclick="setLang('es')">ES</button>
+    </div>
+    <a href="/register" class="nav-cta" data-en="Create pool" data-es="Crear pool">Create pool</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <!-- 3D pitch background -->
+  <div class="hero-canvas">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="pitch-3d">
+      <div class="pitch-surface"></div>
+      <div class="pitch-lines"></div>
+      <div class="pitch-circle"></div>
+      <div class="pitch-glow"></div>
+    </div>
+  </div>
+
+  <div class="hero-kicker" data-en="World Cup 2026 &mdash; Now Open" data-es="Copa del Mundo 2026 &mdash; Disponible">
+    World Cup 2026 &mdash; Now Open
+  </div>
+
+  <h1 class="hero-headline">
+    <!-- "Pre" white · "dict" gold italic -->
+    <span class="line"><span class="pre">Pre</span><span class="dict">dict</span></span>
+    <!-- "Compete" gold outline only -->
+    <span class="compete">Compete</span>
+    <!-- "Win" white -->
+    <span class="line win">Win</span>
+  </h1>
+
+  <p class="hero-sub"
+     data-en="Private prediction pools for the world's biggest tournament. Score picks, chase the leaderboard, split the pot."
+     data-es="Pools privados de predicciones para el torneo más grande. Puntúa, sube en el marcador, divide el premio.">
+    Private prediction pools for the world's biggest tournament. Score picks, chase the leaderboard, split the pot.
+  </p>
+
+  <div class="hero-actions">
+    <a href="/register" class="btn-gold"    data-en="Start a pool &mdash; free" data-es="Crear pool &mdash; gratis">Start a pool &mdash; free</a>
+    <a href="#how-it-works" class="btn-outline" data-en="See how it works" data-es="Cómo funciona">See how it works</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP MOCKUP
+════════════════════════════════════════════════════════════ -->
+<div class="mockup-section">
+  <div class="app-window">
+    <div class="window-bar">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+      <span class="window-url">poolr.app / pool / amigos-wc26</span>
+    </div>
+
+    <div class="pool-header">
+      <div>
+        <div class="pool-name" data-en="Amigos WC26 Pool" data-es="Pool Amigos MX26">Amigos WC26 Pool</div>
+        <div class="pool-meta" data-en="Round of 16 &middot; 14 players" data-es="Octavos de Final &middot; 14 jugadores">Round of 16 &middot; 14 players</div>
+      </div>
+      <div>
+        <div class="pot-amount">$280</div>
+        <div class="pot-label" data-en="Prize pool" data-es="Premio">Prize pool</div>
+      </div>
+    </div>
+
+    <div class="match-list">
+      <div class="match-item">
+        <div class="team-home" data-en="Argentina" data-es="Argentina">Argentina</div>
+        <div class="flag-home"><img class="flag-img" src="https://flagcdn.com/w40/ar.png" alt="Argentina flag"></div>
+        <div class="score-block">
+          <div class="match-status"><span class="live-ring"></span><span data-en="Live" data-es="En vivo">Live</span></div>
+          <div class="score-nums"><span class="score-num">3</span><span class="score-sep">&ndash;</span><span class="score-num">1</span></div>
+        </div>
+        <div class="flag-away"><img class="flag-img" src="https://flagcdn.com/w40/fr.png" alt="France flag"></div>
+        <div class="team-away" data-en="France" data-es="Francia">France</div>
+      </div>
+      <div class="match-item">
+        <div class="team-home" data-en="Brazil" data-es="Brasil">Brazil</div>
+        <div class="flag-home"><img class="flag-img" src="https://flagcdn.com/w40/br.png" alt="Brazil flag"></div>
+        <div class="score-block">
+          <div class="match-status done">86'</div>
+          <div class="score-nums"><span class="score-num">2</span><span class="score-sep">&ndash;</span><span class="score-num">2</span></div>
+        </div>
+        <div class="flag-away"><img class="flag-img" src="https://flagcdn.com/w40/de.png" alt="Germany flag"></div>
+        <div class="team-away" data-en="Germany" data-es="Alemania">Germany</div>
+      </div>
+      <div class="match-item">
+        <div class="team-home" data-en="Mexico" data-es="México">Mexico</div>
+        <div class="flag-home"><img class="flag-img" src="https://flagcdn.com/w40/mx.png" alt="Mexico flag"></div>
+        <div class="score-block">
+          <div class="match-status done">FT</div>
+          <div class="score-nums"><span class="score-num">1</span><span class="score-sep">&ndash;</span><span class="score-num">0</span></div>
+        </div>
+        <div class="flag-away"><img class="flag-img" src="https://flagcdn.com/w40/pt.png" alt="Portugal flag"></div>
+        <div class="team-away" data-en="Portugal" data-es="Portugal">Portugal</div>
+      </div>
+    </div>
+
+    <div class="lb-section">
+      <div class="lb-header">
+        <span class="lb-title" data-en="Leaderboard" data-es="Clasificación">Leaderboard</span>
+        <span class="lb-viewall" data-en="View all &rarr;" data-es="Ver todos &rarr;">View all &rarr;</span>
+      </div>
+      <div class="lb-row"><div class="lb-rank top">1</div><div class="lb-player">Carlos M.<span class="paid-dot" title="Paid"></span></div><div class="lb-pts">84 pts</div><div class="mv mv-up">+2</div></div>
+      <div class="lb-row"><div class="lb-rank">2</div><div class="lb-player">Ana R.<span class="paid-dot" title="Paid"></span></div><div class="lb-pts">79 pts</div><div class="mv mv-flat">&mdash;</div></div>
+      <div class="lb-row"><div class="lb-rank">3</div><div class="lb-player">Mike T.<span class="paid-dot" title="Paid"></span></div><div class="lb-pts">77 pts</div><div class="mv mv-dn">&minus;1</div></div>
+      <div class="lb-row"><div class="lb-rank">4</div><div class="lb-player">Valentina S.</div><div class="lb-pts">72 pts</div><div class="mv mv-up">+3</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FEATURES
+════════════════════════════════════════════════════════════ -->
+<hr class="divider">
+<div class="section" id="features">
+  <div class="section-eyebrow">Platform features</div>
+  <h2 class="section-title" data-en="Everything your pool needs" data-es="Todo lo que tu pool necesita">Everything your pool needs</h2>
+  <p class="section-sub"  data-en="Built for World Cup 2026. Works for any tournament. Clean, bilingual, built to last." data-es="Hecho para el Mundial 2026. Funciona para cualquier torneo. Limpio, bilingüe, duradero.">Built for World Cup 2026. Works for any tournament. Clean, bilingual, built to last.</p>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div class="feat-name" data-en="Private invite pools" data-es="Pools por invitación">Private invite pools</div>
+      <p class="feat-desc" data-en="Share a unique link. Only invited players can join — no strangers, no spam." data-es="Comparte un link único. Solo los invitados pueden unirse — sin extraños.">Share a unique link. Only invited players can join — no strangers, no spam.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="feat-name" data-en="Live leaderboard" data-es="Clasificación en vivo">Live leaderboard</div>
+      <p class="feat-desc" data-en="Real-time rankings with movement indicators. Share a public link to the board." data-es="Rankings en tiempo real con indicadores de movimiento.">Real-time rankings with movement indicators. Share a public link to the board.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div>
+      <div class="feat-name" data-en="Match &amp; special picks" data-es="Picks de partidos y especiales">Match &amp; special picks</div>
+      <p class="feat-desc" data-en="Predict every scoreline plus champion, top scorer, and best goalkeeper." data-es="Predice cada marcador, campeón, goleador y portero.">Predict every scoreline plus champion, top scorer, and best goalkeeper.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div>
+      <div class="feat-name" data-en="Flexible payments" data-es="Pagos flexibles">Flexible payments</div>
+      <p class="feat-desc" data-en="Stripe for in-app buy-ins, or track Venmo and Zelle manually." data-es="Stripe para pagos en la app, o rastrea Venmo y Zelle manualmente.">Stripe for in-app buy-ins, or track Venmo and Zelle manually.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div class="feat-name" data-en="Smart scoring" data-es="Puntuación inteligente">Smart scoring</div>
+      <p class="feat-desc" data-en="Exact score earns 3 pts. Correct result earns 1. Special picks up to 10. Fully automatic." data-es="Marcador exacto: 3pts. Resultado: 1pt. Picks especiales hasta 10.">Exact score earns 3 pts. Correct result earns 1. Special picks up to 10. Fully automatic.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div class="feat-name" data-en="English &amp; Spanish" data-es="Inglés y Español">English &amp; Spanish</div>
+      <p class="feat-desc" data-en="Every page available in both languages. Switch anytime with one click." data-es="Cada página disponible en ambos idiomas. Cambia en cualquier momento.">Every page available in both languages. Switch anytime with one click.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════════════════════ -->
+<hr class="divider">
+<div class="section" id="how-it-works">
+  <div class="section-eyebrow">Process</div>
+  <h2 class="section-title" data-en="Up and running in minutes" data-es="Listo en minutos">Up and running in minutes</h2>
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-n">01</div>
+      <div class="step-title" data-en="Create your pool"     data-es="Crea tu pool">Create your pool</div>
+      <p class="step-desc"    data-en="Set name, buy-in, prize structure and tournament. Two minutes, no card required." data-es="Configura nombre, cuota, premios y torneo. Dos minutos, sin tarjeta.">Set name, buy-in, prize structure and tournament. Two minutes, no card required.</p>
+    </div>
+    <div class="step">
+      <div class="step-n">02</div>
+      <div class="step-title" data-en="Invite your crew"     data-es="Invita a tu grupo">Invite your crew</div>
+      <p class="step-desc"    data-en="Share the invite link via WhatsApp, text, or email. Players join instantly." data-es="Comparte el link por WhatsApp, mensaje o correo. Unión instantánea.">Share the invite link via WhatsApp, text, or email. Players join instantly.</p>
+    </div>
+    <div class="step">
+      <div class="step-n">03</div>
+      <div class="step-title" data-en="Submit picks"         data-es="Envía tus picks">Submit picks</div>
+      <p class="step-desc"    data-en="Everyone predicts before each matchday deadline. Picks lock automatically." data-es="Todos predicen antes del cierre. Los picks se bloquean automáticamente.">Everyone predicts before each matchday deadline. Picks lock automatically.</p>
+    </div>
+    <div class="step">
+      <div class="step-n">04</div>
+      <div class="step-title" data-en="Watch the board move" data-es="Mira la tabla moverse">Watch the board move</div>
+      <p class="step-desc"    data-en="Points update with results. Track movement. Share the live leaderboard." data-es="Los puntos se actualizan. Sigue el movimiento. Comparte la tabla en vivo.">Points update with results. Track movement. Share the live leaderboard.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PRICING
+════════════════════════════════════════════════════════════ -->
+<hr class="divider">
+<div class="pricing-wrap" id="pricing">
+  <div class="section-eyebrow" style="justify-content:center">Pricing</div>
+  <h2 class="section-title" data-en="Simple, fair pricing" data-es="Precios simples y justos">Simple, fair pricing</h2>
+  <div class="price-card">
+    <div class="price-num">Free</div>
+    <div class="price-tag" data-en="to create and play &mdash; always" data-es="para crear y jugar &mdash; siempre">to create and play &mdash; always</div>
+    <hr class="price-divider">
+    <div style="display:flex;flex-direction:column;gap:0.25rem;text-align:left">
+      <div class="price-feature"><div class="check-mark"><i class="ti ti-check" style="font-size:9px" aria-hidden="true"></i></div><span data-en="No subscription or monthly fee" data-es="Sin suscripción ni cuota mensual">No subscription or monthly fee</span></div>
+      <div class="price-feature"><div class="check-mark"><i class="ti ti-check" style="font-size:9px" aria-hidden="true"></i></div><span data-en="5% fee on paid prize pools only — absorbed by pot or split among players" data-es="5% solo en pools con premio — absorbida por el bote o dividida entre jugadores">5% fee on paid prize pools only — absorbed by pot or split among players</span></div>
+      <div class="price-feature"><div class="check-mark"><i class="ti ti-check" style="font-size:9px" aria-hidden="true"></i></div><span data-en="Zero platform fee for free pools with manual payment tracking" data-es="Sin comisión para pools gratuitos con seguimiento manual">Zero platform fee for free pools with manual payment tracking</span></div>
+      <div class="price-feature"><div class="check-mark"><i class="ti ti-check" style="font-size:9px" aria-hidden="true"></i></div><span data-en="Unlimited pools and unlimited players" data-es="Pools y jugadores ilimitados">Unlimited pools and unlimited players</span></div>
+    </div>
+    <div style="margin-top:2.5rem">
+      <a href="/register" class="btn-gold" data-en="Create your first pool" data-es="Crea tu primer pool">Create your first pool</a>
+    </div>
+    <div class="stripe-note">
+      <i class="ti ti-lock" style="font-size:13px;color:var(--gold)" aria-hidden="true"></i>
+      <span data-en="Payments secured by Stripe" data-es="Pagos protegidos por Stripe">Payments secured by Stripe</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-logo">Poolr</div>
+  <div class="footer-links">
+    <a href="/terms"   data-en="Terms"   data-es="Términos">Terms</a>
+    <a href="/privacy" data-en="Privacy" data-es="Privacidad">Privacy</a>
+    <a href="/contact" data-en="Contact" data-es="Contacto">Contact</a>
+    <a href="#pricing" data-en="Pricing" data-es="Precios">Pricing</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 Poolr. Not affiliated with FIFA. For entertainment purposes only.</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JS — Language toggle
+════════════════════════════════════════════════════════════ -->
+<script>
+  function setLang(lang) {
+    // Toggle active state on buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+    });
+    // Swap all translatable text
+    document.querySelectorAll('[data-en]').forEach(el => {
+      el.innerHTML = el.dataset[lang] || el.dataset.en;
+    });
+    // Persist preference
+    localStorage.setItem('poolr-lang', lang);
+  }
+
+  // Restore saved language on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('poolr-lang');
+    if (saved && saved !== 'en') setLang(saved);
+  });
+</script>
+
+</body>
+</html>
