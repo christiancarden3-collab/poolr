@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [language, setLanguage] = useState('English')
@@ -19,8 +20,8 @@ export default function RegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault()
-    if (!email || !password || password.length < 8) {
-      setError('Please fill all fields. Password must be at least 8 characters.')
+    if (!email || !password || password.length < 8 || !username || username.length < 3) {
+      setError('Please fill all fields. Username must be at least 3 characters. Password must be at least 8 characters.')
       return
     }
     if (!terms) {
@@ -38,6 +39,7 @@ export default function RegisterPage() {
           data: {
             first_name: firstName,
             last_name: lastName,
+            username: username,
             preferred_language: language
           }
         }
@@ -120,6 +122,17 @@ export default function RegisterPage() {
                       onChange={(e) => setLastName(e.target.value)}
                     />
                   </div>
+                </div>
+                <div className="field">
+                  <label className="field-label">Username</label>
+                  <input 
+                    className="field-input"
+                    type="text" 
+                    placeholder="juangarcia26"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  />
+                  <div className="field-hint">Letters, numbers, underscores only</div>
                 </div>
                 <div className="field">
                   <label className="field-label">Email address</label>
