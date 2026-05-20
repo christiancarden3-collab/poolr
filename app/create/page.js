@@ -14,6 +14,7 @@ export default function CreatePoolPage() {
   
   // Form state
   const [poolName, setPoolName] = useState('')
+  const [tournament, setTournament] = useState('wc2026')
   const [description, setDescription] = useState('')
   const [privacy, setPrivacy] = useState('private')
   const [inviteCode, setInviteCode] = useState('pool26')
@@ -48,6 +49,25 @@ export default function CreatePoolPage() {
 
   const prizeTotal = prizes.reduce((sum, p) => sum + (p.percent || 0), 0)
 
+  const tournamentNames = {
+    wc2026: 'FIFA World Cup 2026',
+    ucl2526: 'UEFA Champions League 2025-26',
+    copa2024: 'Copa America 2024',
+    nflplayoffs26: 'NFL Playoffs 2025-26',
+    superbowl60: 'Super Bowl LX',
+    cfp2526: 'College Football Playoff 2025-26',
+    marchmadness26: 'March Madness 2026',
+    nbaplayoffs26: 'NBA Playoffs 2026',
+    mlbplayoffs26: 'MLB Playoffs 2026',
+    worldseries26: 'World Series 2026',
+    stanleycup26: 'Stanley Cup Playoffs 2026',
+    masters26: 'The Masters 2026',
+    usopen26: 'US Open 2026',
+    britishopen26: 'The Open Championship 2026',
+    pgachamp26: 'PGA Championship 2026'
+  }
+  const getTournamentName = () => tournamentNames[tournament] || 'World Cup 2026'
+
   const handleCreate = async () => {
     setLoading(true)
     try {
@@ -63,7 +83,8 @@ export default function CreatePoolPage() {
         .insert({
           name: poolName,
           description,
-          tournament_id: 1, // World Cup 2026
+          tournament_id: tournament,
+          tournament_name: getTournamentName(),
           commissioner_id: user.id,
           invite_code: inviteCode,
           is_public: privacy === 'public',
@@ -220,10 +241,36 @@ export default function CreatePoolPage() {
                   </div>
                   <div className="field">
                     <label className="field-label">Tournament</label>
-                    <select className="field-input field-select">
-                      <option>FIFA World Cup 2026 · USA, Canada & Mexico</option>
+                    <select className="field-input field-select" value={tournament} onChange={(e) => setTournament(e.target.value)}>
+                      <optgroup label="Soccer">
+                        <option value="wc2026">FIFA World Cup 2026 · USA, Canada & Mexico</option>
+                        <option value="ucl2526">UEFA Champions League 2025-26</option>
+                        <option value="copa2024">Copa America 2024</option>
+                      </optgroup>
+                      <optgroup label="Football">
+                        <option value="nflplayoffs26">NFL Playoffs 2025-26</option>
+                        <option value="superbowl60">Super Bowl LX · Feb 2026</option>
+                        <option value="cfp2526">College Football Playoff 2025-26</option>
+                      </optgroup>
+                      <optgroup label="Basketball">
+                        <option value="marchmadness26">March Madness 2026</option>
+                        <option value="nbaplayoffs26">NBA Playoffs 2026</option>
+                      </optgroup>
+                      <optgroup label="Baseball">
+                        <option value="mlbplayoffs26">MLB Playoffs 2026</option>
+                        <option value="worldseries26">World Series 2026</option>
+                      </optgroup>
+                      <optgroup label="Hockey">
+                        <option value="stanleycup26">Stanley Cup Playoffs 2026</option>
+                      </optgroup>
+                      <optgroup label="Golf">
+                        <option value="masters26">The Masters 2026</option>
+                        <option value="usopen26">US Open 2026</option>
+                        <option value="britishopen26">The Open Championship 2026</option>
+                        <option value="pgachamp26">PGA Championship 2026</option>
+                      </optgroup>
                     </select>
-                    <div className="field-hint">More tournaments coming soon</div>
+                    <div className="field-hint">Pick a tournament to set up your prediction pool</div>
                   </div>
                   <div className="field">
                     <label className="field-label">Picks deadline</label>
@@ -462,7 +509,7 @@ export default function CreatePoolPage() {
                     <div>
                       <div className="field-label" style={{ marginBottom: '0.75rem' }}>Pool Details</div>
                       <div className="preview-row"><div className="preview-label">Name</div><div className="preview-val">{poolName || '-'}</div></div>
-                      <div className="preview-row"><div className="preview-label">Tournament</div><div className="preview-val">World Cup 2026</div></div>
+                      <div className="preview-row"><div className="preview-label">Tournament</div><div className="preview-val">{getTournamentName()}</div></div>
                       <div className="preview-row"><div className="preview-label">Deadline</div><div className="preview-val">1hr before kickoff</div></div>
                     </div>
                     <div>
@@ -502,7 +549,7 @@ function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode }) {
       <div className="sc-head"><div className="sc-title">Pool Preview</div></div>
       <div className="sc-body">
         <div className="preview-name">{poolName || 'Your Pool Name'}</div>
-        <div className="preview-meta">FIFA World Cup 2026</div>
+        <div className="preview-meta">{getTournamentName()}</div>
         <div className="preview-row"><div className="preview-label">Privacy</div><div className="preview-val">{privacy === 'private' ? 'Private' : 'Public'}</div></div>
         {inviteCode && <div className="preview-row"><div className="preview-label">Invite link</div><div className="preview-val gold small">pickpoolr.com/join/{inviteCode}</div></div>}
         <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyinAmount ? `$${buyinAmount}` : 'Free'}</div></div>
