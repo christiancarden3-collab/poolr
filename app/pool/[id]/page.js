@@ -243,8 +243,8 @@ export default function PoolDetailPage() {
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
+          <Link href="/browse" className="nav-item">Browse</Link>
           <Link href="/results" className="nav-item">Scores</Link>
-          <span className="nav-item active">{pool?.name || 'Pool'}</span>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>

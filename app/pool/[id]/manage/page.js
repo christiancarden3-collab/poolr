@@ -151,22 +151,38 @@ export default function ManagePoolPage() {
     }
 
     setDeletingPool(true)
+    setMessage('')
+    
     try {
+      console.log('Starting pool deletion...')
+      
       // Delete all match picks for all members
       for (const member of members) {
-        await supabase.from('match_picks').delete().eq('pool_member_id', member.id)
-        await supabase.from('special_picks').delete().eq('pool_member_id', member.id)
+        const { error: picksErr } = await supabase.from('match_picks').delete().eq('pool_member_id', member.id)
+        if (picksErr) console.log('Match picks delete error (ok if table empty):', picksErr)
+        
+        const { error: specialErr } = await supabase.from('special_picks').delete().eq('pool_member_id', member.id)
+        if (specialErr) console.log('Special picks delete error (ok if table empty):', specialErr)
       }
 
       // Delete all members
-      await supabase.from('pool_members').delete().eq('pool_id', pool.id)
+      const { error: membersErr } = await supabase.from('pool_members').delete().eq('pool_id', pool.id)
+      if (membersErr) {
+        console.error('Members delete error:', membersErr)
+        throw new Error('Failed to delete pool members: ' + membersErr.message)
+      }
 
       // Delete the pool
       const { error } = await supabase.from('pools').delete().eq('id', pool.id)
-      if (error) throw error
+      if (error) {
+        console.error('Pool delete error:', error)
+        throw new Error('Failed to delete pool: ' + error.message)
+      }
 
+      console.log('Pool deleted successfully, redirecting...')
       router.push('/dashboard')
     } catch (err) {
+      console.error('Delete pool error:', err)
       setMessage('Error: ' + err.message)
       setDeletingPool(false)
     }
@@ -194,8 +210,8 @@ export default function ManagePoolPage() {
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
+          <Link href="/browse" className="nav-item">Browse</Link>
           <Link href="/results" className="nav-item">Scores</Link>
-          <Link href={`/pool/${pool.id}`} className="nav-item active">{pool.name}</Link>
         </div>
         <Link href={`/pool/${pool.id}`} className="nav-cta">← Back to Pool</Link>
       </nav>

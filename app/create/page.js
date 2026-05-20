@@ -143,7 +143,8 @@ export default function CreatePoolPage() {
           <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
           <div className="nav-items">
             <Link href="/dashboard" className="nav-item">Home</Link>
-            <span className="nav-item active">Create Pool</span>
+            <Link href="/browse" className="nav-item">Browse</Link>
+            <Link href="/results" className="nav-item">Scores</Link>
           </div>
           <Link href="/dashboard" className="nav-back">← Back to dashboard</Link>
         </nav>
