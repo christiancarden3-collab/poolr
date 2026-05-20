@@ -918,12 +918,7 @@ export default function SpecialPicksPage() {
         .ph-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; color: #f0ede8; }
         .ph-meta { font-size: 0.78rem; color: #8a8780; margin-top: 0.2rem; }
 
-        /* TABS — matches pool page exactly */
-        :global(.tab-nav) { background: var(--bg2, #111318); border-bottom: 1px solid var(--line, rgba(255,255,255,0.07)); }
-        :global(.tab-nav-inner) { max-width: 1100px; margin: 0 auto; display: flex; }
-        :global(.tab) { display: flex; align-items: center; gap: 0.4rem; padding: 0 1.5rem; height: 44px; font-family: 'Barlow Condensed', sans-serif !important; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f3, #8a8780); border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; text-decoration: none; }
-        :global(.tab:hover) { color: var(--f1, #f0ede8); }
-        :global(.tab.active) { color: var(--white, #fff); border-bottom-color: var(--gold, #c9a84c); }
+        /* Tab styles now in globals.css */
 
         /* GRID */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; background: #0a0c10; max-width: 640px; margin: 0 auto; }
