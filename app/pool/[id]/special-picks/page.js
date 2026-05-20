@@ -114,14 +114,28 @@ export default function SpecialPicksPage() {
 
   const initAll3D = () => {
     if (typeof window === 'undefined' || !window.THREE) return
-    buildTrophy('cv-champion', true)
-    buildTrophy('cv-runner', false)
-    buildStriker('cv-scorer')
-    buildKeeper('cv-gk')
-    if (champion) buildFlag('flag-champion', champion.c, true, 118, 78)
-    if (runnerUp) buildFlag('flag-runner', runnerUp.c, false, 118, 78)
-    if (topScorer) buildFlag('pflag-scorer', topScorer.team, true, 80, 54)
-    if (bestKeeper) buildFlag('pflag-gk', bestKeeper.team, true, 80, 54)
+    if (typeof window.buildTrophy === 'function') {
+      window.buildTrophy('cv-champion', true)
+      window.buildTrophy('cv-runner', false)
+    }
+    if (typeof window.buildStriker === 'function') {
+      window.buildStriker('cv-scorer')
+    }
+    if (typeof window.buildKeeper === 'function') {
+      window.buildKeeper('cv-gk')
+    }
+    if (champion && typeof window.buildFlag === 'function') {
+      window.buildFlag('flag-champion', champion.c, true, 118, 78)
+    }
+    if (runnerUp && typeof window.buildFlag === 'function') {
+      window.buildFlag('flag-runner', runnerUp.c, false, 118, 78)
+    }
+    if (topScorer && typeof window.buildFlag === 'function') {
+      window.buildFlag('pflag-scorer', topScorer.team, true, 80, 54)
+    }
+    if (bestKeeper && typeof window.buildFlag === 'function') {
+      window.buildFlag('pflag-gk', bestKeeper.team, true, 80, 54)
+    }
   }
 
   const savePick = async (pickType, data) => {
@@ -228,7 +242,131 @@ export default function SpecialPicksPage() {
     <>
       <Script 
         src="https://unpkg.com/three@0.128.0/build/three.min.js" 
-        onLoad={() => setThreeLoaded(true)}
+        strategy="afterInteractive"
+        onReady={() => {
+          console.log('Three.js ready')
+          // Define helper functions
+          window.fl = (c, sm) => 'https://flagcdn.com/w' + (sm ? 40 : 80) + '/' + c.replace('gb-', '') + '.png';
+          window.flHD = c => 'https://flagcdn.com/w320/' + c.replace('gb-', '') + '.png';
+          window.flagScenes = {};
+          window.mkMat = (c, r, m, x) => Object.assign(new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m }), x || {});
+          window.mkRenderer = (id, w, h) => {
+            const cv = document.getElementById(id);
+            if (!cv) return null;
+            const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
+            rr.setSize(w, h);
+            rr.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            return rr;
+          };
+          window.addLights = (scene, isGold) => {
+            scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+            const k = new THREE.DirectionalLight(isGold ? 0xfff4cc : 0xddeeff, 3.5);
+            k.position.set(4, 8, 5);
+            scene.add(k);
+          };
+          window.buildTrophy = (canvasId, isGold) => {
+            const rr = window.mkRenderer(canvasId, 170, 170);
+            if (!rr) return;
+            const scene = new THREE.Scene();
+            const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+            cam.position.set(0, 0.5, 7);
+            window.addLights(scene, isGold);
+            const gc = isGold ? 0xd4a017 : 0x9ab0cc;
+            const mM = window.mkMat(gc, 0.10, 0.97);
+            const grp = new THREE.Group();
+            grp.add(new THREE.Mesh(new THREE.CylinderGeometry(1.10, 1.10, 0.08, 32), mM));
+            const pts = [[0.02,0],[0.28,0.45],[0.72,1.00],[1.08,1.80],[0.72,2.42],[0.44,2.46]].map(([x,y]) => new THREE.Vector2(x, y));
+            const cup = new THREE.Mesh(new THREE.LatheGeometry(pts, 32), mM);
+            cup.position.y = -0.12;
+            grp.add(cup);
+            grp.position.y = 0.20;
+            scene.add(grp);
+            let t = 0;
+            (function a() { requestAnimationFrame(a); t += 0.008; grp.rotation.y = t * 0.5; grp.position.y = 0.20 + Math.sin(t) * 0.05; rr.render(scene, cam); })();
+          };
+          window.buildStriker = (canvasId) => {
+            const rr = window.mkRenderer(canvasId, 170, 170);
+            if (!rr) return;
+            const scene = new THREE.Scene();
+            const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+            cam.position.set(0, 1.2, 6);
+            window.addLights(scene, true);
+            const mB = window.mkMat(0xd4a832, 0.15, 0.92);
+            const g = new THREE.Group();
+            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.48, 0.50), mB));
+            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.70, 0.48), mB));
+            const ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), window.mkMat(0xffffff, 0.7, 0));
+            ball.position.set(0.48, -0.80, 1.30);
+            g.add(ball);
+            g.position.set(0, -0.2, 0);
+            scene.add(g);
+            let t = 0;
+            (function a() { requestAnimationFrame(a); t += 0.015; ball.rotation.y += 0.03; g.rotation.y = Math.sin(t * 0.5) * 0.2; rr.render(scene, cam); })();
+          };
+          window.buildKeeper = (canvasId) => {
+            const rr = window.mkRenderer(canvasId, 170, 170);
+            if (!rr) return;
+            const scene = new THREE.Scene();
+            const cam = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
+            cam.position.set(0, 0.8, 6.5);
+            window.addLights(scene, true);
+            const mB = window.mkMat(0xd4a832, 0.15, 0.92);
+            const postMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.7 });
+            [-2.2, 2.2].forEach(x => { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.2, 16), postMat); p.position.set(x, 0.2, -1.5); scene.add(p); });
+            const cb = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 4.54, 16), postMat); cb.rotation.z = Math.PI / 2; cb.position.set(0, 1.82, -1.5); scene.add(cb);
+            const g = new THREE.Group();
+            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.45, 0.48), mB));
+            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.66, 0.46), mB));
+            const glv = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.30, 0.12), window.mkMat(0xc9a84c, 0.25, 0.80));
+            glv.position.set(1.2, 0.8, 0);
+            g.add(glv);
+            g.position.set(-0.15, 0, 0);
+            scene.add(g);
+            let t = 0;
+            (function a() { requestAnimationFrame(a); t += 0.012; glv.position.x = 1.2 + Math.sin(t * 2.5) * 0.1; g.rotation.y = Math.sin(t * 0.5) * 0.1; rr.render(scene, cam); })();
+          };
+          window.buildFlag = (canvasId, code, isGold, cW, cH) => {
+            const cv = document.getElementById(canvasId);
+            if (!cv) return;
+            const W = cW || 118, H = cH || 78;
+            const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
+            rr.setSize(W, H);
+            rr.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            const scene = new THREE.Scene();
+            const aspect = W / H;
+            const cam = new THREE.OrthographicCamera(-aspect * 1.06, aspect * 1.06, 1.06, -1.06, 0.1, 20);
+            cam.position.set(0, 0, 5);
+            scene.add(new THREE.AmbientLight(0xffffff, 1.1));
+            const fW = 3.0, fH = 2.0, sX = 30, sY = 20, vC = (sX + 1) * (sY + 1);
+            const geo = new THREE.PlaneGeometry(fW, fH, sX, sY);
+            const arr = geo.attributes.position.array;
+            const ox = new Float32Array(vC), oy = new Float32Array(vC);
+            for (let i = 0; i < vC; i++) { ox[i] = arr[i * 3]; oy[i] = arr[i * 3 + 1]; }
+            const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+            new THREE.TextureLoader().load(window.flHD(code), tex => { mat.map = tex; mat.needsUpdate = true; }, undefined, () => {
+              new THREE.TextureLoader().load(window.fl(code, false), tex => { mat.map = tex; mat.needsUpdate = true; });
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.x = 0.14;
+            scene.add(mesh);
+            const poleMat = new THREE.MeshBasicMaterial({ color: isGold ? 0xc9a84c : 0xb0c4de });
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, fH * 1.12, 12), poleMat);
+            pole.position.set(-fW / 2 - 0.04, 0, 0);
+            scene.add(pole);
+            let t = 0;
+            (function a() { requestAnimationFrame(a); t += 0.040;
+              const p = geo.attributes.position.array;
+              for (let vi = 0; vi < vC; vi++) {
+                const xN = (ox[vi] + fW / 2) / fW;
+                p[vi * 3 + 1] = oy[vi] + Math.sin(xN * 2.8 - t * 0.85) * 0.032 * xN;
+                p[vi * 3 + 2] = Math.sin(xN * 3.5 - t) * 0.11 * xN;
+              }
+              geo.attributes.position.needsUpdate = true;
+              rr.render(scene, cam);
+            })();
+          };
+          setThreeLoaded(true);
+        }}
       />
       
       {/* TOPBAR */}
@@ -569,265 +707,6 @@ export default function SpecialPicksPage() {
           .tgrid { grid-template-columns: repeat(3, 1fr); }
         }
       `}</style>
-
-      <script dangerouslySetInnerHTML={{ __html: `
-        // 3D Functions
-        const fl = (c, sm) => 'https://flagcdn.com/w' + (sm ? 40 : 80) + '/' + c.replace('gb-', '') + '.png';
-        const flHD = c => 'https://flagcdn.com/w320/' + c.replace('gb-', '') + '.png';
-        const flagScenes = {};
-
-        function mkMat(c, r, m, x) {
-          return Object.assign(new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m }), x || {});
-        }
-
-        function mkRenderer(id, w, h) {
-          const cv = document.getElementById(id);
-          if (!cv) return null;
-          const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true, powerPreference: 'high-performance' });
-          rr.setSize(w, h);
-          rr.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-          rr.shadowMap.enabled = true;
-          rr.shadowMap.type = THREE.PCFSoftShadowMap;
-          return rr;
-        }
-
-        function addLights(scene, isGold) {
-          scene.add(new THREE.AmbientLight(0xffffff, 0.45));
-          const k = new THREE.DirectionalLight(isGold ? 0xfff4cc : 0xddeeff, 3.5);
-          k.position.set(4, 8, 5);
-          k.castShadow = true;
-          k.shadow.mapSize.set(1024, 1024);
-          scene.add(k);
-          const f = new THREE.DirectionalLight(isGold ? 0xffaa00 : 0x88aaff, 0.9);
-          f.position.set(-4, 2, -3);
-          scene.add(f);
-          const rm = new THREE.DirectionalLight(0xffffff, 1.4);
-          rm.position.set(0, -1, 5);
-          scene.add(rm);
-        }
-
-        window.buildFlag = function(canvasId, code, isGold, cW, cH) {
-          const cv = document.getElementById(canvasId);
-          if (!cv || !window.THREE) return;
-          if (flagScenes[canvasId]) try { flagScenes[canvasId](); } catch(e) {}
-          const W = cW || 118, H = cH || 78;
-          const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
-          rr.setSize(W, H);
-          rr.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-          rr.toneMapping = THREE.NoToneMapping;
-          rr.outputEncoding = THREE.sRGBEncoding;
-
-          const scene = new THREE.Scene();
-          const aspect = W / H;
-          const cam = new THREE.OrthographicCamera(-aspect * 1.06, aspect * 1.06, 1.06, -1.06, 0.1, 20);
-          cam.position.set(0, 0, 5);
-          cam.lookAt(0, 0, 0);
-
-          scene.add(new THREE.AmbientLight(0xffffff, 1.1));
-          const kl = new THREE.DirectionalLight(0xffffff, 0.5);
-          kl.position.set(2, 3, 4);
-          scene.add(kl);
-
-          const fW = 3.0, fH = 2.0, sX = 40, sY = 26, vC = (sX + 1) * (sY + 1);
-          const geo = new THREE.PlaneGeometry(fW, fH, sX, sY);
-          const arr = geo.attributes.position.array;
-          const ox = new Float32Array(vC), oy = new Float32Array(vC);
-          for (let i = 0; i < vC; i++) { ox[i] = arr[i * 3]; oy[i] = arr[i * 3 + 1]; }
-
-          const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-          const loader = new THREE.TextureLoader();
-          loader.load(flHD(code), tex => {
-            tex.encoding = THREE.sRGBEncoding;
-            mat.map = tex;
-            mat.needsUpdate = true;
-          }, undefined, () => {
-            loader.load(fl(code, false), tex => {
-              tex.encoding = THREE.sRGBEncoding;
-              mat.map = tex;
-              mat.needsUpdate = true;
-            });
-          });
-
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.x = 0.14;
-          scene.add(mesh);
-
-          const poleMat = new THREE.MeshBasicMaterial({ color: isGold ? 0xc9a84c : 0xb0c4de });
-          const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, fH * 1.12, 12), poleMat);
-          pole.position.set(-fW / 2 - 0.04, 0, 0);
-          scene.add(pole);
-          const finial = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), poleMat);
-          finial.position.set(-fW / 2 - 0.04, fH * 0.57, 0);
-          scene.add(finial);
-
-          let t = 0, alive = true;
-          (function a() {
-            if (!alive) return;
-            requestAnimationFrame(a);
-            t += 0.040;
-            const p = geo.attributes.position.array;
-            for (let vi = 0; vi < vC; vi++) {
-              const xN = (ox[vi] + fW / 2) / fW;
-              p[vi * 3] = ox[vi];
-              p[vi * 3 + 1] = oy[vi] + Math.sin(xN * 2.8 - t * 0.85) * 0.032 * xN;
-              p[vi * 3 + 2] = Math.sin(xN * 3.5 - t) * 0.11 * xN + Math.sin(xN * 7.0 - t * 1.4) * 0.045 * xN;
-            }
-            geo.attributes.position.needsUpdate = true;
-            geo.computeVertexNormals();
-            rr.render(scene, cam);
-          })();
-          flagScenes[canvasId] = () => { alive = false; rr.dispose(); };
-        }
-
-        window.buildTrophy = function(canvasId, isGold) {
-          const rr = mkRenderer(canvasId, 170, 170);
-          if (!rr) return;
-          const scene = new THREE.Scene();
-          const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-          cam.position.set(0, 0.5, 7);
-          cam.lookAt(0, 0, 0);
-          addLights(scene, isGold);
-          
-          const gc = isGold ? 0xd4a017 : 0x9ab0cc;
-          const gh = isGold ? 0xffed80 : 0xddeeff;
-          const gd = isGold ? 0x7a5500 : 0x2a4060;
-          const mM = mkMat(gc, 0.10, 0.97);
-          const mS = mkMat(gh, 0.04, 0.99);
-          const mD = mkMat(gd, 0.45, 0.80);
-          
-          const grp = new THREE.Group();
-          const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); grp.add(m); return m; };
-          
-          add(new THREE.Mesh(new THREE.CylinderGeometry(1.10, 1.10, 0.08, 64), mD), 0, -2.30);
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.12, 64), mM), 0, -2.16);
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.80, 0.14, 64), mS), 0, -1.98);
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.55, 0.18, 48), mM), 0, -1.80);
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.14, 1.30, 24), mM), 0, -0.95);
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.12, 0.20, 48), mS), 0, -0.22);
-          
-          const pts = [[0.02,0],[0.05,0.08],[0.12,0.22],[0.28,0.45],[0.50,0.72],[0.72,1.00],[0.90,1.28],[1.02,1.55],[1.08,1.80],[1.06,2.02],[0.98,2.20],[0.86,2.34],[0.72,2.42],[0.58,2.46],[0.44,2.46]].map(([x,y]) => new THREE.Vector2(x, y));
-          add(new THREE.Mesh(new THREE.LatheGeometry(pts, 80), mM), 0, -0.12);
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.40, 0.10, 0.50, 48), mD), 0, 2.22);
-          
-          const rR = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.055, 20, 80), mS);
-          rR.rotation.x = Math.PI / 2;
-          add(rR, 0, 2.34);
-          
-          [-1, 1].forEach(s => {
-            const h = new THREE.Mesh(new THREE.TorusGeometry(0.60, 0.055, 16, 64, Math.PI * 0.75), mM);
-            h.position.set(s * 1.05, 1.20, 0);
-            h.rotation.z = s * (Math.PI * 0.38);
-            h.rotation.y = Math.PI / 2;
-            grp.add(h);
-          });
-          
-          add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 64, 48), mkMat(isGold ? 0xf5e030 : 0xe8f4ff, 0.06, 0.99)), 0, 2.90);
-          
-          grp.position.y = 0.20;
-          scene.add(grp);
-          
-          let t = 0;
-          (function a() {
-            requestAnimationFrame(a);
-            t += 0.006;
-            grp.rotation.y = t * 0.35 + Math.sin(t * 0.60) * 0.15;
-            grp.position.y = 0.20 + Math.sin(t * 1.0) * 0.06;
-            rr.render(scene, cam);
-          })();
-        }
-
-        window.buildStriker = function(canvasId) {
-          const rr = mkRenderer(canvasId, 170, 170);
-          if (!rr) return;
-          const scene = new THREE.Scene();
-          const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-          cam.position.set(0, 1.2, 6);
-          cam.lookAt(0, 0.8, 0);
-          addLights(scene, true);
-          
-          const mB = mkMat(0xd4a832, 0.15, 0.92);
-          const mS = mkMat(0xffe878, 0.05, 0.99);
-          const mJ = mkMat(0x8a6018, 0.3, 0.85);
-          
-          const g = new THREE.Group();
-          const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); g.add(m); return m; };
-          
-          add(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.48, 0.50), mB), 0, 2.08);
-          add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.70, 0.48), mB), 0, 1.30);
-          add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.28, 0.42), mB), 0, 0.86);
-          
-          const ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 24), mkMat(0xffffff, 0.7, 0));
-          add(ball, 0.48, -0.30, 1.30);
-          
-          g.position.set(0.1, -0.5, 0);
-          g.rotation.y = -0.3;
-          scene.add(g);
-          
-          let t = 0;
-          (function a() {
-            requestAnimationFrame(a);
-            t += 0.012;
-            ball.rotation.y += 0.03;
-            g.rotation.y = -0.3 + Math.sin(t * 0.5) * 0.15;
-            g.position.y = -0.5 + Math.sin(t * 0.8) * 0.04;
-            rr.render(scene, cam);
-          })();
-        }
-
-        window.buildKeeper = function(canvasId) {
-          const rr = mkRenderer(canvasId, 170, 170);
-          if (!rr) return;
-          const scene = new THREE.Scene();
-          const cam = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
-          cam.position.set(0, 0.8, 6.5);
-          cam.lookAt(0, 0.4, 0);
-          addLights(scene, true);
-          
-          const mB = mkMat(0xd4a832, 0.15, 0.92);
-          const mG = mkMat(0xc9a84c, 0.25, 0.80);
-          const postMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.7 });
-          
-          const pGrp = new THREE.Group();
-          [-2.2, 2.2].forEach(x => {
-            const p = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.2, 16), postMat);
-            p.position.set(x, 0.2, -1.5);
-            pGrp.add(p);
-          });
-          const cb = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 4.54, 16), postMat);
-          cb.rotation.z = Math.PI / 2;
-          cb.position.set(0, 1.82, -1.5);
-          pGrp.add(cb);
-          scene.add(pGrp);
-          
-          const g = new THREE.Group();
-          const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); g.add(m); return m; };
-          
-          add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.45, 0.48), mB), -0.1, 1.0);
-          add(new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.66, 0.46), mB), 0.0, 0.32);
-          
-          const glv = add(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.30, 0.12), mG), 1.58, 1.64);
-          glv.rotation.z = -0.9;
-          
-          const ball = new THREE.Mesh(new THREE.SphereGeometry(0.20, 32, 24), mkMat(0xffffff, 0.6, 0.1));
-          add(ball, -1.4, 1.90, 0.3);
-          
-          g.position.set(-0.15, -0.28, 0);
-          scene.add(g);
-          
-          let t = 0;
-          (function a() {
-            requestAnimationFrame(a);
-            t += 0.010;
-            const reach = Math.sin(t * 2.5) * 0.08;
-            glv.position.set(1.58 + reach, 1.64 + reach * 0.8, 0);
-            ball.position.set(-1.4 + Math.sin(t * 1.4) * 0.10, 1.90 + Math.cos(t * 1.4) * 0.08, 0.3);
-            ball.rotation.z += 0.025;
-            g.position.y = -0.28 + Math.sin(t * 1.8) * 0.025;
-            g.rotation.y = Math.sin(t * 0.5) * 0.10;
-            rr.render(scene, cam);
-          })();
-        }
-      ` }} />
     </>
   )
 }
