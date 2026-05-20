@@ -153,12 +153,11 @@ export default function PoolDetailPage() {
     if (!currentMember) return
     setLeaving(true)
     try {
-      // Delete predictions first
+      // Delete match picks first
       await supabase
-        .from('predictions')
+        .from('match_picks')
         .delete()
-        .eq('pool_id', pool.id)
-        .eq('user_id', user.id)
+        .eq('pool_member_id', currentMember.id)
 
       // Delete special picks
       await supabase
@@ -176,6 +175,7 @@ export default function PoolDetailPage() {
       
       router.push('/dashboard')
     } catch (err) {
+      console.error('Leave pool error:', err)
       alert('Error leaving pool: ' + err.message)
       setLeaving(false)
     }
