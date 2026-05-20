@@ -70,7 +70,8 @@ export default function PoolDetailPage() {
 
         // Format members for leaderboard
         const formattedMembers = (membersData || []).map((m, index) => {
-          const teamName = m.profiles?.team_name || null
+          // Use team_name from pool_members first, fall back to profiles
+          const teamName = m.team_name || m.profiles?.team_name || null
           const fullName = m.profiles?.name || 'Player'
           return {
             rank: index + 1,
@@ -135,17 +136,27 @@ export default function PoolDetailPage() {
     
     setSavingTeamName(true)
     try {
-      const { error } = await supabase
+      const updateData = { 
+        team_name: teamNameInput.trim(),
+        name_changes_count: nameChanges + 1
+      }
+      console.log('Updating pool_members with:', updateData, 'for id:', currentMember.id)
+      
+      const { data, error } = await supabase
         .from('pool_members')
-        .update({ 
-          team_name: teamNameInput.trim(),
-          name_changes_count: nameChanges + 1
-        })
+        .update(updateData)
         .eq('id', currentMember.id)
+        .select()
+      
+      console.log('Update result:', { data, error })
       
       if (error) {
         console.error('Team name update error:', error)
         throw error
+      }
+      
+      if (!data || data.length === 0) {
+        throw new Error('Update returned no data - check RLS policies')
       }
       
       // Update local state
