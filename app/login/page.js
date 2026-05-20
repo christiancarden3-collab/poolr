@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('') // email or username
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(true)
   const [showMagic, setShowMagic] = useState(false)
@@ -16,22 +16,38 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    if (!email) { setError('Email is required'); return }
+    if (!identifier) { setError('Email or username is required'); return }
     setLoading(true)
     setError('')
 
     try {
+      let emailToUse = identifier
+      
+      // Check if identifier is a username (no @ sign)
+      if (!identifier.includes('@')) {
+        // Look up email by username from profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', identifier.toLowerCase())
+          .single()
+        
+        if (profileError || !profile || !profile.email) {
+          throw new Error('Username not found. Try using your email instead.')
+        }
+        
+        emailToUse = profile.email
+      }
+      
       const { error } = await supabase.auth.signInWithPassword({ 
-        email, 
+        email: emailToUse, 
         password,
         options: {
-          // When remember me is checked, session persists longer
           persistSession: rememberMe
         }
       })
       if (error) throw error
       
-      // Store remember me preference
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true')
       } else {
@@ -47,12 +63,13 @@ export default function LoginPage() {
   }
 
   const handleMagicLink = async () => {
-    if (!email) { setError('Enter your email first'); return }
+    if (!identifier) { setError('Enter your email first'); return }
+    if (!identifier.includes('@')) { setError('Magic link requires an email address, not username'); return }
     setLoading(true)
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email })
+      const { error } = await supabase.auth.signInWithOtp({ email: identifier })
       if (error) throw error
       setShowMagic(true)
     } catch (err) {
@@ -95,13 +112,13 @@ export default function LoginPage() {
             {!showMagic ? (
               <form onSubmit={handleLogin}>
                 <div className="field">
-                  <label className="field-label">Email address</label>
+                  <label className="field-label">Email or Username</label>
                   <input 
                     className={`field-input ${error ? 'error' : ''}`}
-                    type="email" 
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text" 
+                    placeholder="you@example.com or username"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                   />
                 </div>
                 <div className="field">
@@ -143,7 +160,7 @@ export default function LoginPage() {
                 <div className="magic-icon">✉</div>
                 <div className="magic-title">Check your inbox</div>
                 <div className="magic-sub">
-                  We sent a magic link to <span className="magic-email">{email}</span>. Click it to sign in · no password needed.
+                  We sent a magic link to <span className="magic-email">{identifier}</span>. Click it to sign in · no password needed.
                 </div>
                 <button className="btn-outline-full" style={{ marginTop: '1rem' }} onClick={() => setShowMagic(false)}>
                   ← Use password instead

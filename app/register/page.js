@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [username, setUsername] = useState('')
   const [teamName, setTeamName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -18,14 +19,34 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Password validation
+  const hasCapital = /[A-Z]/.test(password)
+  const hasMinLength = password.length >= 8
+
   const handleRegister = async (e) => {
     e.preventDefault()
-    if (!email || !password || password.length < 8 || !firstName) {
+    if (!email || !password || !hasMinLength || !firstName || !username) {
       setError('Please fill all required fields. Password must be at least 8 characters.')
+      return
+    }
+    if (!hasCapital) {
+      setError('Password must contain at least one capital letter.')
       return
     }
     if (!terms) {
       setError('You must agree to the Terms of Service.')
+      return
+    }
+    
+    // Check if username is taken
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username.toLowerCase())
+      .single()
+    
+    if (existingUser) {
+      setError('Username is already taken. Please choose another.')
       return
     }
     setLoading(true)
@@ -39,18 +60,21 @@ export default function RegisterPage() {
           data: {
             first_name: firstName,
             last_name: lastName,
+            username: username.toLowerCase(),
             team_name: teamName,
             preferred_language: language
           }
         }
       })
       
-      // Update profile with team name
-      if (authData?.user && teamName) {
+      // Update profile with username, email, and team name
+      if (authData?.user) {
         await supabase.from('profiles').upsert({
           id: authData.user.id,
           name: `${firstName} ${lastName}`.trim(),
-          team_name: teamName
+          username: username.toLowerCase(),
+          email: email.toLowerCase(),
+          team_name: teamName || null
         })
       }
       if (error) throw error
@@ -133,6 +157,18 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <div className="field">
+                  <label className="field-label">Username</label>
+                  <input 
+                    className="field-input"
+                    type="text" 
+                    placeholder="juangarcia"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/\s/g, '').toLowerCase())}
+                    maxLength={20}
+                  />
+                  <div className="field-hint">Used for sign in · No spaces · Lowercase</div>
+                </div>
+                <div className="field">
                   <label className="field-label">Team Name <span className="optional-tag">(optional)</span></label>
                   <input 
                     className="field-input"
@@ -158,11 +194,14 @@ export default function RegisterPage() {
                   <input 
                     className="field-input"
                     type="password" 
-                    placeholder="At least 8 characters"
+                    placeholder="At least 8 characters with 1 capital"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <div className="field-hint">Minimum 8 characters</div>
+                  <div className="password-reqs">
+                    <span className={hasMinLength ? 'req-met' : ''}>✓ 8+ characters</span>
+                    <span className={hasCapital ? 'req-met' : ''}>✓ 1 capital letter</span>
+                  </div>
                 </div>
                 <div className="field">
                   <label className="field-label">Preferred language</label>
@@ -454,6 +493,18 @@ export default function RegisterPage() {
           font-size: 0.72rem;
           color: var(--f4);
           margin-top: 0.3rem;
+        }
+        .password-reqs {
+          display: flex;
+          gap: 1rem;
+          margin-top: 0.4rem;
+        }
+        .password-reqs span {
+          font-size: 0.7rem;
+          color: var(--f4);
+        }
+        .password-reqs span.req-met {
+          color: var(--green);
         }
         .optional-tag {
           font-weight: 400;
