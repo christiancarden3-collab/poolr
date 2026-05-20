@@ -289,7 +289,7 @@ export default function PoolDetailPage() {
           </Link>
           <span className={`tab ${activeTab === 'lb' ? 'active' : ''}`} onClick={() => setActiveTab('lb')}>Leaderboard</span>
           {pool?.isCommissioner && (
-            <span className={`tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Settings</span>
+            <Link href={`/pool/${params.id}/manage`} className="tab">Settings</Link>
           )}
         </div>
       </div>
