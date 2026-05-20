@@ -27,45 +27,13 @@ const allPlayers = PLAYERS.map((p, i) => ({
   name: p.name,
   position: p.pos,
   team: getTeamName(p.team),
+  teamCode: p.team,
   flag: p.team,
   flagUrl: `https://flagcdn.com/w40/${p.team.replace('gb-', '')}.png`
 }))
 
 const scorerCandidates = allPlayers.filter(p => p.position === 'FWD' || p.position === 'MID')
 const goalkeeperCandidates = allPlayers.filter(p => p.position === 'GK')
-
-// SVG Icons
-const GoldenBootIcon = () => (
-  <svg viewBox="0 0 100 100" className="background-icon boot-icon">
-    <path d="M75 25c0 0-5-5-15-5s-20 5-25 15c-5 10-5 25-5 25l10 5 5 15h40l5-15 10-5s0-15-5-25c-5-10-15-10-20-10z" fill="currentColor"/>
-    <path d="M30 65l-10-5c0 0 0 10 5 15s15 10 25 10 20-5 25-10 5-15 5-15l-10 5" fill="currentColor" opacity="0.7"/>
-    <ellipse cx="50" cy="35" rx="15" ry="8" fill="currentColor" opacity="0.5"/>
-  </svg>
-)
-
-const GloveIcon = () => (
-  <svg viewBox="0 0 100 100" className="background-icon glove-icon">
-    <path d="M30 80V45c0-5 2-10 8-10h4V25c0-3 2-5 5-5s5 2 5 5v10h4V20c0-3 2-5 5-5s5 2 5 5v15h4V25c0-3 2-5 5-5s5 2 5 5v10h4c6 0 8 5 8 10v35c0 10-8 15-20 15H50c-12 0-20-5-20-15z" fill="currentColor"/>
-    <rect x="38" y="55" width="24" height="8" rx="2" fill="currentColor" opacity="0.5"/>
-  </svg>
-)
-
-const TrophyIcon = () => (
-  <svg viewBox="0 0 100 100" className="background-icon trophy-icon">
-    <path d="M70 20H30v5h-15c0 15 10 25 20 25v5c0 5-5 10-10 15h50c-5-5-10-10-10-15v-5c10 0 20-10 20-25h-15v-5z" fill="currentColor"/>
-    <rect x="40" y="70" width="20" height="5" fill="currentColor"/>
-    <rect x="35" y="75" width="30" height="8" rx="2" fill="currentColor"/>
-  </svg>
-)
-
-const SilverMedalIcon = () => (
-  <svg viewBox="0 0 100 100" className="background-icon medal-icon">
-    <circle cx="50" cy="45" r="30" fill="currentColor"/>
-    <circle cx="50" cy="45" r="22" fill="currentColor" opacity="0.6"/>
-    <text x="50" y="52" textAnchor="middle" fontSize="20" fontWeight="bold" fill="currentColor" opacity="0.4">2</text>
-    <path d="M35 75l15-10 15 10v15H35z" fill="currentColor" opacity="0.8"/>
-  </svg>
-)
 
 export default function SpecialPicksPage() {
   const params = useParams()
@@ -120,8 +88,6 @@ export default function SpecialPicksPage() {
         .single()
       
       if (memberData) setPoolMember(memberData)
-
-      // Teams and players already loaded from wc2026-database
 
       // Load existing special picks
       if (memberData) {
@@ -192,6 +158,7 @@ export default function SpecialPicksPage() {
       handleSave('runner_up', teamCode)
     }
     setShowTeamModal(null)
+    setSearchTerm('')
   }
 
   const selectPlayer = (playerName, type) => {
@@ -267,103 +234,128 @@ export default function SpecialPicksPage() {
           </div>
         )}
 
-        {/* Special Picks Grid */}
-        <div className="picks-grid">
+        {/* Top Row: Champion & Runner-up */}
+        <div className="picks-row top-row">
           {/* CHAMPION */}
           <div 
-            className={`pick-card gold ${champion ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
+            className={`pick-card team-card gold ${champion ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
             onClick={() => !isLocked && setShowTeamModal('champion')}
           >
-            <TrophyIcon />
-            <div className="pick-badge">10 PTS</div>
-            <div className="pick-label">CHAMPION</div>
+            <div className="pick-badge gold-badge">10 PTS</div>
+            <div className="pick-header">
+              <div className="pick-title">CHAMPION</div>
+              <div className="pick-subtitle">World Cup Winner</div>
+            </div>
             {champion && championTeam ? (
-              <div className="pick-content">
-                <div className="pick-flag-wrapper gold-border">
-                  <img src={championTeam.flagUrl} alt={championTeam.name} className="pick-flag" />
-                </div>
-                <div className="pick-name">{championTeam.name}</div>
+              <div className="team-display gold-border">
+                <img src={championTeam.flagUrl} alt={championTeam.name} className="team-flag-large" />
               </div>
             ) : (
-              <div className="pick-empty">
-                <div className="pick-empty-icon">+</div>
-                <div className="pick-empty-text">Select Team</div>
+              <div className="team-display empty gold-border">
+                <div className="empty-plus">+</div>
               </div>
             )}
+            {champion && championTeam && (
+              <div className="team-name-display">{championTeam.name}</div>
+            )}
+            {!champion && <div className="pick-cta">Select Team</div>}
             {saving.champion && <div className="saving-indicator">Saving...</div>}
           </div>
 
           {/* RUNNER-UP */}
           <div 
-            className={`pick-card silver ${runnerUp ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
+            className={`pick-card team-card silver ${runnerUp ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
             onClick={() => !isLocked && setShowTeamModal('runner_up')}
           >
-            <SilverMedalIcon />
             <div className="pick-badge silver-badge">7 PTS</div>
-            <div className="pick-label">RUNNER-UP</div>
+            <div className="pick-header">
+              <div className="pick-title">RUNNER-UP</div>
+              <div className="pick-subtitle">Final Loser</div>
+            </div>
             {runnerUp && runnerUpTeam ? (
-              <div className="pick-content">
-                <div className="pick-flag-wrapper silver-border">
-                  <img src={runnerUpTeam.flagUrl} alt={runnerUpTeam.name} className="pick-flag" />
-                </div>
-                <div className="pick-name">{runnerUpTeam.name}</div>
+              <div className="team-display silver-border">
+                <img src={runnerUpTeam.flagUrl} alt={runnerUpTeam.name} className="team-flag-large" />
               </div>
             ) : (
-              <div className="pick-empty">
-                <div className="pick-empty-icon">+</div>
-                <div className="pick-empty-text">Select Team</div>
+              <div className="team-display empty silver-border">
+                <div className="empty-plus">+</div>
               </div>
             )}
+            {runnerUp && runnerUpTeam && (
+              <div className="team-name-display">{runnerUpTeam.name}</div>
+            )}
+            {!runnerUp && <div className="pick-cta">Select Team</div>}
             {saving.runner_up && <div className="saving-indicator">Saving...</div>}
           </div>
+        </div>
 
-          {/* TOP SCORER (PICHICHI) */}
+        {/* Bottom Row: Pichichi & Golden Glove */}
+        <div className="picks-row bottom-row">
+          {/* PICHICHI (TOP SCORER) */}
           <div 
-            className={`pick-card gold ${topScorer ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
+            className={`pick-card player-card ${topScorer ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
             onClick={() => !isLocked && setShowPlayerModal('top_scorer')}
           >
-            <GoldenBootIcon />
-            <div className="pick-badge">5 PTS</div>
-            <div className="pick-label">PICHICHI</div>
-            <div className="pick-sublabel">Top Scorer</div>
+            {/* Golden Boot SVG Background */}
+            <svg className="bg-icon" viewBox="0 0 100 120" fill="none">
+              <path d="M25 95 L35 30 Q37 20 50 20 Q63 20 65 30 L75 95 Q75 105 50 110 Q25 105 25 95Z" fill="currentColor"/>
+              <ellipse cx="50" cy="25" rx="18" ry="8" fill="currentColor" opacity="0.6"/>
+              <path d="M30 92 Q50 100 70 92" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.4"/>
+              <circle cx="50" cy="60" r="6" fill="currentColor" opacity="0.3"/>
+              <circle cx="50" cy="78" r="4" fill="currentColor" opacity="0.3"/>
+            </svg>
+            
+            <div className="pick-badge gold-badge">5 PTS</div>
+            <div className="pick-header">
+              <div className="pick-title">PICHICHI</div>
+              <div className="pick-subtitle">Top Goalscorer</div>
+            </div>
             {topScorer && topScorerPlayer ? (
-              <div className="pick-content player">
-                <div className="pick-player-name">{topScorer}</div>
-                <div className="pick-player-team">
-                  <img src={topScorerPlayer.flagUrl} alt="" className="pick-mini-flag" />
-                  {topScorerPlayer.team}
+              <div className="player-display">
+                <div className="player-name-large">{topScorer}</div>
+                <div className="player-team-row">
+                  <img src={topScorerPlayer.flagUrl} alt="" className="player-flag-small" />
+                  <span>{topScorerPlayer.team}</span>
                 </div>
               </div>
             ) : (
-              <div className="pick-empty">
-                <div className="pick-empty-icon">+</div>
-                <div className="pick-empty-text">Select Player</div>
+              <div className="player-display empty">
+                <div className="empty-plus">+</div>
+                <div className="pick-cta">Select Player</div>
               </div>
             )}
             {saving.top_scorer && <div className="saving-indicator">Saving...</div>}
           </div>
 
-          {/* BEST GOALKEEPER */}
+          {/* GOLDEN GLOVE (BEST KEEPER) */}
           <div 
-            className={`pick-card gold ${bestKeeper ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
+            className={`pick-card player-card ${bestKeeper ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
             onClick={() => !isLocked && setShowPlayerModal('best_keeper')}
           >
-            <GloveIcon />
-            <div className="pick-badge">5 PTS</div>
-            <div className="pick-label">GOLDEN GLOVE</div>
-            <div className="pick-sublabel">Best Goalkeeper</div>
+            {/* Glove SVG Background */}
+            <svg className="bg-icon" viewBox="0 0 100 120" fill="none">
+              <path d="M25 100 V55 Q25 45 35 45 L38 45 V30 Q38 22 45 22 Q52 22 52 30 V45 L55 45 V25 Q55 17 62 17 Q69 17 69 25 V45 L72 45 V30 Q72 22 79 22 Q86 22 86 30 V45 L89 45 Q95 45 95 55 V100 Q95 115 60 115 Q25 115 25 100Z" fill="currentColor"/>
+              <rect x="35" y="65" rx="3" width="40" height="10" fill="currentColor" opacity="0.4"/>
+              <rect x="38" y="80" rx="2" width="34" height="6" fill="currentColor" opacity="0.3"/>
+            </svg>
+            
+            <div className="pick-badge gold-badge">5 PTS</div>
+            <div className="pick-header">
+              <div className="pick-title">GOLDEN GLOVE</div>
+              <div className="pick-subtitle">Best Goalkeeper</div>
+            </div>
             {bestKeeper && bestKeeperPlayer ? (
-              <div className="pick-content player">
-                <div className="pick-player-name">{bestKeeper}</div>
-                <div className="pick-player-team">
-                  <img src={bestKeeperPlayer.flagUrl} alt="" className="pick-mini-flag" />
-                  {bestKeeperPlayer.team}
+              <div className="player-display">
+                <div className="player-name-large">{bestKeeper}</div>
+                <div className="player-team-row">
+                  <img src={bestKeeperPlayer.flagUrl} alt="" className="player-flag-small" />
+                  <span>{bestKeeperPlayer.team}</span>
                 </div>
               </div>
             ) : (
-              <div className="pick-empty">
-                <div className="pick-empty-icon">+</div>
-                <div className="pick-empty-text">Select Player</div>
+              <div className="player-display empty">
+                <div className="empty-plus">+</div>
+                <div className="pick-cta">Select Player</div>
               </div>
             )}
             {saving.best_keeper && <div className="saving-indicator">Saving...</div>}
@@ -382,13 +374,13 @@ export default function SpecialPicksPage() {
 
       {/* Team Selection Modal */}
       {showTeamModal && (
-        <div className="modal-overlay" onClick={() => setShowTeamModal(null)}>
+        <div className="modal-overlay" onClick={() => { setShowTeamModal(null); setSearchTerm(''); }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title">
                 {showTeamModal === 'champion' ? '🏆 Select Champion' : '🥈 Select Runner-Up'}
               </div>
-              <button className="modal-close" onClick={() => setShowTeamModal(null)}>×</button>
+              <button className="modal-close" onClick={() => { setShowTeamModal(null); setSearchTerm(''); }}>×</button>
             </div>
             <div className="modal-search">
               <input 
@@ -457,6 +449,7 @@ export default function SpecialPicksPage() {
       )}
 
       <style jsx>{`
+        /* NAV */
         nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 200; }
         .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; margin-right: 2rem; padding-right: 2rem; border-right: 1px solid var(--f4); text-decoration: none; }
         .nav-logo span { color: var(--gold); }
@@ -466,12 +459,14 @@ export default function SpecialPicksPage() {
         .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
         .nav-cta { margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold); color: #000; padding: 0.5rem 1.25rem; border-radius: 2px; text-decoration: none; }
 
+        /* PAGE HEADER */
         .page-header { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 1.25rem 2rem; }
         .page-header-inner { max-width: 900px; margin: 0 auto; }
         .ph-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
         .ph-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; color: var(--white); }
         .ph-meta { font-size: 0.78rem; color: var(--f3); margin-top: 0.2rem; }
 
+        /* TABS */
         .tab-nav { background: var(--bg2); border-bottom: 1px solid var(--line); }
         .tab-nav-inner { max-width: 900px; margin: 0 auto; display: flex; }
         .tab { display: flex; align-items: center; gap: 0.4rem; padding: 0 1.5rem; height: 44px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f3); border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; }
@@ -482,138 +477,153 @@ export default function SpecialPicksPage() {
 
         .lock-banner { background: rgba(224,59,59,0.1); border: 1px solid rgba(224,59,59,0.3); color: var(--red); padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; text-align: center; font-weight: 600; }
 
-        /* Special Picks Grid */
-        .picks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        /* PICKS LAYOUT */
+        .picks-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
 
+        /* PICK CARD BASE */
         .pick-card {
           position: relative;
           background: var(--bg2);
           border: 2px solid var(--line);
-          border-radius: 12px;
-          padding: 2rem 1.5rem;
+          border-radius: 8px;
+          padding: 1.5rem;
           text-align: center;
           cursor: pointer;
           transition: all 0.2s;
           overflow: hidden;
-          min-height: 220px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
         }
         .pick-card:hover:not(.locked) { border-color: var(--f3); transform: translateY(-2px); }
-        .pick-card.locked { cursor: not-allowed; opacity: 0.7; }
+        .pick-card.locked { cursor: not-allowed; opacity: 0.6; }
+        .pick-card.selected { border-color: var(--gold); }
+        .pick-card.silver.selected { border-color: #a8a8a8; }
 
-        .pick-card.gold.selected { border-color: var(--gold); background: linear-gradient(180deg, rgba(201,168,76,0.08) 0%, var(--bg2) 100%); }
-        .pick-card.silver.selected { border-color: #a8a8a8; background: linear-gradient(180deg, rgba(168,168,168,0.08) 0%, var(--bg2) 100%); }
-
-        /* Background Icons */
-        :global(.background-icon) {
-          position: absolute;
-          width: 120px;
-          height: 120px;
-          opacity: 0.08;
-          color: var(--gold);
-          pointer-events: none;
-        }
-        .pick-card.silver :global(.background-icon) { color: #a8a8a8; }
-        :global(.trophy-icon) { top: 10px; right: 10px; }
-        :global(.medal-icon) { top: 10px; right: 10px; }
-        :global(.boot-icon) { top: 10px; right: 10px; }
-        :global(.glove-icon) { top: 10px; right: 10px; }
-        .pick-card.selected :global(.background-icon) { opacity: 0.15; }
-
+        /* BADGES */
         .pick-badge {
           position: absolute;
           top: 12px;
           left: 12px;
-          background: var(--gold);
-          color: #000;
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           font-weight: 800;
           letter-spacing: 0.08em;
-          padding: 0.25rem 0.6rem;
+          padding: 0.2rem 0.6rem;
           border-radius: 3px;
         }
-        .pick-badge.silver-badge { background: #a8a8a8; }
+        .gold-badge { background: var(--gold); color: #000; }
+        .silver-badge { background: #a8a8a8; color: #000; }
 
-        .pick-label {
+        /* HEADER */
+        .pick-header { margin-bottom: 1rem; }
+        .pick-title {
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.4rem;
+          font-size: 1.3rem;
           font-weight: 900;
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: var(--white);
-          margin-bottom: 0.25rem;
-          position: relative;
-          z-index: 1;
         }
-        .pick-sublabel {
-          font-family: 'Inter', sans-serif;
-          font-size: 0.75rem;
-          color: var(--f3);
-          margin-bottom: 1rem;
-          position: relative;
-          z-index: 1;
+        .pick-subtitle {
+          font-size: 0.72rem;
+          color: var(--f4);
+          margin-top: 0.15rem;
         }
 
-        .pick-content { position: relative; z-index: 1; margin-top: 0.5rem; }
-        .pick-content.player { margin-top: 0.75rem; }
-
-        .pick-flag-wrapper {
-          width: 80px;
-          height: 80px;
+        /* TEAM CARDS */
+        .team-display {
+          width: 100px;
+          height: 100px;
+          margin: 0 auto 0.75rem;
           border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto 0.75rem;
           overflow: hidden;
+          background: var(--bg3);
         }
-        .pick-flag-wrapper.gold-border { border: 3px solid var(--gold); box-shadow: 0 4px 20px rgba(201,168,76,0.3); }
-        .pick-flag-wrapper.silver-border { border: 3px solid #a8a8a8; box-shadow: 0 4px 20px rgba(168,168,168,0.2); }
-        .pick-flag { width: 100%; height: 100%; object-fit: cover; }
-
-        .pick-name {
+        .team-display.gold-border { border: 3px solid var(--gold); box-shadow: 0 4px 20px rgba(201,168,76,0.25); }
+        .team-display.silver-border { border: 3px solid #a8a8a8; box-shadow: 0 4px 20px rgba(168,168,168,0.15); }
+        .team-display.empty { border-style: dashed; }
+        .team-flag-large { width: 100%; height: 100%; object-fit: cover; }
+        .team-name-display {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 1.1rem;
-          font-weight: 700;
+          font-weight: 800;
           text-transform: uppercase;
           color: var(--white);
         }
+        .pick-card.gold .team-name-display { color: var(--gold); }
+        .pick-card.silver .team-name-display { color: #c0c0c0; }
 
-        .pick-player-name {
+        /* PLAYER CARDS */
+        .player-card { min-height: 200px; }
+        .bg-icon {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 140px;
+          height: 160px;
+          opacity: 0.12;
+          color: var(--gold);
+          pointer-events: none;
+        }
+        .player-card.selected .bg-icon { opacity: 0.2; }
+
+        .player-display {
+          position: relative;
+          z-index: 1;
+          margin-top: 1rem;
+        }
+        .player-display.empty { margin-top: 2rem; }
+        .player-name-large {
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.2rem;
-          font-weight: 800;
+          font-size: 1.4rem;
+          font-weight: 900;
           text-transform: uppercase;
           color: var(--gold);
-          margin-bottom: 0.25rem;
+          margin-bottom: 0.5rem;
         }
-        .pick-player-team {
+        .player-team-row {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          font-size: 0.8rem;
+          font-size: 0.85rem;
           color: var(--f3);
         }
-        .pick-mini-flag { width: 18px; height: 12px; border-radius: 2px; object-fit: cover; }
+        .player-flag-small {
+          width: 22px;
+          height: 15px;
+          border-radius: 2px;
+          object-fit: cover;
+        }
 
-        .pick-empty { opacity: 0.5; position: relative; z-index: 1; }
-        .pick-empty-icon { font-size: 2.5rem; color: var(--f4); margin-bottom: 0.25rem; }
-        .pick-empty-text { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; color: var(--f4); }
+        /* EMPTY STATE */
+        .empty-plus {
+          font-size: 2.5rem;
+          color: var(--f4);
+          line-height: 1;
+        }
+        .pick-cta {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--f4);
+          margin-top: 0.5rem;
+        }
 
         .saving-indicator {
           position: absolute;
           bottom: 8px;
           right: 8px;
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           color: var(--gold);
           font-weight: 600;
         }
 
+        /* DEADLINE */
         .deadline-info {
           display: flex;
           align-items: center;
@@ -622,13 +632,13 @@ export default function SpecialPicksPage() {
           border: 1px solid var(--line);
           border-radius: 8px;
           padding: 1rem 1.5rem;
-          margin-top: 2rem;
+          margin-top: 1rem;
         }
         .deadline-icon { font-size: 1.5rem; }
         .deadline-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; color: var(--white); text-transform: uppercase; }
         .deadline-sub { font-size: 0.8rem; color: var(--f3); margin-top: 0.2rem; }
 
-        /* Modal */
+        /* MODAL */
         .modal-overlay {
           position: fixed;
           inset: 0;
@@ -742,7 +752,7 @@ export default function SpecialPicksPage() {
           .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
           .nav-items { display: none; }
           .wrap { padding: 1rem; }
-          .picks-grid { grid-template-columns: 1fr; }
+          .picks-row { grid-template-columns: 1fr; }
           .modal-grid { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
