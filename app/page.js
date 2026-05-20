@@ -11,10 +11,10 @@ export default function LandingPage() {
       {/* TOPBAR */}
       <div className="topbar">
         <div className="topbar-links">
-          <a href="#" className="topbar-link">Tournaments</a>
-          <a href="#" className="topbar-link">Leaderboards</a>
-          <a href="#" className="topbar-link">How to play</a>
-          <a href="#" className="topbar-link">Pricing</a>
+          <a href="#features" className="topbar-link">Features</a>
+          <a href="#how-to-play" className="topbar-link">How to play</a>
+          <a href="#scoring" className="topbar-link">Scoring</a>
+          <a href="#pricing" className="topbar-link">Pricing</a>
         </div>
         <div className="topbar-right">
           <div className="lang-toggle">
@@ -125,7 +125,7 @@ export default function LandingPage() {
             <div className="lb-panel">
               <div className="lb-head">
                 <div className="lb-head-title">Standings</div>
-                <a href="#" className="lb-head-link">Full table →</a>
+                <a href="/browse" className="lb-head-link">Browse pools →</a>
               </div>
               <div className="lb-cols">
                 <div className="lb-col-label">#</div>
@@ -146,7 +146,7 @@ export default function LandingPage() {
       <div className="content-wrap">
         <div className="three-col">
           <div className="col-main">
-            <div className="section-head">
+            <div id="features" className="section-head">
               <div className="section-head-title">Platform Features</div>
               <div className="section-head-sub">Everything you need to run a pool</div>
             </div>
@@ -159,7 +159,7 @@ export default function LandingPage() {
               <div className="feat-card"><div className="feat-card-icon">Language</div><div className="feat-card-name">English & Spanish</div><p className="feat-card-desc">Full bilingual support. Every page in both languages, switchable instantly.</p></div>
             </div>
 
-            <div className="section-head" style={{ marginTop: '2.5rem' }}>
+            <div id="how-to-play" className="section-head" style={{ marginTop: '2.5rem' }}>
               <div className="section-head-title">How to Play</div>
             </div>
             <div className="steps-list">
@@ -171,7 +171,7 @@ export default function LandingPage() {
           </div>
 
           <div className="col-side">
-            <div className="section-head">
+            <div id="scoring" className="section-head">
               <div className="section-head-title">Scoring</div>
             </div>
 
@@ -206,7 +206,7 @@ export default function LandingPage() {
               </table>
             </div>
 
-            <div className="section-head" style={{ marginTop: '0.5rem' }}>
+            <div id="pricing" className="section-head" style={{ marginTop: '0.5rem' }}>
               <div className="section-head-title">Pricing</div>
             </div>
             <div className="price-box">
@@ -236,8 +236,8 @@ export default function LandingPage() {
         <div className="footer-links">
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
-          <a href="#">Contact</a>
-          <a href="#">How to play</a>
+          <a href="mailto:support@pickpoolr.com">Contact</a>
+          <a href="#how-to-play">How to play</a>
         </div>
         <p className="footer-copy">© 2026 PickPoolr. Not affiliated with FIFA. For entertainment purposes only.</p>
       </footer>
