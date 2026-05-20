@@ -73,7 +73,7 @@ export default function LandingPage() {
             <p className="hero-sub">Private prediction pools for friends, coworkers, and family. Score picks on every match, track the leaderboard, and split the pot.</p>
             <div className="hero-btns">
               <Link href="/create" className="btn-primary">Create a Pool</Link>
-              <Link href="/login" className="btn-secondary">Sign In</Link>
+              <Link href="/browse" className="btn-secondary">Browse Pools</Link>
             </div>
             <div className="stat-row">
               <div className="stat-pill"><div className="stat-num">48</div><div className="stat-label">Group matches</div></div>
