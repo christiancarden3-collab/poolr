@@ -9,6 +9,9 @@
 
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Override inline opacity:0 once CSS loads - prevents FOUC */
+body { opacity: 1 !important; }
+
 :root {
   --bg: #0a0c10;
   --bg2: #111318;
