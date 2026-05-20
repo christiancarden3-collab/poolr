@@ -16,6 +16,7 @@ export default function BrowsePage() {
   const [showTeamNameModal, setShowTeamNameModal] = useState(false)
   const [pendingPoolId, setPendingPoolId] = useState(null)
   const [teamNameInput, setTeamNameInput] = useState('')
+  const [previewPool, setPreviewPool] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -28,12 +29,13 @@ export default function BrowsePage() {
     const currentUser = await getCurrentUser()
     setUser(currentUser)
 
-    // Load public pools with members
+    // Load public pools with members and commissioner
     const { data: publicPools, error } = await supabase
       .from('pools')
       .select(`
         *,
-        pool_members(id, team_name, user_id)
+        pool_members(id, team_name, user_id),
+        commissioner:profiles!pools_commissioner_id_fkey(id, name, display_name)
       `)
       .eq('visibility', 'public')
       .eq('status', 'open')
@@ -44,27 +46,34 @@ export default function BrowsePage() {
       const poolsWithMembers = await Promise.all(publicPools.map(async (p) => {
         const memberList = p.pool_members || []
         
-        // Get profile names for members without team_name
+        // Get commissioner name
+        const commName = p.commissioner?.name || p.commissioner?.display_name || 'Unknown'
+        
+        // Get profile names for all members
         const membersWithNames = await Promise.all(memberList.map(async (m) => {
-          if (m.team_name) {
-            return { id: m.id, name: m.team_name }
-          }
-          // Fetch profile name
+          // Fetch profile name for this member
           const { data: profile } = await supabase
             .from('profiles')
             .select('name, display_name')
             .eq('id', m.user_id)
             .single()
+          
+          const realName = profile?.name || profile?.display_name || 'Unknown'
+          const displayName = m.team_name || realName
+          
           return { 
             id: m.id, 
-            name: profile?.name || profile?.display_name || 'Player' 
+            name: displayName,
+            realName: realName,
+            isCommissioner: m.user_id === p.commissioner_id
           }
         }))
 
         return {
           ...p,
           player_count: memberList.length,
-          members: membersWithNames
+          members: membersWithNames,
+          commissionerName: commName
         }
       }))
       
@@ -209,15 +218,9 @@ export default function BrowsePage() {
               <div key={p.id} className="pt-row-wrap">
                 <div className="pt-row">
                   <div>
-                    <div className="pt-name">{p.name}</div>
+                    <div className="pt-name clickable" onClick={() => setPreviewPool(p)}>{p.name}</div>
                     <div className="pt-commissioner">
-                      {p.player_count} player{p.player_count !== 1 ? 's' : ''}
-                      {p.members && p.members.length > 0 && (
-                        <span className="pt-members-preview">
-                          {' · '}{p.members.slice(0, 3).map(m => m.name).join(', ')}
-                          {p.members.length > 3 && ` +${p.members.length - 3} more`}
-                        </span>
-                      )}
+                      by {p.commissionerName} · {p.player_count} player{p.player_count !== 1 ? 's' : ''}
                     </div>
                   </div>
                   <div className="pt-tournament">FIFA World Cup</div>
@@ -293,6 +296,61 @@ export default function BrowsePage() {
               <button className="modal-btn-confirm" onClick={confirmJoin}>
                 Join Pool
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pool Preview Modal */}
+      {previewPool && (
+        <div className="modal-overlay" onClick={() => setPreviewPool(null)}>
+          <div className="modal-card preview-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{previewPool.name}</h3>
+              <button className="modal-close" onClick={() => setPreviewPool(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="preview-section">
+                <div className="preview-label">Commissioner</div>
+                <div className="preview-value highlight">{previewPool.commissionerName}</div>
+              </div>
+              <div className="preview-section">
+                <div className="preview-label">Entry Fee</div>
+                <div className="preview-value">{previewPool.buy_in === 0 ? 'Free' : `$${previewPool.buy_in}`}</div>
+              </div>
+              <div className="preview-section">
+                <div className="preview-label">Players ({previewPool.members?.length || 0})</div>
+                <div className="preview-members">
+                  {previewPool.members && previewPool.members.length > 0 ? (
+                    previewPool.members.map((m, i) => (
+                      <div key={i} className="preview-member">
+                        <span className="pm-name">{m.name}</span>
+                        {m.isCommissioner && <span className="pm-badge">Commissioner</span>}
+                        {m.realName && m.realName !== m.name && <span className="pm-real">{m.realName}</span>}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="preview-empty">No players yet — be the first to join!</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="modal-btn-cancel" onClick={() => setPreviewPool(null)}>
+                Close
+              </button>
+              {!isJoined(previewPool.id) ? (
+                <button className="modal-btn-confirm" onClick={() => {
+                  setPreviewPool(null)
+                  handleJoin(previewPool.id)
+                }}>
+                  Join Pool
+                </button>
+              ) : (
+                <Link href={`/pool/${previewPool.id}`} className="modal-btn-confirm" style={{ textDecoration: 'none', textAlign: 'center' }}>
+                  View Pool
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -533,6 +591,13 @@ export default function BrowsePage() {
           font-weight: 600;
           color: var(--f1);
         }
+        .pt-name.clickable {
+          cursor: pointer;
+          transition: color 0.15s;
+        }
+        .pt-name.clickable:hover {
+          color: var(--gold);
+        }
         .pt-commissioner {
           font-size: 0.72rem;
           color: var(--f3);
@@ -763,6 +828,93 @@ export default function BrowsePage() {
           padding: 0.6rem 1.25rem;
           border-radius: 3px;
           cursor: pointer;
+        }
+
+        /* Preview Modal */
+        .preview-modal {
+          max-width: 450px;
+        }
+        .modal-close {
+          background: none;
+          border: none;
+          color: var(--f3);
+          font-size: 1.5rem;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .modal-close:hover {
+          color: var(--white);
+        }
+        .preview-modal .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .preview-section {
+          margin-bottom: 1rem;
+        }
+        .preview-section:last-child {
+          margin-bottom: 0;
+        }
+        .preview-label {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--f4);
+          margin-bottom: 0.35rem;
+        }
+        .preview-value {
+          font-size: 0.95rem;
+          color: var(--f1);
+        }
+        .preview-value.highlight {
+          color: var(--gold);
+          font-weight: 600;
+        }
+        .preview-members {
+          background: var(--bg);
+          border-radius: 4px;
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        .preview-member {
+          padding: 0.6rem 0.8rem;
+          border-bottom: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .preview-member:last-child {
+          border-bottom: none;
+        }
+        .pm-name {
+          font-size: 0.85rem;
+          color: var(--f1);
+          font-weight: 500;
+        }
+        .pm-badge {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.6rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background: var(--gold);
+          color: #000;
+          padding: 0.15rem 0.4rem;
+          border-radius: 2px;
+        }
+        .pm-real {
+          font-size: 0.72rem;
+          color: var(--f4);
+          margin-left: auto;
+        }
+        .preview-empty {
+          padding: 1rem;
+          text-align: center;
+          color: var(--f4);
+          font-size: 0.85rem;
         }
 
         @media (max-width: 768px) {
