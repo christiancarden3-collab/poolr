@@ -57,7 +57,10 @@ export default function LandingPage() {
         </div>
         <div className="nav-right">
           {user ? (
-            <Link href="/dashboard" className="nav-cta">My Dashboard</Link>
+            <>
+              <Link href="/profile" className="nav-signin">Profile</Link>
+              <Link href="/dashboard" className="nav-cta">My Dashboard</Link>
+            </>
           ) : (
             <>
               <Link href="/login" className="nav-signin">Sign In</Link>

@@ -25,12 +25,17 @@ export default function BrowsePage() {
     const currentUser = await getCurrentUser()
     setUser(currentUser)
 
-    // Load public pools
+    // Load public pools with members
     const { data: publicPools, error } = await supabase
       .from('pools')
       .select(`
         *,
-        pool_members(count)
+        pool_members(
+          id,
+          team_name,
+          user_id,
+          profiles:user_id(name, display_name)
+        )
       `)
       .eq('visibility', 'public')
       .eq('status', 'open')
@@ -39,7 +44,11 @@ export default function BrowsePage() {
     if (publicPools) {
       setPools(publicPools.map(p => ({
         ...p,
-        player_count: p.pool_members?.[0]?.count || 0
+        player_count: p.pool_members?.length || 0,
+        members: (p.pool_members || []).map(m => ({
+          id: m.id,
+          name: m.team_name || m.profiles?.name || m.profiles?.display_name || 'Player'
+        }))
       })))
     }
 
@@ -163,40 +172,53 @@ export default function BrowsePage() {
               <div className="pt-col"></div>
             </div>
             {filteredPools.map((p) => (
-              <div key={p.id} className="pt-row">
-                <div>
-                  <div className="pt-name">{p.name}</div>
-                  <div className="pt-commissioner">
-                    {p.player_count} player{p.player_count !== 1 ? 's' : ''}
+              <div key={p.id} className="pt-row-wrap">
+                <div className="pt-row">
+                  <div>
+                    <div className="pt-name">{p.name}</div>
+                    <div className="pt-commissioner">
+                      {p.player_count} player{p.player_count !== 1 ? 's' : ''}
+                      {p.members && p.members.length > 0 && (
+                        <span className="pt-members-preview">
+                          {' · '}{p.members.slice(0, 3).map(m => m.name).join(', ')}
+                          {p.members.length > 3 && ` +${p.members.length - 3} more`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pt-tournament">FIFA World Cup</div>
+                  <div className="pt-val r">{p.player_count}</div>
+                  <div className={`pt-val r ${p.buy_in === 0 ? 'gold' : ''}`}>
+                    {p.buy_in === 0 ? 'Free' : `$${p.buy_in}`}
+                  </div>
+                  <div className="pt-status">
+                    <span className="status-dot dot-upcoming"></span>
+                    <span style={{ color: 'var(--gold)' }}>
+                      {p.status === 'open' ? 'Open' : 'Starting Jun 11'}
+                    </span>
+                  </div>
+                  <div>
+                    {isJoined(p.id) ? (
+                      <Link href={`/pool/${p.id}`} className="btn-joined">✓ Joined</Link>
+                    ) : (
+                      <button 
+                        className="btn-join-sm" 
+                        onClick={() => handleJoin(p.id)}
+                        disabled={joiningPool === p.id}
+                      >
+                        {joiningPool === p.id ? 'Joining...' : 'Join Pool'}
+                      </button>
+                    )}
                   </div>
                 </div>
-                <div className="pt-tournament">
-                  <div className="pt-flag"><img src="https://flagcdn.com/w40/us.png" alt="WC26" /></div>
-                  WC 2026
-                </div>
-                <div className="pt-val r">{p.player_count}</div>
-                <div className={`pt-val r ${p.buy_in === 0 ? 'gold' : ''}`}>
-                  {p.buy_in === 0 ? 'Free' : `$${p.buy_in}`}
-                </div>
-                <div className="pt-status">
-                  <span className="status-dot dot-upcoming"></span>
-                  <span style={{ color: 'var(--gold)' }}>
-                    {p.status === 'open' ? 'Open' : 'Starting Jun 11'}
-                  </span>
-                </div>
-                <div>
-                  {isJoined(p.id) ? (
-                    <Link href={`/pool/${p.id}`} className="btn-joined">✓ Joined</Link>
-                  ) : (
-                    <button 
-                      className="btn-join-sm" 
-                      onClick={() => handleJoin(p.id)}
-                      disabled={joiningPool === p.id}
-                    >
-                      {joiningPool === p.id ? 'Joining...' : 'Join Pool'}
-                    </button>
-                  )}
-                </div>
+                {p.members && p.members.length > 0 && (
+                  <div className="pt-members-row">
+                    <span className="pt-members-label">Players:</span>
+                    {p.members.map((m, i) => (
+                      <span key={m.id} className="pt-member-tag">{m.name}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -533,6 +555,44 @@ export default function BrowsePage() {
         .browse-empty span {
           color: var(--gold);
           cursor: pointer;
+        }
+
+        /* Pool row with members */
+        .pt-row-wrap {
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .pt-row-wrap:last-child { border-bottom: none; }
+        .pt-row-wrap .pt-row { border-bottom: none; }
+        .pt-members-preview {
+          color: var(--f4);
+        }
+        .pt-members-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.4rem;
+          padding: 0 1.25rem 0.75rem;
+          align-items: center;
+        }
+        .pt-members-label {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.65rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--f4);
+          margin-right: 0.25rem;
+        }
+        .pt-member-tag {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.68rem;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: var(--f2);
+          background: var(--bg3);
+          padding: 0.2rem 0.5rem;
+          border-radius: 2px;
+          border: 1px solid var(--line);
         }
 
         @keyframes pulse {
