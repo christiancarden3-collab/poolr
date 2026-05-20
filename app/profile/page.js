@@ -125,7 +125,8 @@ export default function ProfilePage() {
       <nav>
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
-          <Link href="/dashboard" className="nav-item">Dashboard</Link>
+          <Link href="/" className="nav-item">Home</Link>
+          <Link href="/dashboard" className="nav-item">My Pools</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
         </div>
         <button className="nav-ghost" onClick={handleSignOut}>Sign Out</button>
