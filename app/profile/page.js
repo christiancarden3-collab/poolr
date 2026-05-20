@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
+import AppShell from '@/app/components/AppShell'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -110,11 +111,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
-
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No name set'
   const displayUsername = username || 'username'
 
@@ -123,20 +119,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      {/* NAV */}
-      <nav>
-        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
-        <div className="nav-items">
-          <Link href="/" className="nav-item">Home</Link>
-          <Link href="/dashboard" className="nav-item">My Pools</Link>
-          <Link href="/browse" className="nav-item">Browse</Link>
-          <Link href="/results" className="nav-item">Scores</Link>
-        </div>
-        <button className="nav-ghost" onClick={handleSignOut}>Sign Out</button>
-      </nav>
-
-      {/* PROFILE HEADER */}
+    <AppShell user={user} showPageHeader={false} showCreate={false}>
+      {/* PROFILE HERO */}
       <div className="profile-hero">
         <div className="profile-hero-inner">
           <div className="profile-avatar">
@@ -150,7 +134,7 @@ export default function ProfilePage() {
       </div>
 
       {/* PAGE HEADER */}
-      <div className="page-header">
+      <div className="page-header-profile">
         <div className="page-header-inner">
           <div className="ph-left">
             <div className="ph-eyebrow">Settings</div>
@@ -295,64 +279,6 @@ export default function ProfilePage() {
           color: var(--f3);
         }
 
-        /* NAV */
-        nav {
-          background: var(--bg);
-          border-bottom: 3px solid var(--gold);
-          display: flex;
-          align-items: center;
-          padding: 0 2rem;
-          height: 56px;
-          position: sticky;
-          top: 0;
-          z-index: 200;
-        }
-        .nav-logo {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 2rem;
-          font-weight: 900;
-          letter-spacing: 0.04em;
-          color: var(--white);
-          text-transform: uppercase;
-          margin-right: 2rem;
-          text-decoration: none;
-        }
-        .nav-logo span { color: var(--gold); }
-        .nav-items {
-          display: flex;
-          height: 100%;
-        }
-        .nav-item {
-          display: flex;
-          align-items: center;
-          padding: 0 1.25rem;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.85rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          text-decoration: none;
-          transition: color 0.15s;
-        }
-        .nav-item:hover { color: var(--f1); }
-        .nav-ghost {
-          margin-left: auto;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          background: transparent;
-          border: 1px solid var(--f4);
-          padding: 0.5rem 1rem;
-          border-radius: 2px;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .nav-ghost:hover { color: var(--f1); border-color: var(--f2); }
-
         /* PROFILE HERO */
         .profile-hero {
           background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
@@ -403,7 +329,7 @@ export default function ProfilePage() {
         }
 
         /* PAGE HEADER */
-        .page-header {
+        .page-header-profile {
           background: var(--bg2);
           border-bottom: 1px solid var(--line);
           padding: 1.25rem 2rem;
@@ -594,12 +520,9 @@ export default function ProfilePage() {
         }
 
         @media (max-width: 768px) {
-          nav { padding: 0 1rem; }
-          .nav-logo { font-size: 1.6rem; margin-right: 1rem; }
-          .nav-items { display: none; }
           .wrap { padding: 1rem; }
           .form-row { grid-template-columns: 1fr; }
-          .page-header { padding: 1rem; }
+          .page-header-profile { padding: 1rem; }
           .profile-hero { padding: 1.5rem 1rem; }
           .profile-hero-inner { gap: 1rem; }
           .profile-avatar { width: 60px; height: 60px; font-size: 1.8rem; }
@@ -607,6 +530,6 @@ export default function ProfilePage() {
           .profile-fullname { font-size: 0.9rem; }
         }
       `}</style>
-    </>
+    </AppShell>
   )
 }

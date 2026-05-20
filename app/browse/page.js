@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
+import AppShell from '@/app/components/AppShell'
 
 export default function BrowsePage() {
   const router = useRouter()
@@ -167,27 +168,7 @@ export default function BrowsePage() {
   const isJoined = (poolId) => userMemberships.includes(poolId)
 
   return (
-    <>
-      <nav>
-        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
-        <div className="nav-items">
-          <Link href="/" className="nav-item">Home</Link>
-          <Link href="/dashboard" className="nav-item">My Pools</Link>
-          <Link href="/browse" className="nav-item active">Browse</Link>
-          <Link href="/results" className="nav-item">Scores</Link>
-        </div>
-        <div className="nav-right">
-          {user ? (
-            <Link href="/dashboard" className="nav-cta">My Dashboard</Link>
-          ) : (
-            <>
-              <Link href="/login" className="nav-link">Sign In</Link>
-              <Link href="/register" className="nav-cta">Create Account</Link>
-            </>
-          )}
-        </div>
-      </nav>
-
+    <AppShell user={user} showPageHeader={false}>
       <div className="browse-page">
         <div className="page-header-browse">
           <div>
@@ -393,82 +374,6 @@ export default function BrowsePage() {
       )}
 
       <style jsx global>{`
-        nav {
-          background: var(--bg);
-          border-bottom: 3px solid var(--gold);
-          display: flex;
-          align-items: center;
-          padding: 0 2rem;
-          height: 56px;
-          position: sticky;
-          top: 0;
-          z-index: 200;
-        }
-        .nav-logo {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 2rem;
-          font-weight: 900;
-          letter-spacing: 0.04em;
-          color: var(--white);
-          text-transform: uppercase;
-          text-decoration: none;
-          margin-right: 2rem;
-          padding-right: 2rem;
-          border-right: 1px solid var(--f4);
-        }
-        .nav-logo span { color: var(--gold); }
-        .nav-items {
-          display: flex;
-          height: 100%;
-        }
-        .nav-item {
-          display: flex;
-          align-items: center;
-          padding: 0 1.25rem;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.85rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          text-decoration: none;
-          border-bottom: 3px solid transparent;
-          margin-bottom: -3px;
-        }
-        .nav-item:hover { color: var(--f1); }
-        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
-        .nav-right {
-          margin-left: auto;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-        .nav-link {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.8rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          text-decoration: none;
-          transition: color 0.15s;
-        }
-        .nav-link:hover { color: var(--f1); }
-        .nav-cta {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.8rem;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          background: var(--gold);
-          color: #000;
-          padding: 0.45rem 1.1rem;
-          border-radius: 2px;
-          text-decoration: none;
-          transition: background 0.15s;
-        }
-        .nav-cta:hover { background: var(--gold2); }
-
         .browse-page {
           max-width: 1100px;
           margin: 0 auto;
@@ -962,9 +867,6 @@ export default function BrowsePage() {
         }
 
         @media (max-width: 768px) {
-          nav { padding: 0 1rem; }
-          .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
-          .nav-items { display: none; }
           .browse-page { padding: 1rem; }
           .pt-head, .pt-row { grid-template-columns: 1fr auto 80px; }
           .pt-col:nth-child(n+3):not(:last-child),
@@ -975,6 +877,6 @@ export default function BrowsePage() {
           .page-header-browse { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
         }
       `}</style>
-    </>
+    </AppShell>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
+import AppShell from '@/app/components/AppShell'
 
 export default function PoolDetailPage() {
   const params = useParams()
@@ -221,22 +222,14 @@ export default function PoolDetailPage() {
 
   if (error) {
     return (
-      <>
-        <nav>
-          <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
-        </nav>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 56px)', color: 'var(--f3)', textAlign: 'center', padding: '2rem' }}>
+      <AppShell user={user} showPageHeader={false}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 130px)', color: 'var(--f3)', textAlign: 'center', padding: '2rem' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>😕</div>
           <div style={{ fontSize: '1.2rem', color: 'var(--f1)', marginBottom: '0.5rem' }}>Pool Not Found</div>
           <div style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>{error}</div>
           <Link href="/dashboard" style={{ color: 'var(--gold)' }}>← Back to dashboard</Link>
         </div>
-        <style jsx global>{`
-          nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; }
-          .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; text-decoration: none; }
-          .nav-logo span { color: var(--gold); }
-        `}</style>
-      </>
+      </AppShell>
     )
   }
 
@@ -246,66 +239,8 @@ export default function PoolDetailPage() {
   const visibilityDisplay = pool?.visibility === 'private' ? 'Private' : 'Public'
   const rankSuffix = pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'
 
-  // Get user display name for header
-  // Format user name like dashboard: "Christian C."
-  const getUserName = () => {
-    if (!user) return 'User'
-    const meta = user.user_metadata || {}
-    if (meta.first_name) return `${meta.first_name} ${meta.last_name?.[0] || ''}.`
-    return user.email?.split('@')[0] || 'User'
-  }
-  
-  const getUserInitials = () => {
-    if (!user) return 'U'
-    const meta = user.user_metadata || {}
-    const first = meta.first_name?.[0] || user.email?.[0] || 'U'
-    const last = meta.last_name?.[0] || ''
-    return (first + last).toUpperCase()
-  }
-  
-  const userName = getUserName()
-  const userInitials = getUserInitials()
-
   return (
-    <>
-      {/* TOPBAR */}
-      <div className="topbar">
-        <div className="topbar-links">
-          <Link href="/dashboard" className="tb-link">Dashboard</Link>
-          <span className="tb-link active">My Pools</span>
-          <span className="tb-link">World Cup 2026</span>
-          <span className="tb-link">Results</span>
-        </div>
-        <div className="topbar-right">
-          <Link href="/profile" className="user-pill">
-            <div className="user-avatar">{userInitials}</div>
-            {userName}
-          </Link>
-          <button className="signout-btn" onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }}>Sign Out</button>
-        </div>
-      </div>
-
-      {/* NAV */}
-      <nav>
-        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
-        <div className="nav-items">
-          <Link href="/dashboard" className="nav-item">Home</Link>
-          <Link href="/browse" className="nav-item">Browse</Link>
-          <Link href="/results" className="nav-item">Scores</Link>
-        </div>
-        <Link href="/create" className="nav-cta">+ Create Pool</Link>
-      </nav>
-
-      {/* TICKER */}
-      <div className="ticker">
-        <div className="ticker-label">World Cup 2026</div>
-        <div className="ticker-items">
-          <span className="ticker-item">48 Teams</span>
-          <span className="ticker-item">104 Matches</span>
-          <span className="ticker-item">Kicks off June 11, 2026</span>
-        </div>
-      </div>
-
+    <AppShell user={user} showPageHeader={false}>
       {/* PAGE HEADER */}
       <div className="page-header">
         <div className="page-header-inner">
@@ -616,137 +551,6 @@ export default function PoolDetailPage() {
       )}
 
       <style jsx global>{`
-        /* TOPBAR */
-        .topbar {
-          background: var(--bg2);
-          border-bottom: 1px solid var(--line);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 2rem;
-          height: 42px;
-        }
-        .topbar-links { display: flex; height: 100%; }
-        .tb-link {
-          display: flex;
-          align-items: center;
-          padding: 0 1rem;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.78rem;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          text-decoration: none;
-          border-right: 1px solid var(--line);
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .tb-link:first-child { border-left: 1px solid var(--line); }
-        .tb-link:hover, .tb-link.active { color: var(--f1); background: rgba(255,255,255,0.03); }
-        .topbar-right { display: flex; align-items: center; gap: 1rem; }
-        .user-pill { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--f2); text-decoration: none; cursor: pointer; transition: color 0.15s; }
-        .user-pill:hover { color: var(--gold); }
-        .signout-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--f4); color: var(--f3); padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; margin-left: 0.75rem; }
-        .signout-btn:hover { border-color: var(--gold); color: var(--gold); }
-        .user-avatar {
-          width: 26px; height: 26px; border-radius: 50%; background: var(--gold);
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 900; color: #000;
-        }
-
-        /* NAV */
-        nav {
-          background: var(--bg);
-          border-bottom: 3px solid var(--gold);
-          display: flex;
-          align-items: center;
-          padding: 0 2rem;
-          height: 56px;
-          position: sticky;
-          top: 0;
-          z-index: 200;
-        }
-        .nav-logo {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 2rem;
-          font-weight: 900;
-          letter-spacing: 0.04em;
-          color: var(--white);
-          text-transform: uppercase;
-          margin-right: 2rem;
-          padding-right: 2rem;
-          border-right: 1px solid var(--f4);
-          text-decoration: none;
-        }
-        .nav-logo span { color: var(--gold); }
-        .nav-items { display: flex; height: 100%; }
-        .nav-item {
-          display: flex;
-          align-items: center;
-          padding: 0 1.25rem;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.85rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          text-decoration: none;
-          border-bottom: 3px solid transparent;
-          margin-bottom: -3px;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .nav-item:hover { color: var(--f1); }
-        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
-        .nav-cta {
-          margin-left: auto;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          background: var(--gold);
-          color: #000;
-          padding: 0.5rem 1.25rem;
-          border-radius: 2px;
-          text-decoration: none;
-          transition: background 0.15s;
-        }
-        .nav-cta:hover { background: var(--gold2); }
-
-        /* TICKER */
-        .ticker {
-          background: var(--gold);
-          padding: 0 2rem;
-          height: 30px;
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-          overflow: hidden;
-        }
-        .ticker-label {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.7rem;
-          font-weight: 900;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #000;
-          white-space: nowrap;
-          border-right: 1px solid rgba(0,0,0,0.2);
-          padding-right: 1.5rem;
-        }
-        .ticker-items { display: flex; gap: 2rem; }
-        .ticker-item {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.72rem;
-          font-weight: 600;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: #000;
-          white-space: nowrap;
-        }
-
         /* PAGE HEADER */
         .page-header {
           background: var(--bg2);
@@ -1301,10 +1105,6 @@ export default function PoolDetailPage() {
         .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @media (max-width: 900px) {
-          .topbar { display: none; }
-          nav { padding: 0 1rem; }
-          .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
-          .nav-items { display: none; }
           .wrap { padding: 1rem; }
           .two-col { grid-template-columns: 1fr; }
           .action-cards { grid-template-columns: 1fr; }
@@ -1313,6 +1113,6 @@ export default function PoolDetailPage() {
           .ph-right { text-align: left; }
         }
       `}</style>
-    </>
+    </AppShell>
   )
 }

@@ -3,10 +3,21 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { TEAMS, MATCHES, getTeam, flagUrl } from '../../lib/wc2026-database'
+import { getCurrentUser } from '@/lib/supabase'
+import AppShell from '@/app/components/AppShell'
 
 export default function ResultsPage() {
+  const [user, setUser] = useState(null)
   const [selectedMatchday, setSelectedMatchday] = useState(1)
   const [selectedStage, setSelectedStage] = useState('group')
+
+  useEffect(() => {
+    async function loadUser() {
+      const currentUser = await getCurrentUser()
+      setUser(currentUser)
+    }
+    loadUser()
+  }, [])
 
   const groupMatches = MATCHES.filter(m => m.stage === 'group')
   const knockoutMatches = MATCHES.filter(m => m.stage !== 'group')
@@ -38,30 +49,13 @@ export default function ResultsPage() {
   }
 
   return (
-    <>
-      {/* NAV */}
-      <nav>
-        <a href="/" className="nav-logo">Pick<span>Poolr</span></a>
-        <div className="nav-items">
-          <a href="/" className="nav-item">Home</a>
-          <a href="/dashboard" className="nav-item">My Pools</a>
-          <a href="#" className="nav-item">World Cup 2026</a>
-          <a href="/results" className="nav-item active">Results</a>
-        </div>
-        <a href="/create" className="nav-cta">+ Create Pool</a>
-      </nav>
-
-      {/* PAGE HEADER */}
-      <div className="page-header">
-        <div className="page-header-inner">
-          <div className="ph-left">
-            <div className="ph-eyebrow">World Cup 2026</div>
-            <h1 className="ph-title">Match Results</h1>
-            <p className="ph-meta">All scores and standings from the tournament</p>
-          </div>
-        </div>
-      </div>
-
+    <AppShell 
+      user={user} 
+      pageTitle="Match Results" 
+      pageEyebrow="World Cup 2026"
+      pageMeta="All scores and standings from the tournament"
+      showCreate={!!user}
+    >
       {/* STAGE TABS */}
       <div className="tab-nav">
         <div className="tab-nav-inner">
@@ -161,112 +155,6 @@ export default function ResultsPage() {
       </div>
 
       <style jsx global>{`
-        :root {
-          --bg: #0a0c10;
-          --bg2: #111318;
-          --bg3: #181c24;
-          --bg4: #1e2330;
-          --gold: #c9a84c;
-          --gold2: #e6c76a;
-          --red: #e03b3b;
-          --green: #2cb67d;
-          --white: #fff;
-          --f1: #f0ede8;
-          --f2: #c8c5be;
-          --f3: #8a8780;
-          --f4: #4a4845;
-          --line: rgba(255,255,255,0.07);
-          --gold-line: rgba(201,168,76,0.3);
-        }
-
-        body {
-          background: var(--bg);
-          color: var(--f1);
-          font-family: 'Inter', sans-serif;
-          margin: 0;
-        }
-
-        nav {
-          background: var(--bg);
-          border-bottom: 3px solid var(--gold);
-          display: flex;
-          align-items: center;
-          padding: 0 2rem;
-          height: 56px;
-          position: sticky;
-          top: 0;
-          z-index: 200;
-        }
-        .nav-logo {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 2rem;
-          font-weight: 900;
-          letter-spacing: 0.04em;
-          color: var(--white);
-          text-transform: uppercase;
-          text-decoration: none;
-          margin-right: 2rem;
-          padding-right: 2rem;
-          border-right: 1px solid var(--f4);
-        }
-        .nav-logo span { color: var(--gold); }
-        .nav-items { display: flex; height: 100%; }
-        .nav-item {
-          display: flex;
-          align-items: center;
-          padding: 0 1.25rem;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.85rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--f3);
-          text-decoration: none;
-          border-bottom: 3px solid transparent;
-          margin-bottom: -3px;
-          transition: all 0.15s;
-        }
-        .nav-item:hover { color: var(--f1); }
-        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
-        .nav-cta {
-          margin-left: auto;
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          background: var(--gold);
-          color: #000;
-          padding: 0.5rem 1.25rem;
-          border-radius: 2px;
-          text-decoration: none;
-        }
-
-        .page-header {
-          background: var(--bg2);
-          border-bottom: 1px solid var(--line);
-          padding: 1.5rem 2rem;
-        }
-        .page-header-inner { max-width: 1100px; margin: 0 auto; }
-        .ph-eyebrow {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: var(--gold);
-          margin-bottom: 0.3rem;
-        }
-        .ph-title {
-          font-family: 'Barlow Condensed', sans-serif;
-          font-size: 2rem;
-          font-weight: 900;
-          text-transform: uppercase;
-          color: var(--white);
-          margin: 0;
-        }
-        .ph-meta { font-size: 0.82rem; color: var(--f3); margin-top: 0.25rem; }
-
         .tab-nav {
           background: var(--bg2);
           border-bottom: 1px solid var(--line);
@@ -421,13 +309,11 @@ export default function ResultsPage() {
         }
 
         @media (max-width: 768px) {
-          .nav-items { display: none; }
-          nav { padding: 0 1rem; }
-          .nav-logo { margin-right: 0; padding-right: 0; border-right: none; }
           .wrap { padding: 1rem; }
           .tab { padding: 0 0.75rem; font-size: 0.72rem; }
+          .matchday-bar { padding: 0.75rem 1rem; }
         }
       `}</style>
-    </>
+    </AppShell>
   )
 }

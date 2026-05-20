@@ -48,18 +48,16 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 
-// Helper to check if picks for a match date are locked (1 hour before first game of that day)
-function isDateLocked(matchDate, matchTime) {
-  // Parse date like "Jun 11" and time like "5:00 PM ET"
+// Parse match date/time into a Date object
+function parseMatchDateTime(matchDate, matchTime) {
   const year = 2026
   const months = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
   const [monthStr, dayStr] = matchDate.split(' ')
   const month = months[monthStr]
   const day = parseInt(dayStr)
   
-  // Parse time
   const timeMatch = matchTime.match(/(\d+):(\d+)\s*(AM|PM)/i)
-  if (!timeMatch) return false
+  if (!timeMatch) return null
   
   let hours = parseInt(timeMatch[1])
   const mins = parseInt(timeMatch[2])
@@ -68,18 +66,47 @@ function isDateLocked(matchDate, matchTime) {
   if (ampm === 'PM' && hours !== 12) hours += 12
   if (ampm === 'AM' && hours === 12) hours = 0
   
-  // Create the match datetime (ET timezone approximation)
-  const matchDateTime = new Date(year, month, day, hours, mins)
+  return new Date(year, month, day, hours, mins)
+}
+
+// Get deadline offset in milliseconds based on deadline type
+function getDeadlineOffset(deadlineType) {
+  switch (deadlineType) {
+    case '30m_before_match': return 30 * 60 * 1000       // 30 minutes
+    case '1h_before_matchday': return 60 * 60 * 1000    // 1 hour
+    case '2h_before_matchday': return 2 * 60 * 60 * 1000 // 2 hours
+    case '24h_before_matchday': return 24 * 60 * 60 * 1000 // 24 hours
+    default: return 60 * 60 * 1000 // Default 1 hour
+  }
+}
+
+// Check if a specific match is locked (for per-match deadline mode)
+function isMatchLocked(matchDate, matchTime, deadlineType) {
+  const matchDateTime = parseMatchDateTime(matchDate, matchTime)
+  if (!matchDateTime) return false
   
-  // Lock 1 hour before
-  const lockTime = new Date(matchDateTime.getTime() - 60 * 60 * 1000)
+  const offset = getDeadlineOffset(deadlineType)
+  const lockTime = new Date(matchDateTime.getTime() - offset)
+  
+  return new Date() >= lockTime
+}
+
+// Helper to check if picks for a match date are locked (based on first game of that day)
+function isDateLocked(matchDate, matchTime, deadlineType = '1h_before_matchday') {
+  const matchDateTime = parseMatchDateTime(matchDate, matchTime)
+  if (!matchDateTime) return false
+  
+  const offset = getDeadlineOffset(deadlineType)
+  const lockTime = new Date(matchDateTime.getTime() - offset)
   
   return new Date() >= lockTime
 }
 
 // Group matches by date and get earliest time for each date
-function getDateLockStatus(matches) {
+// Also returns per-match lock status for '30m_before_match' mode
+function getDateLockStatus(matches, deadlineType = '1h_before_matchday') {
   const dateGroups = {}
+  const matchLockStatus = {} // Per-match lock status
   
   matches.forEach(m => {
     if (!dateGroups[m.date]) {
@@ -88,19 +115,23 @@ function getDateLockStatus(matches) {
     dateGroups[m.date].matches.push(m)
     
     // Keep track of earliest time for this date
-    // Simple comparison - assumes times are in same format
     if (m.time < dateGroups[m.date].earliestTime) {
       dateGroups[m.date].earliestTime = m.time
     }
+    
+    // For per-match mode, check each match individually
+    if (deadlineType === '30m_before_match') {
+      matchLockStatus[m.id] = isMatchLocked(m.date, m.time, deadlineType)
+    }
   })
   
-  // Check if each date is locked
-  const lockStatus = {}
+  // Check if each date is locked (for matchday-based deadlines)
+  const dateLockStatus = {}
   Object.keys(dateGroups).forEach(date => {
-    lockStatus[date] = isDateLocked(date, dateGroups[date].earliestTime)
+    dateLockStatus[date] = isDateLocked(date, dateGroups[date].earliestTime, deadlineType)
   })
   
-  return lockStatus
+  return { dateLockStatus, matchLockStatus, deadlineType }
 }
 
 export default function PredictionsPage() {
@@ -116,6 +147,8 @@ export default function PredictionsPage() {
   const [pool, setPool] = useState(null)
   const [deadline, setDeadline] = useState(null)
   const [dateLockStatus, setDateLockStatus] = useState({})
+  const [matchLockStatus, setMatchLockStatus] = useState({})
+  const [deadlineType, setDeadlineType] = useState('1h_before_matchday')
 
   // Load data on mount and matchday change
   const loadData = useCallback(async () => {
@@ -136,7 +169,12 @@ export default function PredictionsPage() {
         .eq('id', params.id)
         .single()
       
-      if (poolData) setPool(poolData)
+      if (poolData) {
+        setPool(poolData)
+        // Get pool's deadline type, default to '1h_before_matchday'
+        const poolDeadlineType = poolData.prediction_deadline || '1h_before_matchday'
+        setDeadlineType(poolDeadlineType)
+      }
 
       // Get pool membership
       const { data: memberData } = await supabase
@@ -153,8 +191,13 @@ export default function PredictionsPage() {
       let matchList = getDemoMatches(matchday)
       setDeadline(new Date('2026-06-11T12:00:00-04:00'))
       
+      // Get lock status based on pool's deadline setting
+      const poolDeadlineType = poolData?.prediction_deadline || '1h_before_matchday'
+      const lockResult = getDateLockStatus(matchList, poolDeadlineType)
+      
       setMatches(matchList)
-      setDateLockStatus(getDateLockStatus(matchList))
+      setDateLockStatus(lockResult.dateLockStatus)
+      setMatchLockStatus(lockResult.matchLockStatus)
 
       // Load existing picks for this user (always try if we have memberData and matches)
       if (memberData && matchList.length > 0) {
@@ -420,8 +463,11 @@ export default function PredictionsPage() {
             {matches.map(match => {
               const status = getMatchStatus(match)
               const pick = picks[match.id] || {}
-              const dateIsLocked = dateLockStatus[match.date] || false
-              const isLocked = ['live', 'ft', 'locked'].includes(status) || dateIsLocked
+              // Check lock status: per-match for '30m_before_match', otherwise per-date
+              const isTimeLocked = deadlineType === '30m_before_match' 
+                ? (matchLockStatus[match.id] || false)
+                : (dateLockStatus[match.date] || false)
+              const isLocked = ['live', 'ft', 'locked'].includes(status) || isTimeLocked
               
               return (
                 <div key={match.id} className={`mpc ${status === 'saved' ? 'submitted' : ''} ${isLocked ? 'locked-card' : ''}`}>
@@ -429,12 +475,12 @@ export default function PredictionsPage() {
                     <div className="mpc-info">
                       {match.group ? `Group ${match.group} · ` : ''}{match.date} · {match.time}
                     </div>
-                    <div className={`mpc-status s-${dateIsLocked && status !== 'live' && status !== 'ft' ? 'locked' : status}`}>
-                      {status === 'open' && !dateIsLocked && 'Open'}
-                      {status === 'saved' && !dateIsLocked && '✓ Saved'}
+                    <div className={`mpc-status s-${isTimeLocked && status !== 'live' && status !== 'ft' ? 'locked' : status}`}>
+                      {status === 'open' && !isTimeLocked && 'Open'}
+                      {status === 'saved' && !isTimeLocked && '✓ Saved'}
                       {status === 'live' && <><span className="live-dot"></span>Live</>}
                       {status === 'ft' && 'FT'}
-                      {(status === 'locked' || (dateIsLocked && status !== 'live' && status !== 'ft')) && '🔒 Locked'}
+                      {(status === 'locked' || (isTimeLocked && status !== 'live' && status !== 'ft')) && '🔒 Locked'}
                     </div>
                   </div>
                   <div className="mpc-body">

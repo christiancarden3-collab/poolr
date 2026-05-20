@@ -30,6 +30,7 @@ function CreatePoolContent() {
   const [feeType, setFeeType] = useState('on_top')
   const [prizeType, setPrizeType] = useState('winner')
   const [prizes, setPrizes] = useState([{ place: 1, percent: 100 }])
+  const [predictionDeadline, setPredictionDeadline] = useState('1h_before_matchday')
   
   // Check Stripe Connect status on mount and after redirect
   useEffect(() => {
@@ -148,6 +149,7 @@ function CreatePoolContent() {
           fee_handling: poolType === 'paid' ? feeType : 'absorbed',
           prize_structure: prizes.reduce((acc, p) => ({ ...acc, [p.place]: p.percent }), {}),
           payment_method: poolType === 'paid' ? 'stripe' : 'external',
+          prediction_deadline: predictionDeadline,
           status: 'open'
         })
         .select()
@@ -329,10 +331,11 @@ function CreatePoolContent() {
                   </div>
                   <div className="field">
                     <label className="field-label">Picks deadline</label>
-                    <select className="field-input field-select">
-                      <option>1 hour before first match of each matchday</option>
-                      <option>2 hours before first match of each matchday</option>
-                      <option>24 hours before first match of each matchday</option>
+                    <select className="field-input field-select" value={predictionDeadline} onChange={e => setPredictionDeadline(e.target.value)}>
+                      <option value="30m_before_match">30 minutes before each match starts</option>
+                      <option value="1h_before_matchday">1 hour before first match of each matchday</option>
+                      <option value="2h_before_matchday">2 hours before first match of each matchday</option>
+                      <option value="24h_before_matchday">24 hours before first match of each matchday</option>
                     </select>
                   </div>
                 </div>
