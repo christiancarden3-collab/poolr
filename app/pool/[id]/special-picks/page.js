@@ -784,7 +784,7 @@ export default function SpecialPicksPage() {
       {!isLocked && (
         <div className="save-section">
           <button 
-            className="save-btn" 
+            className={`save-btn ${saving.done ? 'saved' : ''}`}
             onClick={async () => {
               setSaving({ all: true })
               try {
@@ -799,17 +799,17 @@ export default function SpecialPicksPage() {
                     .from('special_picks')
                     .upsert({ pool_member_id: poolMember.id, ...pick }, { onConflict: 'pool_member_id,pick_type' })
                 }
-                alert('Picks saved!')
+                setSaving({ done: true })
+                setTimeout(() => setSaving({}), 2000)
               } catch (err) {
                 console.error('Error saving picks:', err)
-                alert('Error saving picks')
-              } finally {
-                setSaving({})
+                setSaving({ error: true })
+                setTimeout(() => setSaving({}), 2000)
               }
             }}
-            disabled={saving.all}
+            disabled={saving.all || saving.done}
           >
-            {saving.all ? 'Saving...' : 'Save Picks'}
+            {saving.all ? 'Saving...' : saving.done ? 'Saved ✓' : saving.error ? 'Error!' : 'Save Picks'}
           </button>
         </div>
       )}
@@ -1009,6 +1009,7 @@ export default function SpecialPicksPage() {
         .save-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: #c9a84c; color: #000; padding: 0.85rem 2.5rem; border-radius: 4px; border: none; cursor: pointer; transition: all 0.15s; }
         .save-btn:hover { background: #e6c76a; transform: translateY(-1px); }
         .save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .save-btn.saved { background: #2cb67d; color: #fff; }
 
         @media (max-width: 520px) {
           .grid { max-width: 100%; }
