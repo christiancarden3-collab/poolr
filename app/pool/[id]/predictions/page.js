@@ -269,7 +269,6 @@ export default function PredictionsPage() {
           <Link href="/dashboard" className="nav-item">Home</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
           <Link href="/results" className="nav-item">Scores</Link>
-          <Link href="/profile" className="nav-item">Profile</Link>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>

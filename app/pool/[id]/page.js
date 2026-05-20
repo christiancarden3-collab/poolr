@@ -231,10 +231,10 @@ export default function PoolDetailPage() {
           <span className="tb-link">Results</span>
         </div>
         <div className="topbar-right">
-          <div className="user-pill">
+          <Link href="/profile" className="user-pill">
             <div className="user-avatar">{userInitials}</div>
             {userName}
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -245,7 +245,6 @@ export default function PoolDetailPage() {
           <Link href="/dashboard" className="nav-item">Home</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
           <Link href="/results" className="nav-item">Scores</Link>
-          <Link href="/profile" className="nav-item">Profile</Link>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>
       </nav>
@@ -558,7 +557,8 @@ export default function PoolDetailPage() {
         .tb-link:first-child { border-left: 1px solid var(--line); }
         .tb-link:hover, .tb-link.active { color: var(--f1); background: rgba(255,255,255,0.03); }
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
-        .user-pill { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--f2); }
+        .user-pill { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--f2); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+        .user-pill:hover { color: var(--gold); }
         .user-avatar {
           width: 26px; height: 26px; border-radius: 50%; background: var(--gold);
           display: flex; align-items: center; justify-content: center;
