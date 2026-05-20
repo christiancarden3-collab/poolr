@@ -240,7 +240,6 @@ export default function SpecialPicksPage() {
 
   return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');`}</style>
       <Script 
         src="https://unpkg.com/three@0.128.0/build/three.min.js" 
         strategy="afterInteractive"

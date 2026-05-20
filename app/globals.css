@@ -9,6 +9,13 @@
 
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Force Barlow Condensed on all elements that need it */
+.lbl, .pts, .tn, .pn-full, .ph-title, .ph-eyebrow, .tab, .nav-logo, .nav-item, .nav-cta,
+.tb-link, .signout-btn, .user-avatar, .sh-title, .sh-close, .topt-n, .pi-p, .cta,
+.deadline-banner strong, [class*="barlow"] {
+  font-family: 'Barlow Condensed', sans-serif !important;
+}
+
 /* Override inline opacity:0 once CSS loads - prevents FOUC */
 body { opacity: 1 !important; }
 
