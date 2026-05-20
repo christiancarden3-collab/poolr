@@ -125,17 +125,35 @@ export default function PoolDetailPage() {
 
   const handleUpdateTeamName = async () => {
     if (!teamNameInput.trim() || !currentMember) return
+    
+    // Check if user has exceeded name change limit (2 changes max)
+    const nameChanges = currentMember.name_changes_count || 0
+    if (nameChanges >= 2) {
+      alert('You can only change your team name twice. You have used all your changes.')
+      return
+    }
+    
     setSavingTeamName(true)
     try {
       const { error } = await supabase
         .from('pool_members')
-        .update({ team_name: teamNameInput.trim() })
+        .update({ 
+          team_name: teamNameInput.trim(),
+          name_changes_count: nameChanges + 1
+        })
         .eq('id', currentMember.id)
       
-      if (error) throw error
+      if (error) {
+        console.error('Team name update error:', error)
+        throw error
+      }
       
       // Update local state
-      setCurrentMember({ ...currentMember, team_name: teamNameInput.trim() })
+      setCurrentMember({ 
+        ...currentMember, 
+        team_name: teamNameInput.trim(),
+        name_changes_count: nameChanges + 1
+      })
       setMembers(members.map(m => 
         m.user_id === user.id 
           ? { ...m, teamName: teamNameInput.trim(), displayName: teamNameInput.trim() }
@@ -480,15 +498,20 @@ export default function PoolDetailPage() {
                   onChange={e => setTeamNameInput(e.target.value)}
                   placeholder="Enter your team name..."
                   maxLength={30}
+                  disabled={(currentMember?.name_changes_count || 0) >= 2}
                 />
-                <div className="field-hint">This is how you appear on the leaderboard</div>
+                <div className="field-hint">
+                  {(currentMember?.name_changes_count || 0) >= 2 
+                    ? '❌ No changes remaining (max 2)' 
+                    : `${2 - (currentMember?.name_changes_count || 0)} change${2 - (currentMember?.name_changes_count || 0) === 1 ? '' : 's'} remaining`}
+                </div>
               </div>
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setShowTeamNameModal(false)}>Cancel</button>
                 <button 
                   className="btn-save" 
                   onClick={handleUpdateTeamName}
-                  disabled={savingTeamName || !teamNameInput.trim()}
+                  disabled={savingTeamName || !teamNameInput.trim() || (currentMember?.name_changes_count || 0) >= 2}
                 >
                   {savingTeamName ? 'Saving...' : 'Save'}
                 </button>
