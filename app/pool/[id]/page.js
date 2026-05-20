@@ -235,8 +235,24 @@ export default function PoolDetailPage() {
   const rankSuffix = pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'
 
   // Get user display name for header
-  const userName = user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'
-  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  // Format user name like dashboard: "Christian C."
+  const getUserName = () => {
+    if (!user) return 'User'
+    const meta = user.user_metadata || {}
+    if (meta.first_name) return `${meta.first_name} ${meta.last_name?.[0] || ''}.`
+    return user.email?.split('@')[0] || 'User'
+  }
+  
+  const getUserInitials = () => {
+    if (!user) return 'U'
+    const meta = user.user_metadata || {}
+    const first = meta.first_name?.[0] || user.email?.[0] || 'U'
+    const last = meta.last_name?.[0] || ''
+    return (first + last).toUpperCase()
+  }
+  
+  const userName = getUserName()
+  const userInitials = getUserInitials()
 
   return (
     <>
