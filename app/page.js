@@ -1,10 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { supabase, getCurrentUser } from '@/lib/supabase'
 
 export default function LandingPage() {
   const [lang, setLang] = useState('en')
+  const [user, setUser] = useState(null)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    // Check auth on mount
+    getCurrentUser().then(u => {
+      setUser(u)
+      setCheckingAuth(false)
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
     <>
@@ -21,7 +39,11 @@ export default function LandingPage() {
             <button className={`lang-btn ${lang === 'en' ? 'active' : ''}`} onClick={() => setLang('en')}>EN</button>
             <button className={`lang-btn ${lang === 'es' ? 'active' : ''}`} onClick={() => setLang('es')}>ES</button>
           </div>
-          <Link href="/login" className="topbar-signin">Sign in</Link>
+          {user ? (
+            <Link href="/dashboard" className="topbar-signin">Dashboard</Link>
+          ) : (
+            <Link href="/login" className="topbar-signin">Sign in</Link>
+          )}
         </div>
       </div>
 
@@ -32,9 +54,17 @@ export default function LandingPage() {
           <a href="/" className="nav-item active">Home</a>
           <a href="/dashboard" className="nav-item">My Pools</a>
           <a href="/browse" className="nav-item">Browse</a>
-          <a href="/results" className="nav-item">Scores</a>
         </div>
-        <Link href="/create" className="nav-cta">+ Create Pool</Link>
+        <div className="nav-right">
+          {user ? (
+            <Link href="/dashboard" className="nav-cta">My Dashboard</Link>
+          ) : (
+            <>
+              <Link href="/login" className="nav-signin">Sign In</Link>
+              <Link href="/register" className="nav-cta">Sign Up</Link>
+            </>
+          )}
+        </div>
       </nav>
 
       {/* TICKER */}
@@ -380,8 +410,24 @@ export default function LandingPage() {
           color: var(--white);
           border-bottom-color: var(--gold);
         }
-        .nav-cta {
+        .nav-right {
           margin-left: auto;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        .nav-signin {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .nav-signin:hover { color: var(--f1); }
+        .nav-cta {
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 0.82rem;
           font-weight: 800;
@@ -1219,6 +1265,9 @@ export default function LandingPage() {
           nav { padding: 0 1rem; }
           .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
           .nav-items { display: none; }
+          .nav-right { gap: 0.5rem; }
+          .nav-signin { font-size: 0.75rem; padding: 0.4rem 0.6rem; }
+          .nav-cta { font-size: 0.72rem; padding: 0.4rem 0.85rem; }
           .hero-inner { grid-template-columns: 1fr; }
           .hero-left { border-right: none; padding: 2rem 0; }
           .hero-right { padding: 0 0 2rem; }
