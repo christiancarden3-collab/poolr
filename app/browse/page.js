@@ -1,41 +1,117 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-const PUBLIC_POOLS = [
-  { name: 'La Quiniela Oficial', commissioner: 'Pedro M.', tournament: 'World Cup 2026', players: 31, max: 50, buyin: 'Free', status: 'live', joined: false },
-  { name: 'WC2026 Open Championship', commissioner: 'Sarah K.', tournament: 'World Cup 2026', players: 87, max: null, buyin: '$10', status: 'live', joined: false },
-  { name: 'Americas Rivalry Pool', commissioner: 'Carlos R.', tournament: 'World Cup 2026', players: 22, max: 30, buyin: 'Free', status: 'live', joined: true },
-  { name: 'European HQ Picks', commissioner: 'Emma T.', tournament: 'World Cup 2026', players: 18, max: 25, buyin: '$5', status: 'live', joined: false },
-  { name: 'Reddit Soccer WC26', commissioner: 'FootballFan99', tournament: 'World Cup 2026', players: 142, max: null, buyin: 'Free', status: 'live', joined: false },
-  { name: 'Global Prediction League', commissioner: 'Aisha N.', tournament: 'World Cup 2026', players: 56, max: 100, buyin: '$20', status: 'upcoming', joined: false },
-  { name: 'South American Special', commissioner: 'Diego V.', tournament: 'World Cup 2026', players: 9, max: 20, buyin: 'Free', status: 'upcoming', joined: false },
-  { name: 'Expats United WC26', commissioner: 'Mike O.', tournament: 'World Cup 2026', players: 14, max: null, buyin: '$15', status: 'upcoming', joined: false },
-]
+import { useRouter } from 'next/navigation'
+import { supabase, getCurrentUser } from '@/lib/supabase'
 
 export default function BrowsePage() {
+  const router = useRouter()
   const [search, setSearch] = useState('')
-  const [pools, setPools] = useState(PUBLIC_POOLS)
+  const [pools, setPools] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
+  const [userMemberships, setUserMemberships] = useState([])
+  const [joiningPool, setJoiningPool] = useState(null)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    
+    // Check if user is logged in
+    const currentUser = await getCurrentUser()
+    setUser(currentUser)
+
+    // Load public pools
+    const { data: publicPools, error } = await supabase
+      .from('pools')
+      .select(`
+        *,
+        pool_members(count)
+      `)
+      .eq('visibility', 'public')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+
+    if (publicPools) {
+      setPools(publicPools.map(p => ({
+        ...p,
+        player_count: p.pool_members?.[0]?.count || 0
+      })))
+    }
+
+    // Load user's memberships if logged in
+    if (currentUser) {
+      const { data: memberships } = await supabase
+        .from('pool_members')
+        .select('pool_id')
+        .eq('user_id', currentUser.id)
+
+      if (memberships) {
+        setUserMemberships(memberships.map(m => m.pool_id))
+      }
+    }
+
+    setLoading(false)
+  }
+
+  const handleJoin = async (poolId) => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    setJoiningPool(poolId)
+    try {
+      const { error } = await supabase
+        .from('pool_members')
+        .insert({
+          pool_id: poolId,
+          user_id: user.id,
+          role: 'player',
+          paid: false,
+          total_points: 0
+        })
+
+      if (error) throw error
+
+      setUserMemberships([...userMemberships, poolId])
+      router.push(`/pool/${poolId}`)
+    } catch (err) {
+      console.error('Error joining pool:', err)
+      alert('Failed to join pool: ' + err.message)
+    } finally {
+      setJoiningPool(null)
+    }
+  }
 
   const filteredPools = pools.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.commissioner.toLowerCase().includes(search.toLowerCase())
+    p.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleJoin = (index) => {
-    const newPools = [...pools]
-    newPools[index].joined = true
-    setPools(newPools)
-  }
+  const isJoined = (poolId) => userMemberships.includes(poolId)
 
   return (
     <>
       <nav>
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
+        <div className="nav-items">
+          <Link href="/" className="nav-item">Home</Link>
+          <Link href="/dashboard" className="nav-item">My Pools</Link>
+          <Link href="/browse" className="nav-item active">Browse</Link>
+        </div>
         <div className="nav-right">
-          <Link href="/login" className="nav-link">Sign In</Link>
-          <Link href="/register" className="nav-cta">Create Account</Link>
+          {user ? (
+            <Link href="/dashboard" className="nav-cta">My Dashboard</Link>
+          ) : (
+            <>
+              <Link href="/login" className="nav-link">Sign In</Link>
+              <Link href="/register" className="nav-cta">Create Account</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -52,7 +128,7 @@ export default function BrowsePage() {
           <input 
             className="filter-search" 
             type="text" 
-            placeholder="Search pool name or commissioner..."
+            placeholder="Search pool name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -65,57 +141,71 @@ export default function BrowsePage() {
             <option value="free">Free only</option>
             <option value="paid">Paid only</option>
           </select>
-          <select className="filter-select">
-            <option value="">Any status</option>
-            <option value="open">Open to join</option>
-            <option value="live">Live now</option>
-          </select>
         </div>
 
-        <div className="pools-table">
-          <div className="pt-head">
-            <div className="pt-col">Pool name</div>
-            <div className="pt-col">Tournament</div>
-            <div className="pt-col r">Players</div>
-            <div className="pt-col r">Buy-in</div>
-            <div className="pt-col">Status</div>
-            <div className="pt-col"></div>
+        {loading ? (
+          <div className="loading-state">Loading pools...</div>
+        ) : filteredPools.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🏆</div>
+            <div className="empty-title">No public pools yet</div>
+            <div className="empty-text">Be the first to create a public pool for World Cup 2026!</div>
+            <Link href="/create" className="btn-primary">+ Create Pool</Link>
           </div>
-          {filteredPools.map((p, i) => (
-            <div key={i} className="pt-row">
-              <div>
-                <div className="pt-name">{p.name}</div>
-                <div className="pt-commissioner">
-                  by {p.commissioner}
-                  {p.max ? ` · ${p.players}/${p.max} players` : ''}
+        ) : (
+          <div className="pools-table">
+            <div className="pt-head">
+              <div className="pt-col">Pool name</div>
+              <div className="pt-col">Tournament</div>
+              <div className="pt-col r">Players</div>
+              <div className="pt-col r">Buy-in</div>
+              <div className="pt-col">Status</div>
+              <div className="pt-col"></div>
+            </div>
+            {filteredPools.map((p) => (
+              <div key={p.id} className="pt-row">
+                <div>
+                  <div className="pt-name">{p.name}</div>
+                  <div className="pt-commissioner">
+                    {p.player_count} player{p.player_count !== 1 ? 's' : ''}
+                  </div>
+                </div>
+                <div className="pt-tournament">
+                  <div className="pt-flag"><img src="https://flagcdn.com/w40/us.png" alt="WC26" /></div>
+                  WC 2026
+                </div>
+                <div className="pt-val r">{p.player_count}</div>
+                <div className={`pt-val r ${p.buy_in === 0 ? 'gold' : ''}`}>
+                  {p.buy_in === 0 ? 'Free' : `$${p.buy_in}`}
+                </div>
+                <div className="pt-status">
+                  <span className="status-dot dot-upcoming"></span>
+                  <span style={{ color: 'var(--gold)' }}>
+                    {p.status === 'open' ? 'Open' : 'Starting Jun 11'}
+                  </span>
+                </div>
+                <div>
+                  {isJoined(p.id) ? (
+                    <Link href={`/pool/${p.id}`} className="btn-joined">✓ Joined</Link>
+                  ) : (
+                    <button 
+                      className="btn-join-sm" 
+                      onClick={() => handleJoin(p.id)}
+                      disabled={joiningPool === p.id}
+                    >
+                      {joiningPool === p.id ? 'Joining...' : 'Join Pool'}
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="pt-tournament">
-                <div className="pt-flag"><img src="https://flagcdn.com/w40/us.png" alt="WC26" /></div>
-                WC 2026
-              </div>
-              <div className="pt-val r">{p.players}</div>
-              <div className={`pt-val r ${p.buyin === 'Free' ? 'gold' : ''}`}>{p.buyin}</div>
-              <div className="pt-status">
-                <span className={`status-dot ${p.status === 'live' ? 'dot-live' : 'dot-upcoming'}`}></span>
-                <span style={{ color: p.status === 'live' ? 'var(--red)' : 'var(--gold)' }}>
-                  {p.status === 'live' ? 'Live' : 'Starting Jun 11'}
-                </span>
-              </div>
-              <div>
-                {p.joined ? (
-                  <span className="btn-joined">✓ Joined</span>
-                ) : (
-                  <button className="btn-join-sm" onClick={() => handleJoin(i)}>Join Pool</button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredPools.length === 0 && (
+        {filteredPools.length > 0 && search && (
           <div className="browse-empty">
-            No pools match your search. <span onClick={() => setSearch('')}>Clear filters</span>
+            {filteredPools.length} pool{filteredPools.length !== 1 ? 's' : ''} found. 
+            <span onClick={() => setSearch('')}> Clear search</span>
           </div>
         )}
       </div>
@@ -140,8 +230,31 @@ export default function BrowsePage() {
           color: var(--white);
           text-transform: uppercase;
           text-decoration: none;
+          margin-right: 2rem;
+          padding-right: 2rem;
+          border-right: 1px solid var(--f4);
         }
         .nav-logo span { color: var(--gold); }
+        .nav-items {
+          display: flex;
+          height: 100%;
+        }
+        .nav-item {
+          display: flex;
+          align-items: center;
+          padding: 0 1.25rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
+          text-decoration: none;
+          border-bottom: 3px solid transparent;
+          margin-bottom: -3px;
+        }
+        .nav-item:hover { color: var(--f1); }
+        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
         .nav-right {
           margin-left: auto;
           display: flex;
@@ -249,6 +362,49 @@ export default function BrowsePage() {
         }
         .filter-select:focus { border-color: var(--gold); }
 
+        .loading-state {
+          text-align: center;
+          padding: 3rem;
+          color: var(--f3);
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 4rem 2rem;
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+        }
+        .empty-icon {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+        }
+        .empty-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.4rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          color: var(--white);
+          margin-bottom: 0.5rem;
+        }
+        .empty-text {
+          color: var(--f3);
+          margin-bottom: 1.5rem;
+        }
+        .btn-primary {
+          display: inline-block;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          padding: 0.6rem 1.5rem;
+          border-radius: 2px;
+          text-decoration: none;
+        }
+
         .pools-table {
           background: var(--bg2);
           border: 1px solid var(--line);
@@ -352,7 +508,9 @@ export default function BrowsePage() {
           white-space: nowrap;
         }
         .btn-join-sm:hover { background: var(--gold2); }
+        .btn-join-sm:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-joined {
+          display: inline-block;
           font-family: 'Barlow Condensed', sans-serif;
           font-size: 0.72rem;
           font-weight: 700;
@@ -363,7 +521,7 @@ export default function BrowsePage() {
           border: 1px solid rgba(44,182,125,0.3);
           padding: 0.32rem 0.85rem;
           border-radius: 2px;
-          cursor: default;
+          text-decoration: none;
         }
 
         .browse-empty {
@@ -383,6 +541,9 @@ export default function BrowsePage() {
         }
 
         @media (max-width: 768px) {
+          nav { padding: 0 1rem; }
+          .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
+          .nav-items { display: none; }
           .browse-page { padding: 1rem; }
           .pt-head, .pt-row { grid-template-columns: 1fr auto 80px; }
           .pt-col:nth-child(n+3):not(:last-child),

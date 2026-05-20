@@ -115,6 +115,9 @@ export default function ProfilePage() {
     router.push('/')
   }
 
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No name set'
+  const displayUsername = username || 'username'
+
   if (loading) {
     return <div className="loading-page">Loading...</div>
   }
@@ -128,9 +131,23 @@ export default function ProfilePage() {
           <Link href="/" className="nav-item">Home</Link>
           <Link href="/dashboard" className="nav-item">My Pools</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
+          <Link href="/results" className="nav-item">Scores</Link>
         </div>
         <button className="nav-ghost" onClick={handleSignOut}>Sign Out</button>
       </nav>
+
+      {/* PROFILE HEADER */}
+      <div className="profile-hero">
+        <div className="profile-hero-inner">
+          <div className="profile-avatar">
+            {(firstName?.[0] || username?.[0] || 'U').toUpperCase()}
+          </div>
+          <div className="profile-info">
+            <div className="profile-username">@{displayUsername}</div>
+            <div className="profile-fullname">{fullName}</div>
+          </div>
+        </div>
+      </div>
 
       {/* PAGE HEADER */}
       <div className="page-header">
@@ -336,6 +353,55 @@ export default function ProfilePage() {
         }
         .nav-ghost:hover { color: var(--f1); border-color: var(--f2); }
 
+        /* PROFILE HERO */
+        .profile-hero {
+          background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+          border-bottom: 1px solid var(--line);
+          padding: 2rem;
+        }
+        .profile-hero-inner {
+          max-width: 700px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+        }
+        .profile-avatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 2.5rem;
+          font-weight: 900;
+          color: #000;
+          border: 3px solid var(--gold);
+          box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
+        }
+        .profile-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+        .profile-username {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 2rem;
+          font-weight: 900;
+          color: var(--white);
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          line-height: 1;
+        }
+        .profile-fullname {
+          font-family: 'Inter', sans-serif;
+          font-size: 1rem;
+          font-weight: 500;
+          color: var(--f3);
+        }
+
         /* PAGE HEADER */
         .page-header {
           background: var(--bg2);
@@ -534,6 +600,11 @@ export default function ProfilePage() {
           .wrap { padding: 1rem; }
           .form-row { grid-template-columns: 1fr; }
           .page-header { padding: 1rem; }
+          .profile-hero { padding: 1.5rem 1rem; }
+          .profile-hero-inner { gap: 1rem; }
+          .profile-avatar { width: 60px; height: 60px; font-size: 1.8rem; }
+          .profile-username { font-size: 1.5rem; }
+          .profile-fullname { font-size: 0.9rem; }
         }
       `}</style>
     </>

@@ -18,6 +18,7 @@ export default function JoinPoolPage() {
   const [error, setError] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [teamName, setTeamName] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
 
   useEffect(() => {
@@ -118,16 +119,21 @@ export default function JoinPoolPage() {
 
   const handleConfirmJoin = async () => {
     if (!user || !pool) return
+    if (!teamName.trim()) {
+      setError('Please enter a team name')
+      return
+    }
     setJoining(true)
     setError(null)
     
     try {
-      // Add user to pool
+      // Add user to pool with team name
       const { error: joinError } = await supabase
         .from('pool_members')
         .insert({
           pool_id: pool.id,
           user_id: user.id,
+          team_name: teamName.trim(),
           payment_status: 'paid' // Free pool, so mark as paid
         })
 
@@ -234,14 +240,26 @@ export default function JoinPoolPage() {
                 <div className="confirm-icon">🏆</div>
                 <div className="confirm-title">Confirm Join</div>
                 <div className="confirm-text">
-                  Are you sure you want to join <strong>{pool?.name}</strong>?
+                  Choose your team name for <strong>{pool?.name}</strong>
+                </div>
+                <div className="team-name-field">
+                  <label className="field-label">Team Name *</label>
+                  <input 
+                    className="field-input" 
+                    type="text" 
+                    placeholder="e.g., Los Galácticos, Dream Team..." 
+                    value={teamName} 
+                    onChange={(e) => setTeamName(e.target.value)}
+                    maxLength={30}
+                  />
+                  <div className="field-hint">This is how you'll appear on the leaderboard</div>
                 </div>
                 <div className="confirm-details">
                   <div>Tournament: {pool?.tournament || 'FIFA World Cup 2026'}</div>
                   <div>Buy-in: {buyinDisplay}</div>
                   <div>Players: {pool?.player_count}</div>
                 </div>
-                <button className="btn-full green" onClick={handleConfirmJoin} disabled={joining}>
+                <button className="btn-full green" onClick={handleConfirmJoin} disabled={joining || !teamName.trim()}>
                   {joining ? 'Joining...' : 'Yes, Join Pool →'}
                 </button>
                 <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => setShowConfirm(false)}>
@@ -424,6 +442,12 @@ export default function JoinPoolPage() {
         .confirm-details { background: var(--bg3); border-radius: 4px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.75rem; color: var(--f3); text-align: left; }
         .confirm-details div { padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
         .confirm-details div:last-child { border-bottom: none; }
+        .team-name-field { margin-bottom: 1rem; text-align: left; }
+        .team-name-field .field-input { width: 100%; padding: 0.75rem 1rem; background: var(--bg); border: 2px solid var(--gold-line); border-radius: 4px; color: var(--f1); font-size: 1rem; font-family: 'Inter', sans-serif; font-weight: 600; transition: border-color 0.2s; }
+        .team-name-field .field-input:focus { outline: none; border-color: var(--gold); }
+        .team-name-field .field-input::placeholder { color: var(--f4); font-weight: 400; }
+        .team-name-field .field-label { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+        .team-name-field .field-hint { font-size: 0.7rem; color: var(--f4); margin-top: 0.4rem; }
 
         @keyframes pitchFloat { 0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); } 50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); } }
 

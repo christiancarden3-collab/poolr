@@ -14,6 +14,12 @@ export default function PoolDetailPage() {
   const [activeTab, setActiveTab] = useState('picks')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showTeamNameModal, setShowTeamNameModal] = useState(false)
+  const [teamNameInput, setTeamNameInput] = useState('')
+  const [savingTeamName, setSavingTeamName] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [currentMember, setCurrentMember] = useState(null)
 
   useEffect(() => {
     async function loadData() {
@@ -85,8 +91,15 @@ export default function PoolDetailPage() {
         const platformFee = poolData.fee_handling === 'from_pot' ? 0.05 : 0
         const potAmount = buyIn * playerCount * (1 - platformFee)
 
-        // Get current user's stats
+        // Get current user's stats and member record
         const currentUserMember = formattedMembers.find(m => m.user_id === currentUser.id)
+        
+        // Get current user's pool_member record for team name editing
+        const currentMemberData = membersData?.find(m => m.user_id === currentUser.id)
+        if (currentMemberData) {
+          setCurrentMember(currentMemberData)
+          setTeamNameInput(currentMemberData.team_name || '')
+        }
 
         setPool({
           ...poolData,
@@ -109,6 +122,64 @@ export default function PoolDetailPage() {
     }
     loadData()
   }, [router, params.id])
+
+  const handleUpdateTeamName = async () => {
+    if (!teamNameInput.trim() || !currentMember) return
+    setSavingTeamName(true)
+    try {
+      const { error } = await supabase
+        .from('pool_members')
+        .update({ team_name: teamNameInput.trim() })
+        .eq('id', currentMember.id)
+      
+      if (error) throw error
+      
+      // Update local state
+      setCurrentMember({ ...currentMember, team_name: teamNameInput.trim() })
+      setMembers(members.map(m => 
+        m.user_id === user.id 
+          ? { ...m, teamName: teamNameInput.trim(), displayName: teamNameInput.trim() }
+          : m
+      ))
+      setShowTeamNameModal(false)
+    } catch (err) {
+      alert('Error updating team name: ' + err.message)
+    } finally {
+      setSavingTeamName(false)
+    }
+  }
+
+  const handleLeavePool = async () => {
+    if (!currentMember) return
+    setLeaving(true)
+    try {
+      // Delete predictions first
+      await supabase
+        .from('predictions')
+        .delete()
+        .eq('pool_id', pool.id)
+        .eq('user_id', user.id)
+
+      // Delete special picks
+      await supabase
+        .from('special_picks')
+        .delete()
+        .eq('pool_member_id', currentMember.id)
+
+      // Delete membership
+      const { error } = await supabase
+        .from('pool_members')
+        .delete()
+        .eq('id', currentMember.id)
+      
+      if (error) throw error
+      
+      router.push('/dashboard')
+    } catch (err) {
+      alert('Error leaving pool: ' + err.message)
+      setLeaving(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -346,9 +417,101 @@ export default function PoolDetailPage() {
                 <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
               </div>
             </div>
+
+            {/* Member Settings */}
+            {currentMember && (
+              <div className="card">
+                <div className="card-head"><div className="card-title">Your Settings</div></div>
+                <div className="card-body">
+                  <div className="member-setting">
+                    <div className="ms-label">Team Name</div>
+                    <div className="ms-value">{currentMember.team_name || 'Not set'}</div>
+                    <button className="ms-btn" onClick={() => setShowTeamNameModal(true)}>Change</button>
+                  </div>
+                  {!pool?.isCommissioner && (
+                    <div className="member-setting danger">
+                      <div className="ms-label">Leave Pool</div>
+                      <div className="ms-value">Remove yourself from this pool</div>
+                      <button className="ms-btn danger" onClick={() => setShowLeaveConfirm(true)}>Leave</button>
+                    </div>
+                  )}
+                  {pool?.isCommissioner && (
+                    <Link href={`/pool/${params.id}/manage`} className="manage-link">
+                      ⚙️ Manage Pool Settings →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Team Name Modal */}
+      {showTeamNameModal && (
+        <div className="modal-overlay" onClick={() => setShowTeamNameModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Change Team Name</div>
+              <button className="modal-close" onClick={() => setShowTeamNameModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="field">
+                <label className="field-label">Team Name</label>
+                <input
+                  type="text"
+                  className="field-input"
+                  value={teamNameInput}
+                  onChange={e => setTeamNameInput(e.target.value)}
+                  placeholder="Enter your team name..."
+                  maxLength={30}
+                />
+                <div className="field-hint">This is how you appear on the leaderboard</div>
+              </div>
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowTeamNameModal(false)}>Cancel</button>
+                <button 
+                  className="btn-save" 
+                  onClick={handleUpdateTeamName}
+                  disabled={savingTeamName || !teamNameInput.trim()}
+                >
+                  {savingTeamName ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Pool Confirmation */}
+      {showLeaveConfirm && (
+        <div className="modal-overlay" onClick={() => setShowLeaveConfirm(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title" style={{ color: 'var(--red)' }}>Leave Pool</div>
+              <button className="modal-close" onClick={() => setShowLeaveConfirm(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: 'var(--f2)', marginBottom: '1rem' }}>
+                Are you sure you want to leave <strong>{pool?.name}</strong>?
+              </p>
+              <p style={{ color: 'var(--red)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                ⚠️ This will delete all your predictions and cannot be undone.
+              </p>
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowLeaveConfirm(false)}>Cancel</button>
+                <button 
+                  className="btn-danger" 
+                  onClick={handleLeavePool}
+                  disabled={leaving}
+                >
+                  {leaving ? 'Leaving...' : 'Leave Pool'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         /* TOPBAR */
@@ -831,6 +994,168 @@ export default function PoolDetailPage() {
         }
         .sc-val.gold { color: var(--gold); }
         .sc-val.green { color: var(--green); }
+
+        /* MEMBER SETTINGS */
+        .member-setting {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .member-setting:last-child { border-bottom: none; }
+        .member-setting.danger { border-color: rgba(224,59,59,0.2); }
+        .ms-label {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: var(--f2);
+          width: 100%;
+        }
+        .ms-value {
+          flex: 1;
+          font-size: 0.85rem;
+          color: var(--gold);
+          font-weight: 600;
+        }
+        .member-setting.danger .ms-value { color: var(--f3); font-size: 0.75rem; }
+        .ms-btn {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          background: transparent;
+          border: 1px solid var(--f4);
+          color: var(--f2);
+          padding: 0.35rem 0.75rem;
+          border-radius: 3px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .ms-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .ms-btn.danger { border-color: var(--red); color: var(--red); }
+        .ms-btn.danger:hover { background: var(--red); color: white; }
+        .manage-link {
+          display: block;
+          margin-top: 0.75rem;
+          font-size: 0.8rem;
+          color: var(--gold);
+          text-decoration: none;
+        }
+        .manage-link:hover { text-decoration: underline; }
+
+        /* MODALS */
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.85);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 1rem;
+        }
+        .modal {
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          width: 100%;
+          max-width: 400px;
+          overflow: hidden;
+        }
+        .modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid var(--line);
+          background: var(--bg3);
+        }
+        .modal-title {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.1rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          color: var(--white);
+        }
+        .modal-close {
+          background: none;
+          border: none;
+          color: var(--f3);
+          font-size: 1.5rem;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .modal-body { padding: 1.25rem; }
+        .modal-actions {
+          display: flex;
+          gap: 0.75rem;
+          justify-content: flex-end;
+          margin-top: 1.25rem;
+        }
+        .field { margin-bottom: 1rem; }
+        .field-label {
+          display: block;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--f2);
+          margin-bottom: 0.4rem;
+        }
+        .field-input {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: var(--bg);
+          border: 1px solid var(--f4);
+          border-radius: 4px;
+          color: var(--f1);
+          font-size: 0.95rem;
+        }
+        .field-input:focus { outline: none; border-color: var(--gold); }
+        .field-hint { font-size: 0.7rem; color: var(--f4); margin-top: 0.35rem; }
+        .btn-cancel {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          background: transparent;
+          border: 1px solid var(--f4);
+          color: var(--f2);
+          padding: 0.6rem 1.25rem;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .btn-save {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          background: var(--gold);
+          border: none;
+          color: #000;
+          padding: 0.6rem 1.25rem;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-danger {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          background: var(--red);
+          border: none;
+          color: white;
+          padding: 0.6rem 1.25rem;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @media (max-width: 900px) {
           .topbar { display: none; }

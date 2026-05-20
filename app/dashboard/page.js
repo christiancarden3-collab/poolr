@@ -86,6 +86,7 @@ export default function DashboardPage() {
           <a href="/" className="nav-item">Home</a>
           <a href="/dashboard" className="nav-item active">My Pools</a>
           <a href="/browse" className="nav-item">Browse</a>
+          <a href="/results" className="nav-item">Scores</a>
         </div>
         <a href="/create" className="nav-cta">+ Create Pool</a>
       </nav>
@@ -180,11 +181,102 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Match Schedule */}
+        <div className="card">
+          <div className="card-head">
+            <div className="card-title">Upcoming Matches · Matchday 1</div>
+            <Link href="/results" className="card-link">Full schedule →</Link>
+          </div>
+          <div className="card-body" style={{ padding: 0 }}>
+            <div className="match-list">
+              <div className="match-date-header">Wednesday, June 11, 2026</div>
+              <div className="match-item">
+                <div className="match-time">5:00 PM ET</div>
+                <div className="match-teams">
+                  <div className="match-team">
+                    <img src="https://flagcdn.com/w40/mx.png" alt="MEX" className="match-flag" />
+                    <span>Mexico</span>
+                  </div>
+                  <span className="match-vs">vs</span>
+                  <div className="match-team right">
+                    <span>South Africa</span>
+                    <img src="https://flagcdn.com/w40/za.png" alt="RSA" className="match-flag" />
+                  </div>
+                </div>
+                <div className="match-group">Group A</div>
+              </div>
+              <div className="match-item">
+                <div className="match-time">8:00 PM ET</div>
+                <div className="match-teams">
+                  <div className="match-team">
+                    <img src="https://flagcdn.com/w40/kr.png" alt="KOR" className="match-flag" />
+                    <span>Korea Republic</span>
+                  </div>
+                  <span className="match-vs">vs</span>
+                  <div className="match-team right">
+                    <span>Czechia</span>
+                    <img src="https://flagcdn.com/w40/cz.png" alt="CZE" className="match-flag" />
+                  </div>
+                </div>
+                <div className="match-group">Group A</div>
+              </div>
+
+              <div className="match-date-header">Thursday, June 12, 2026</div>
+              <div className="match-item">
+                <div className="match-time">2:00 PM ET</div>
+                <div className="match-teams">
+                  <div className="match-team">
+                    <img src="https://flagcdn.com/w40/ca.png" alt="CAN" className="match-flag" />
+                    <span>Canada</span>
+                  </div>
+                  <span className="match-vs">vs</span>
+                  <div className="match-team right">
+                    <span>Bosnia and Herzegovina</span>
+                    <img src="https://flagcdn.com/w40/ba.png" alt="BIH" className="match-flag" />
+                  </div>
+                </div>
+                <div className="match-group">Group B</div>
+              </div>
+              <div className="match-item highlight">
+                <div className="match-time">8:00 PM ET</div>
+                <div className="match-teams">
+                  <div className="match-team">
+                    <img src="https://flagcdn.com/w40/us.png" alt="USA" className="match-flag" />
+                    <span>USA</span>
+                  </div>
+                  <span className="match-vs">vs</span>
+                  <div className="match-team right">
+                    <span>Paraguay</span>
+                    <img src="https://flagcdn.com/w40/py.png" alt="PAR" className="match-flag" />
+                  </div>
+                </div>
+                <div className="match-group">Group D</div>
+              </div>
+
+              <div className="match-date-header">Friday, June 13, 2026</div>
+              <div className="match-item">
+                <div className="match-time">5:00 PM ET</div>
+                <div className="match-teams">
+                  <div className="match-team">
+                    <img src="https://flagcdn.com/w40/br.png" alt="BRA" className="match-flag" />
+                    <span>Brazil</span>
+                  </div>
+                  <span className="match-vs">vs</span>
+                  <div className="match-team right">
+                    <span>Morocco</span>
+                    <img src="https://flagcdn.com/w40/ma.png" alt="MAR" className="match-flag" />
+                  </div>
+                </div>
+                <div className="match-group">Group C</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Tournament overview */}
         <div className="card">
           <div className="card-head">
-            <div className="card-title">World Cup 2026 · Group Stage</div>
-            <span className="card-link">Full schedule</span>
+            <div className="card-title">World Cup 2026 · Overview</div>
           </div>
           <div className="card-body">
             <div className="overview-grid">
@@ -643,6 +735,80 @@ export default function DashboardPage() {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.35; }
+        }
+
+        /* MATCH SCHEDULE */
+        .match-list { }
+        .match-date-header {
+          background: var(--bg3);
+          padding: 0.5rem 1rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--gold);
+          border-bottom: 1px solid var(--line);
+        }
+        .match-item {
+          display: grid;
+          grid-template-columns: 80px 1fr 70px;
+          align-items: center;
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          transition: background 0.15s;
+        }
+        .match-item:last-child { border-bottom: none; }
+        .match-item:hover { background: rgba(255,255,255,0.02); }
+        .match-item.highlight { background: rgba(201,168,76,0.05); }
+        .match-time {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: var(--f3);
+        }
+        .match-teams {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+        }
+        .match-team {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--f1);
+          min-width: 140px;
+        }
+        .match-team.right {
+          justify-content: flex-end;
+          text-align: right;
+        }
+        .match-flag {
+          width: 24px;
+          height: 16px;
+          border-radius: 2px;
+          object-fit: cover;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .match-vs {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: var(--f4);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+        .match-group {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.68rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f4);
+          text-align: right;
         }
 
         /* EMPTY STATE */

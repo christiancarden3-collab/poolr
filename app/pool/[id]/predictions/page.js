@@ -2,36 +2,47 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-// Demo data fallback when database is empty
+// Real World Cup 2026 fixtures by matchday
 function getDemoMatches(matchday) {
-  const demoMatchesByDay = {
+  const realMatchesByDay = {
     1: [
-      { id: 'demo-1', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'United States', flag: 'us' }, awayTeam: { name: 'Colombia', flag: 'co' }, date: 'Jun 11', time: '12:00 PM ET', status: 'scheduled' },
-      { id: 'demo-2', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'Senegal', flag: 'sn' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 11', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'demo-3', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Mexico', flag: 'mx' }, awayTeam: { name: 'England', flag: 'gb-eng' }, date: 'Jun 11', time: '6:00 PM ET', status: 'scheduled' },
-      { id: 'demo-4', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Iran', flag: 'ir' }, awayTeam: { name: 'Nigeria', flag: 'ng' }, date: 'Jun 11', time: '9:00 PM ET', status: 'scheduled' },
-      { id: 'demo-5', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Canada', flag: 'ca' }, awayTeam: { name: 'Germany', flag: 'de' }, date: 'Jun 12', time: '12:00 PM ET', status: 'scheduled' },
-      { id: 'demo-6', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Japan', flag: 'jp' }, awayTeam: { name: 'Cameroon', flag: 'cm' }, date: 'Jun 12', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'demo-7', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Netherlands', flag: 'nl' }, date: 'Jun 12', time: '6:00 PM ET', status: 'scheduled' },
-      { id: 'demo-8', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'Australia', flag: 'au' }, awayTeam: { name: 'Egypt', flag: 'eg' }, date: 'Jun 12', time: '9:00 PM ET', status: 'scheduled' },
-      { id: 'demo-9', matchday: 1, stage: 'group', group: 'E', homeTeam: { name: 'France', flag: 'fr' }, awayTeam: { name: 'Uruguay', flag: 'uy' }, date: 'Jun 13', time: '12:00 PM ET', status: 'scheduled' },
-      { id: 'demo-10', matchday: 1, stage: 'group', group: 'E', homeTeam: { name: 'South Korea', flag: 'kr' }, awayTeam: { name: 'Morocco', flag: 'ma' }, date: 'Jun 13', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'demo-11', matchday: 1, stage: 'group', group: 'F', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Spain', flag: 'es' }, date: 'Jun 13', time: '6:00 PM ET', status: 'scheduled' },
-      { id: 'demo-12', matchday: 1, stage: 'group', group: 'F', homeTeam: { name: 'Serbia', flag: 'rs' }, awayTeam: { name: 'Costa Rica', flag: 'cr' }, date: 'Jun 13', time: '9:00 PM ET', status: 'scheduled' },
+      { id: 'md1-1', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'Mexico', flag: 'mx' }, awayTeam: { name: 'South Africa', flag: 'za' }, date: 'Jun 11', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md1-2', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'Korea Republic', flag: 'kr' }, awayTeam: { name: 'Czechia', flag: 'cz' }, date: 'Jun 11', time: '8:00 PM ET', status: 'scheduled' },
+      { id: 'md1-3', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Canada', flag: 'ca' }, awayTeam: { name: 'Bosnia and Herzegovina', flag: 'ba' }, date: 'Jun 12', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md1-4', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'USA', flag: 'us' }, awayTeam: { name: 'Paraguay', flag: 'py' }, date: 'Jun 12', time: '8:00 PM ET', status: 'scheduled' },
+      { id: 'md1-5', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Haiti', flag: 'ht' }, awayTeam: { name: 'Scotland', flag: 'gb-sct' }, date: 'Jun 13', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'md1-6', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'Australia', flag: 'au' }, awayTeam: { name: 'Türkiye', flag: 'tr' }, date: 'Jun 13', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md1-7', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Morocco', flag: 'ma' }, date: 'Jun 13', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md1-8', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Qatar', flag: 'qa' }, awayTeam: { name: 'Switzerland', flag: 'ch' }, date: 'Jun 13', time: '8:00 PM ET', status: 'scheduled' },
+      { id: 'md1-9', matchday: 1, stage: 'group', group: 'E', homeTeam: { name: "Côte d'Ivoire", flag: 'ci' }, awayTeam: { name: 'Ecuador', flag: 'ec' }, date: 'Jun 14', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'md1-10', matchday: 1, stage: 'group', group: 'E', homeTeam: { name: 'Germany', flag: 'de' }, awayTeam: { name: 'Curaçao', flag: 'cw' }, date: 'Jun 14', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md1-11', matchday: 1, stage: 'group', group: 'F', homeTeam: { name: 'Netherlands', flag: 'nl' }, awayTeam: { name: 'Japan', flag: 'jp' }, date: 'Jun 14', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md1-12', matchday: 1, stage: 'group', group: 'F', homeTeam: { name: 'Sweden', flag: 'se' }, awayTeam: { name: 'Tunisia', flag: 'tn' }, date: 'Jun 14', time: '8:00 PM ET', status: 'scheduled' },
+      { id: 'md1-13', matchday: 1, stage: 'group', group: 'H', homeTeam: { name: 'Saudi Arabia', flag: 'sa' }, awayTeam: { name: 'Uruguay', flag: 'uy' }, date: 'Jun 15', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'md1-14', matchday: 1, stage: 'group', group: 'H', homeTeam: { name: 'Spain', flag: 'es' }, awayTeam: { name: 'Cabo Verde', flag: 'cv' }, date: 'Jun 15', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md1-15', matchday: 1, stage: 'group', group: 'G', homeTeam: { name: 'IR Iran', flag: 'ir' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 15', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md1-16', matchday: 1, stage: 'group', group: 'G', homeTeam: { name: 'Belgium', flag: 'be' }, awayTeam: { name: 'Egypt', flag: 'eg' }, date: 'Jun 15', time: '8:00 PM ET', status: 'scheduled' },
+      { id: 'md1-17', matchday: 1, stage: 'group', group: 'I', homeTeam: { name: 'France', flag: 'fr' }, awayTeam: { name: 'Senegal', flag: 'sn' }, date: 'Jun 16', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'md1-18', matchday: 1, stage: 'group', group: 'I', homeTeam: { name: 'Iraq', flag: 'iq' }, awayTeam: { name: 'Norway', flag: 'no' }, date: 'Jun 16', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md1-19', matchday: 1, stage: 'group', group: 'J', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Algeria', flag: 'dz' }, date: 'Jun 16', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md1-20', matchday: 1, stage: 'group', group: 'J', homeTeam: { name: 'Austria', flag: 'at' }, awayTeam: { name: 'Jordan', flag: 'jo' }, date: 'Jun 16', time: '8:00 PM ET', status: 'scheduled' },
+      { id: 'md1-21', matchday: 1, stage: 'group', group: 'L', homeTeam: { name: 'Ghana', flag: 'gh' }, awayTeam: { name: 'Panama', flag: 'pa' }, date: 'Jun 17', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'md1-22', matchday: 1, stage: 'group', group: 'L', homeTeam: { name: 'England', flag: 'gb-eng' }, awayTeam: { name: 'Croatia', flag: 'hr' }, date: 'Jun 17', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md1-23', matchday: 1, stage: 'group', group: 'K', homeTeam: { name: 'Portugal', flag: 'pt' }, awayTeam: { name: 'Congo DR', flag: 'cd' }, date: 'Jun 17', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md1-24', matchday: 1, stage: 'group', group: 'K', homeTeam: { name: 'Uzbekistan', flag: 'uz' }, awayTeam: { name: 'Colombia', flag: 'co' }, date: 'Jun 17', time: '8:00 PM ET', status: 'scheduled' },
     ],
     2: [
-      { id: 'demo-13', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'United States', flag: 'us' }, awayTeam: { name: 'Senegal', flag: 'sn' }, date: 'Jun 15', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'demo-14', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'Colombia', flag: 'co' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 15', time: '6:00 PM ET', status: 'scheduled' },
-      { id: 'demo-15', matchday: 2, stage: 'group', group: 'D', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Australia', flag: 'au' }, date: 'Jun 16', time: '6:00 PM ET', status: 'scheduled' },
-      { id: 'demo-16', matchday: 2, stage: 'group', group: 'F', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Serbia', flag: 'rs' }, date: 'Jun 17', time: '9:00 PM ET', status: 'scheduled' },
+      { id: 'md2-1', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'South Africa', flag: 'za' }, awayTeam: { name: 'Korea Republic', flag: 'kr' }, date: 'Jun 19', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md2-2', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'Mexico', flag: 'mx' }, awayTeam: { name: 'Czechia', flag: 'cz' }, date: 'Jun 19', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md2-3', matchday: 2, stage: 'group', group: 'B', homeTeam: { name: 'Switzerland', flag: 'ch' }, awayTeam: { name: 'Canada', flag: 'ca' }, date: 'Jun 20', time: '2:00 PM ET', status: 'scheduled' },
+      { id: 'md2-4', matchday: 2, stage: 'group', group: 'B', homeTeam: { name: 'Qatar', flag: 'qa' }, awayTeam: { name: 'Bosnia and Herzegovina', flag: 'ba' }, date: 'Jun 20', time: '5:00 PM ET', status: 'scheduled' },
     ],
     3: [
-      { id: 'demo-17', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'United States', flag: 'us' }, awayTeam: { name: 'New Zealand', flag: 'nz' }, date: 'Jun 19', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'demo-18', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'Colombia', flag: 'co' }, awayTeam: { name: 'Senegal', flag: 'sn' }, date: 'Jun 19', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'demo-19', matchday: 3, stage: 'group', group: 'D', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Egypt', flag: 'eg' }, date: 'Jun 20', time: '6:00 PM ET', status: 'scheduled' },
+      { id: 'md3-1', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'Czechia', flag: 'cz' }, awayTeam: { name: 'South Africa', flag: 'za' }, date: 'Jun 23', time: '5:00 PM ET', status: 'scheduled' },
+      { id: 'md3-2', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'Korea Republic', flag: 'kr' }, awayTeam: { name: 'Mexico', flag: 'mx' }, date: 'Jun 23', time: '5:00 PM ET', status: 'scheduled' },
     ],
   }
-  return demoMatchesByDay[matchday] || []
+  return realMatchesByDay[matchday] || []
 }
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
