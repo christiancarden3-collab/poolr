@@ -677,9 +677,9 @@ export default function SpecialPicksPage() {
 
       <div className="tab-nav">
         <div className="tab-nav-inner">
-          <Link href={`/pool/${params.id}/predictions`} className="tab">Match Picks</Link>
-          <span className="tab active">Special Picks</span>
-          <Link href={`/pool/${params.id}`} className="tab">Leaderboard</Link>
+          <Link href={`/pool/${params.id}/predictions`} className="tab" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Match Picks</Link>
+          <span className="tab active" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Special Picks</span>
+          <Link href={`/pool/${params.id}`} className="tab" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Leaderboard</Link>
         </div>
       </div>
 

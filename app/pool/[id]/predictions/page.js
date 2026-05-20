@@ -383,9 +383,9 @@ export default function PredictionsPage() {
       {/* TAB NAV */}
       <div className="tab-nav">
         <div className="tab-nav-inner">
-          <span className="tab active">Match Picks{submittedCount < totalMatches && <span className="tab-badge">{totalMatches - submittedCount}</span>}</span>
-          <Link href={`/pool/${params.id}/special-picks`} className="tab">Special Picks</Link>
-          <Link href={`/pool/${params.id}`} className="tab">Leaderboard</Link>
+          <span className="tab active" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Match Picks{submittedCount < totalMatches && <span className="tab-badge">{totalMatches - submittedCount}</span>}</span>
+          <Link href={`/pool/${params.id}/special-picks`} className="tab" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Special Picks</Link>
+          <Link href={`/pool/${params.id}`} className="tab" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Leaderboard</Link>
         </div>
       </div>
 
