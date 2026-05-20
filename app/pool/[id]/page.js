@@ -32,9 +32,7 @@ export default function PoolDetailPage() {
             *,
             profiles:commissioner_id (
               id,
-              username,
-              full_name,
-              email
+              name
             )
           `)
           .eq('id', params.id)
@@ -47,7 +45,7 @@ export default function PoolDetailPage() {
         }
 
         // Format commissioner name
-        const commName = poolData.profiles?.full_name || poolData.profiles?.username || poolData.profiles?.email?.split('@')[0] || 'Unknown'
+        const commName = poolData.profiles?.name || 'Unknown'
         const commInitials = commName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
         // Fetch pool members with their profiles
@@ -57,9 +55,7 @@ export default function PoolDetailPage() {
             *,
             profiles:user_id (
               id,
-              username,
-              full_name,
-              email
+              name
             )
           `)
           .eq('pool_id', params.id)
@@ -67,7 +63,7 @@ export default function PoolDetailPage() {
 
         // Format members for leaderboard
         const formattedMembers = (membersData || []).map((m, index) => {
-          const name = m.profiles?.full_name || m.profiles?.username || m.profiles?.email?.split('@')[0] || 'Player'
+          const name = m.profiles?.name || 'Player'
           return {
             rank: index + 1,
             user_id: m.user_id,

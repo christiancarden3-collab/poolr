@@ -33,9 +33,7 @@ export default function JoinPoolPage() {
             *,
             profiles:commissioner_id (
               id,
-              username,
-              full_name,
-              email
+              name
             )
           `)
           .eq('invite_code', params.code)
@@ -68,7 +66,7 @@ export default function JoinPoolPage() {
           .eq('pool_id', poolData.id)
 
         // Format commissioner name and initials
-        const commName = poolData.profiles?.full_name || poolData.profiles?.username || poolData.profiles?.email?.split('@')[0] || 'Unknown'
+        const commName = poolData.profiles?.name || 'Unknown'
         const initials = commName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
         setPool({
