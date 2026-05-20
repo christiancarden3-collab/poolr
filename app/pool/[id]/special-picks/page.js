@@ -794,10 +794,18 @@ export default function SpecialPicksPage() {
                 if (topScorer) picks.push({ pick_type: 'top_scorer', team_code: topScorer.team, team_name: topScorer.teamName, player_name: topScorer.name })
                 if (bestKeeper) picks.push({ pick_type: 'best_keeper', team_code: bestKeeper.team, team_name: bestKeeper.teamName, player_name: bestKeeper.name })
                 
+                console.log('Saving picks for member:', poolMember.id, picks)
+                
                 for (const pick of picks) {
-                  await supabase
+                  const { data, error } = await supabase
                     .from('special_picks')
                     .upsert({ pool_member_id: poolMember.id, ...pick }, { onConflict: 'pool_member_id,pick_type' })
+                  
+                  if (error) {
+                    console.error('Supabase error:', error)
+                    throw error
+                  }
+                  console.log('Saved pick:', pick.pick_type, data)
                 }
                 setSaving({ done: true })
                 setTimeout(() => setSaving({}), 2000)
