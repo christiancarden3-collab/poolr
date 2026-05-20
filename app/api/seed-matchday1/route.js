@@ -71,11 +71,8 @@ export async function POST(request) {
       away_team_name: match.awayTeam,
       home_flag: match.homeFlag,
       away_flag: match.awayFlag,
-      match_time: new Date(match.date + 'T17:00:00Z').toISOString(), // Default time, update as needed
-      venue: match.venue,
-      city: match.city,
-      status: 'scheduled',
-      match_number: index + 1
+      match_time: new Date(match.date + 'T17:00:00Z').toISOString(),
+      status: 'scheduled'
     }))
 
     const { data: inserted, error: insertError } = await supabase
