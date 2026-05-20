@@ -253,99 +253,361 @@ export default function SpecialPicksPage() {
           window.mkRenderer = (id, w, h) => {
             const cv = document.getElementById(id);
             if (!cv) return null;
-            const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
+            const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true, powerPreference: 'high-performance' });
             rr.setSize(w, h);
             rr.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            rr.shadowMap.enabled = true;
+            rr.shadowMap.type = THREE.PCFSoftShadowMap;
             return rr;
           };
           window.addLights = (scene, isGold) => {
             scene.add(new THREE.AmbientLight(0xffffff, 0.45));
             const k = new THREE.DirectionalLight(isGold ? 0xfff4cc : 0xddeeff, 3.5);
             k.position.set(4, 8, 5);
+            k.castShadow = true;
+            k.shadow.mapSize.set(1024, 1024);
             scene.add(k);
+            const f = new THREE.DirectionalLight(isGold ? 0xffaa00 : 0x88aaff, 0.9);
+            f.position.set(-4, 2, -3);
+            scene.add(f);
+            const rm = new THREE.DirectionalLight(0xffffff, 1.4);
+            rm.position.set(0, -1, 5);
+            scene.add(rm);
+            const tp = new THREE.DirectionalLight(isGold ? 0xffe080 : 0xccddff, 0.8);
+            tp.position.set(0, 10, 0);
+            scene.add(tp);
           };
+          
+          // FULL DETAILED TROPHY
           window.buildTrophy = (canvasId, isGold) => {
             const rr = window.mkRenderer(canvasId, 170, 170);
             if (!rr) return;
             const scene = new THREE.Scene();
             const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
             cam.position.set(0, 0.5, 7);
+            cam.lookAt(0, 0, 0);
             window.addLights(scene, isGold);
-            const gc = isGold ? 0xd4a017 : 0x9ab0cc;
-            const mM = window.mkMat(gc, 0.10, 0.97);
+            const gc = isGold ? 0xd4a017 : 0x9ab0cc, gh = isGold ? 0xffed80 : 0xddeeff, gd = isGold ? 0x7a5500 : 0x2a4060;
+            const mM = window.mkMat(gc, 0.10, 0.97), mS = window.mkMat(gh, 0.04, 0.99), mD = window.mkMat(gd, 0.45, 0.80);
             const grp = new THREE.Group();
-            grp.add(new THREE.Mesh(new THREE.CylinderGeometry(1.10, 1.10, 0.08, 32), mM));
-            const pts = [[0.02,0],[0.28,0.45],[0.72,1.00],[1.08,1.80],[0.72,2.42],[0.44,2.46]].map(([x,y]) => new THREE.Vector2(x, y));
-            const cup = new THREE.Mesh(new THREE.LatheGeometry(pts, 32), mM);
-            cup.position.y = -0.12;
-            grp.add(cup);
+            const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); grp.add(m); return m; };
+            add(new THREE.Mesh(new THREE.CylinderGeometry(1.10, 1.10, 0.08, 64), mD), 0, -2.30);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.12, 64), mM), 0, -2.16);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.80, 0.14, 64), mS), 0, -1.98);
+            const bR = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.03, 8, 64), mS);
+            bR.rotation.x = Math.PI / 2;
+            add(bR, 0, -2.10);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.55, 0.18, 48), mM), 0, -1.80);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.14, 1.30, 24), mM), 0, -0.95);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.12, 0.20, 48), mS), 0, -0.22);
+            const pts = [[0.02,0],[0.05,0.08],[0.12,0.22],[0.28,0.45],[0.50,0.72],[0.72,1.00],[0.90,1.28],[1.02,1.55],[1.08,1.80],[1.06,2.02],[0.98,2.20],[0.86,2.34],[0.72,2.42],[0.58,2.46],[0.44,2.46]].map(([x,y]) => new THREE.Vector2(x, y));
+            add(new THREE.Mesh(new THREE.LatheGeometry(pts, 80), mM), 0, -0.12);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.40, 0.10, 0.50, 48), mD), 0, 2.22);
+            const rR = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.055, 20, 80), mS);
+            rR.rotation.x = Math.PI / 2;
+            add(rR, 0, 2.34);
+            [-1, 1].forEach(s => {
+              const h = new THREE.Mesh(new THREE.TorusGeometry(0.60, 0.055, 16, 64, Math.PI * 0.75), mM);
+              h.position.set(s * 1.05, 1.20, 0);
+              h.rotation.z = s * (Math.PI * 0.38);
+              h.rotation.y = Math.PI / 2;
+              grp.add(h);
+              const hs = new THREE.Mesh(new THREE.TorusGeometry(0.60, 0.016, 8, 64, Math.PI * 0.75), mS);
+              hs.position.set(s * 1.05, 1.20, 0.04);
+              hs.rotation.z = s * (Math.PI * 0.38);
+              hs.rotation.y = Math.PI / 2;
+              grp.add(hs);
+            });
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 64, 48), window.mkMat(isGold ? 0xf5e030 : 0xe8f4ff, 0.06, 0.99)), 0, 2.90);
+            for (let i = 0; i < 4; i++) {
+              const m = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.010, 8, 64), mD);
+              m.position.y = 2.90;
+              m.rotation.y = i * Math.PI / 4;
+              grp.add(m);
+            }
+            const eq = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.010, 8, 64), mD);
+            eq.rotation.x = Math.PI / 2;
+            add(eq, 0, 2.90);
+            const gs = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 10), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0, metalness: 0.05, transparent: true, opacity: 0.55 }));
+            add(gs, -0.14, 3.06, 0.26);
+            [-0.22, 0.22].forEach(x => {
+              add(new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.045, 0.38, 10), mD), x, 2.12);
+              add(new THREE.Mesh(new THREE.CylinderGeometry(0.050, 0.060, 0.32, 12), mD), x, 2.40);
+              add(new THREE.Mesh(new THREE.SphereGeometry(0.068, 14, 10), mD), x, 2.66);
+              const ar = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.44, 8), mM);
+              ar.rotation.z = x < 0 ? 0.70 : -0.70;
+              add(ar, x * 1.55, 2.60);
+            });
             grp.position.y = 0.20;
             scene.add(grp);
             let t = 0;
-            (function a() { requestAnimationFrame(a); t += 0.008; grp.rotation.y = t * 0.5; grp.position.y = 0.20 + Math.sin(t) * 0.05; rr.render(scene, cam); })();
+            (function a() { requestAnimationFrame(a); t += 0.006; grp.rotation.y = t * 0.35 + Math.sin(t * 0.60) * 0.15; grp.position.y = 0.20 + Math.sin(t * 1.0) * 0.06; rr.render(scene, cam); })();
           };
+          
+          // FULL ROBOT STRIKER
           window.buildStriker = (canvasId) => {
             const rr = window.mkRenderer(canvasId, 170, 170);
             if (!rr) return;
             const scene = new THREE.Scene();
             const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
             cam.position.set(0, 1.2, 6);
+            cam.lookAt(0, 0.8, 0);
             window.addLights(scene, true);
-            const mB = window.mkMat(0xd4a832, 0.15, 0.92);
+            const mB = window.mkMat(0xd4a832, 0.15, 0.92), mS = window.mkMat(0xffe878, 0.05, 0.99), mJ = window.mkMat(0x8a6018, 0.3, 0.85), mE = window.mkMat(0x00eeff, 0.1, 0.3);
             const g = new THREE.Group();
-            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.48, 0.50), mB));
-            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.70, 0.48), mB));
-            const ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), window.mkMat(0xffffff, 0.7, 0));
-            ball.position.set(0.48, -0.80, 1.30);
-            g.add(ball);
-            g.position.set(0, -0.2, 0);
+            const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); g.add(m); return m; };
+            // Head
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.48, 0.50), mB), 0, 2.08);
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.08), window.mkMat(0x001a2a, 0.1, 0.1)), 0, 2.10, 0.26);
+            [-0.12, 0.12].forEach(x => {
+              const ey = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 16), mE);
+              ey.rotation.x = Math.PI / 2;
+              add(ey, x, 2.10, 0.30);
+              const gl = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.012, 8, 16), mE);
+              gl.rotation.x = Math.PI / 2;
+              add(gl, x, 2.10, 0.31);
+            });
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.22, 8), mJ), 0.1, 2.37);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), mS), 0.1, 2.50);
+            // Neck
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.12, 0.16, 16), mJ), 0, 1.78);
+            // Torso
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.70, 0.48), mB), 0, 1.30);
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.30, 0.06), mS), 0, 1.36, 0.27);
+            const em = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.03, 5), window.mkMat(0xffcc00, 0.1, 0.9));
+            em.rotation.y = Math.PI / 5;
+            add(em, 0, 1.40, 0.31);
+            // Pelvis
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.28, 0.42), mB), 0, 0.86);
+            // Left arm
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 10), mJ), -0.52, 1.58);
+            const lu = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.09, 0.45, 12), mB);
+            lu.rotation.z = 0.5; lu.rotation.x = 0.3;
+            add(lu, -0.68, 1.38, -0.12);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.10, 12, 8), mJ), -0.82, 1.14, -0.22);
+            const ll = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.40, 12), mB);
+            ll.rotation.z = 0.3; ll.rotation.x = -0.5;
+            add(ll, -0.92, 0.96, -0.10);
+            // Right arm
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 10), mJ), 0.52, 1.58);
+            const ru = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.09, 0.45, 12), mB);
+            ru.rotation.z = -0.5; ru.rotation.x = -0.3;
+            add(ru, 0.68, 1.36, 0.14);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.10, 12, 8), mJ), 0.80, 1.10, 0.24);
+            const rl = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.38, 12), mB);
+            rl.rotation.z = -0.3; rl.rotation.x = 0.4;
+            add(rl, 0.88, 0.92, 0.16);
+            // Left leg
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 10), mJ), -0.22, 0.68);
+            const lt = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.10, 0.48, 14), mB);
+            lt.rotation.x = 0.1;
+            add(lt, -0.24, 0.40, 0.05);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8), mJ), -0.24, 0.12, 0.08);
+            add(new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.44, 12), mB), -0.24, -0.14, 0.04);
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.10, 0.34), mB), -0.24, -0.40, 0.08);
+            // Right leg (kicking)
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 10), mJ), 0.22, 0.68);
+            const rt = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.10, 0.50, 14), mB);
+            rt.rotation.x = -0.85; rt.rotation.z = -0.12;
+            add(rt, 0.28, 0.42, 0.28);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8), mJ), 0.32, 0.22, 0.60);
+            const rSh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.08, 0.46, 12), mB);
+            rSh.rotation.x = -0.20; rSh.rotation.z = -0.10;
+            add(rSh, 0.36, 0.14, 0.86);
+            const rBt = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.36), window.mkMat(0xc9a84c, 0.2, 0.85));
+            rBt.rotation.x = 0.3;
+            add(rBt, 0.38, 0.04, 1.06);
+            // Ball
+            const ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 24), window.mkMat(0xffffff, 0.7, 0));
+            add(ball, 0.48, -0.30, 1.30);
+            [[0,1,0],[0,0,1],[1,0,0],[-1,0,0],[0.7,0.7,0],[-0.7,0.7,0]].forEach(v => {
+              const p = new THREE.Mesh(new THREE.CircleGeometry(0.07, 5), window.mkMat(0x111318, 0.8, 0));
+              p.position.copy(ball.position).addScaledVector(new THREE.Vector3(...v).normalize(), 0.215);
+              p.lookAt(ball.position);
+              g.add(p);
+            });
+            g.position.set(0.1, -0.5, 0);
+            g.rotation.y = -0.3;
             scene.add(g);
             let t = 0;
-            (function a() { requestAnimationFrame(a); t += 0.015; ball.rotation.y += 0.03; g.rotation.y = Math.sin(t * 0.5) * 0.2; rr.render(scene, cam); })();
+            (function a() { requestAnimationFrame(a); t += 0.012;
+              const k = Math.sin(t * 2) * 0.3;
+              rSh.rotation.x = -0.20 + k;
+              rBt.position.z = 1.06 + k * 0.3;
+              ball.position.z = 1.30 + Math.max(0, k) * 0.4;
+              ball.rotation.y += 0.03;
+              g.rotation.y = -0.3 + Math.sin(t * 0.5) * 0.15;
+              g.position.y = -0.5 + Math.sin(t * 0.8) * 0.04;
+              rr.render(scene, cam);
+            })();
           };
+          
+          // FULL ROBOT KEEPER + GOALPOST
           window.buildKeeper = (canvasId) => {
             const rr = window.mkRenderer(canvasId, 170, 170);
             if (!rr) return;
             const scene = new THREE.Scene();
             const cam = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
             cam.position.set(0, 0.8, 6.5);
+            cam.lookAt(0, 0.4, 0);
             window.addLights(scene, true);
-            const mB = window.mkMat(0xd4a832, 0.15, 0.92);
+            const mB = window.mkMat(0xd4a832, 0.15, 0.92), mS = window.mkMat(0xffe878, 0.05, 0.99), mJ = window.mkMat(0x8a6018, 0.3, 0.85), mE = window.mkMat(0x00eeff, 0.1, 0.3), mG = window.mkMat(0xc9a84c, 0.25, 0.80);
             const postMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.7 });
-            [-2.2, 2.2].forEach(x => { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.2, 16), postMat); p.position.set(x, 0.2, -1.5); scene.add(p); });
-            const cb = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 4.54, 16), postMat); cb.rotation.z = Math.PI / 2; cb.position.set(0, 1.82, -1.5); scene.add(cb);
+            const pGrp = new THREE.Group();
+            const pR = 0.07;
+            [-2.2, 2.2].forEach(x => { const p = new THREE.Mesh(new THREE.CylinderGeometry(pR, pR, 3.2, 16), postMat); p.position.set(x, 0.2, -1.5); pGrp.add(p); });
+            const cb = new THREE.Mesh(new THREE.CylinderGeometry(pR, pR, 4.54, 16), postMat);
+            cb.rotation.z = Math.PI / 2;
+            cb.position.set(0, 1.82, -1.5);
+            pGrp.add(cb);
+            const netM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.09, side: THREE.DoubleSide, wireframe: true });
+            const bn = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 1.8, 22, 9), netM);
+            bn.position.set(0, 0.92, -2.5);
+            pGrp.add(bn);
+            [-1, 1].forEach(s => { const sn = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.8, 5, 9), netM); sn.rotation.y = Math.PI / 2; sn.position.set(s * 2.2, 0.92, -2.0); pGrp.add(sn); });
+            const gnd = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 1.4), new THREE.MeshStandardMaterial({ color: 0x1a3a1a, roughness: 0.9, transparent: true, opacity: 0.55 }));
+            gnd.rotation.x = -Math.PI / 2;
+            gnd.position.set(0, -1.42, -1.8);
+            pGrp.add(gnd);
+            const gl = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 0.06), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45 }));
+            gl.rotation.x = -Math.PI / 2;
+            gl.position.set(0, -1.41, -1.5);
+            pGrp.add(gl);
+            scene.add(pGrp);
             const g = new THREE.Group();
-            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.45, 0.48), mB));
-            g.add(new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.66, 0.46), mB));
-            const glv = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.30, 0.12), window.mkMat(0xc9a84c, 0.25, 0.80));
-            glv.position.set(1.2, 0.8, 0);
-            g.add(glv);
-            g.position.set(-0.15, 0, 0);
+            const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); g.add(m); return m; };
+            // Head tilted
+            const hd = add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.45, 0.48), mB), -0.1, 1.0);
+            hd.rotation.z = 0.35;
+            const vs = add(new THREE.Mesh(new THREE.BoxGeometry(0.40, 0.16, 0.08), window.mkMat(0x001a2a, 0.1, 0.1)), -0.12, 1.02, 0.25);
+            vs.rotation.z = 0.35;
+            [-0.11, 0.11].forEach(x => {
+              const ey = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.02, 16), mE);
+              ey.rotation.x = Math.PI / 2;
+              add(ey, x - 0.06, 1.02, 0.29);
+              const gl2 = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.012, 8, 16), mE);
+              gl2.rotation.x = Math.PI / 2;
+              add(gl2, x - 0.06, 1.02, 0.30);
+            });
+            const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.20, 8), mJ);
+            ant.rotation.z = -0.3;
+            add(ant, 0.12, 1.26);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), mS), 0.18, 1.38);
+            const nk = add(new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.14, 16), mJ), -0.04, 0.74);
+            nk.rotation.z = 0.35;
+            const to = add(new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.66, 0.46), mB), 0.0, 0.32);
+            to.rotation.z = 0.45;
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.28, 0.06), mS), 0.04, 0.36, 0.26);
+            const pel = add(new THREE.Mesh(new THREE.BoxGeometry(0.60, 0.26, 0.40), mB), 0.14, -0.08);
+            pel.rotation.z = 0.45;
+            // Right arm reaching up
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 10), mJ), 0.52, 0.58);
+            const rUp = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.08, 0.52, 12), mB);
+            rUp.rotation.z = -1.1;
+            add(rUp, 0.82, 0.92);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), mJ), 1.10, 1.20);
+            const rLo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.48, 12), mB);
+            rLo.rotation.z = -1.0;
+            add(rLo, 1.34, 1.42);
+            const glv = add(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.30, 0.12), mG), 1.58, 1.64);
+            glv.rotation.z = -0.9;
+            [[-0.11, 0.15], [-0.04, 0.16], [0.04, 0.15], [0.12, 0.13]].forEach(([fx, fy]) => {
+              const fi = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.15, 0.09), mG);
+              fi.rotation.z = -0.9;
+              add(fi, 1.58 + fx, 1.64 + fy, 0.01);
+            });
+            const gsh = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.11, 0.02), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0, metalness: 0.05, transparent: true, opacity: 0.55 }));
+            gsh.rotation.z = -0.9;
+            add(gsh, 1.56, 1.68, 0.09);
+            // Left arm
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 10), mJ), -0.46, 0.52);
+            const lUp = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.08, 0.42, 12), mB);
+            lUp.rotation.z = 0.8;
+            add(lUp, -0.68, 0.28);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), mJ), -0.84, 0.06);
+            const lLo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.36, 12), mB);
+            lLo.rotation.z = 0.5;
+            add(lLo, -0.92, -0.14);
+            // Legs splayed diving
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 10), mJ), 0.24, -0.26);
+            const rTh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.50, 12), mB);
+            rTh.rotation.z = -1.2;
+            add(rTh, 0.42, -0.46);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.10, 12, 8), mJ), 0.70, -0.56);
+            const rSh2 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.44, 12), mB);
+            rSh2.rotation.z = -1.4;
+            add(rSh2, 0.92, -0.58);
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.10, 0.30), mB), 1.14, -0.56);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 10), mJ), -0.10, -0.28);
+            const lTh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.42, 12), mB);
+            lTh.rotation.z = 0.4;
+            add(lTh, -0.22, -0.52);
+            add(new THREE.Mesh(new THREE.SphereGeometry(0.10, 12, 8), mJ), -0.30, -0.74);
+            const lSh2 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.36, 12), mB);
+            lSh2.rotation.z = -0.6;
+            add(lSh2, -0.16, -0.90);
+            add(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.10, 0.28), mB), -0.02, -1.02);
+            // Ball
+            const ball = new THREE.Mesh(new THREE.SphereGeometry(0.20, 32, 24), window.mkMat(0xffffff, 0.6, 0.1));
+            add(ball, -1.4, 1.90, 0.3);
+            [[-1,0,0],[0,1,0],[1,0,0],[0,-1,0],[0.7,0.7,0],[-0.7,0.7,0]].forEach(v => {
+              const p = new THREE.Mesh(new THREE.CircleGeometry(0.065, 5), window.mkMat(0x111318, 0.8, 0));
+              p.position.copy(ball.position).addScaledVector(new THREE.Vector3(...v).normalize(), 0.195);
+              p.lookAt(ball.position);
+              g.add(p);
+            });
+            g.position.set(-0.15, -0.28, 0);
             scene.add(g);
             let t = 0;
-            (function a() { requestAnimationFrame(a); t += 0.012; glv.position.x = 1.2 + Math.sin(t * 2.5) * 0.1; g.rotation.y = Math.sin(t * 0.5) * 0.1; rr.render(scene, cam); })();
+            (function a() { requestAnimationFrame(a); t += 0.010;
+              const reach = Math.sin(t * 2.5) * 0.08;
+              glv.position.set(1.58 + reach, 1.64 + reach * 0.8, 0);
+              ball.position.set(-1.4 + Math.sin(t * 1.4) * 0.10, 1.90 + Math.cos(t * 1.4) * 0.08, 0.3);
+              ball.rotation.z += 0.025;
+              g.position.y = -0.28 + Math.sin(t * 1.8) * 0.025;
+              g.rotation.y = Math.sin(t * 0.5) * 0.10;
+              rr.render(scene, cam);
+            })();
           };
+          
+          // WAVING FLAG
           window.buildFlag = (canvasId, code, isGold, cW, cH) => {
             const cv = document.getElementById(canvasId);
             if (!cv) return;
+            if (window.flagScenes[canvasId]) try { window.flagScenes[canvasId](); } catch(e) {}
             const W = cW || 118, H = cH || 78;
             const rr = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: true });
             rr.setSize(W, H);
             rr.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            rr.toneMapping = THREE.NoToneMapping;
+            rr.outputEncoding = THREE.sRGBEncoding;
             const scene = new THREE.Scene();
             const aspect = W / H;
             const cam = new THREE.OrthographicCamera(-aspect * 1.06, aspect * 1.06, 1.06, -1.06, 0.1, 20);
             cam.position.set(0, 0, 5);
+            cam.lookAt(0, 0, 0);
             scene.add(new THREE.AmbientLight(0xffffff, 1.1));
-            const fW = 3.0, fH = 2.0, sX = 30, sY = 20, vC = (sX + 1) * (sY + 1);
+            const kl = new THREE.DirectionalLight(0xffffff, 0.5);
+            kl.position.set(2, 3, 4);
+            scene.add(kl);
+            const fW = 3.0, fH = 2.0, sX = 40, sY = 26, vC = (sX + 1) * (sY + 1);
             const geo = new THREE.PlaneGeometry(fW, fH, sX, sY);
             const arr = geo.attributes.position.array;
             const ox = new Float32Array(vC), oy = new Float32Array(vC);
             for (let i = 0; i < vC; i++) { ox[i] = arr[i * 3]; oy[i] = arr[i * 3 + 1]; }
             const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-            new THREE.TextureLoader().load(window.flHD(code), tex => { mat.map = tex; mat.needsUpdate = true; }, undefined, () => {
-              new THREE.TextureLoader().load(window.fl(code, false), tex => { mat.map = tex; mat.needsUpdate = true; });
-            });
+            const loader = new THREE.TextureLoader();
+            function loadTex(url, fallback) {
+              loader.load(url, tex => {
+                tex.encoding = THREE.sRGBEncoding;
+                tex.anisotropy = rr.capabilities.getMaxAnisotropy();
+                tex.minFilter = THREE.LinearMipmapLinearFilter;
+                tex.generateMipmaps = true;
+                mat.map = tex;
+                mat.needsUpdate = true;
+              }, undefined, fallback);
+            }
+            loadTex(window.flHD(code), () => loadTex(window.fl(code, false), () => {}));
             const mesh = new THREE.Mesh(geo, mat);
             mesh.position.x = 0.14;
             scene.add(mesh);
@@ -353,17 +615,26 @@ export default function SpecialPicksPage() {
             const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, fH * 1.12, 12), poleMat);
             pole.position.set(-fW / 2 - 0.04, 0, 0);
             scene.add(pole);
-            let t = 0;
-            (function a() { requestAnimationFrame(a); t += 0.040;
+            const finial = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), poleMat);
+            finial.position.set(-fW / 2 - 0.04, fH * 0.57, 0);
+            scene.add(finial);
+            let t = 0, alive = true;
+            (function a() {
+              if (!alive) return;
+              requestAnimationFrame(a);
+              t += 0.040;
               const p = geo.attributes.position.array;
               for (let vi = 0; vi < vC; vi++) {
                 const xN = (ox[vi] + fW / 2) / fW;
+                p[vi * 3] = ox[vi];
                 p[vi * 3 + 1] = oy[vi] + Math.sin(xN * 2.8 - t * 0.85) * 0.032 * xN;
-                p[vi * 3 + 2] = Math.sin(xN * 3.5 - t) * 0.11 * xN;
+                p[vi * 3 + 2] = Math.sin(xN * 3.5 - t) * 0.11 * xN + Math.sin(xN * 7.0 - t * 1.4) * 0.045 * xN;
               }
               geo.attributes.position.needsUpdate = true;
+              geo.computeVertexNormals();
               rr.render(scene, cam);
             })();
+            window.flagScenes[canvasId] = () => { alive = false; rr.dispose(); };
           };
           setThreeLoaded(true);
         }}
