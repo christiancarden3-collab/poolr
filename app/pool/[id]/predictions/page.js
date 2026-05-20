@@ -148,25 +148,10 @@ export default function PredictionsPage() {
       
       if (memberData) setPoolMember(memberData)
 
-      // Fetch matches for this matchday
-      const response = await fetch(`/api/matches?matchday=${matchday}`)
-      const data = await response.json()
-      
-      // Determine which matches to use (API or demo)
-      let matchList = []
-      if (data.success && data.matches && data.matches.length > 0) {
-        matchList = data.matches
-        // Find earliest match time for deadline
-        const earliestMatch = matchList.reduce((earliest, match) => 
-          new Date(match.matchTime) < new Date(earliest.matchTime) ? match : earliest
-        )
-        setDeadline(new Date(earliestMatch.matchTime))
-      } else {
-        // Fallback to demo data if database is empty
-        matchList = getDemoMatches(matchday)
-        // Set demo deadline to next June 11
-        setDeadline(new Date('2026-06-11T12:00:00-04:00'))
-      }
+      // Use the correct World Cup 2026 match fixtures
+      // These are the official fixtures that match the scoring display
+      let matchList = getDemoMatches(matchday)
+      setDeadline(new Date('2026-06-11T12:00:00-04:00'))
       
       setMatches(matchList)
       setDateLockStatus(getDateLockStatus(matchList))
