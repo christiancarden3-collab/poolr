@@ -34,8 +34,9 @@ export async function POST(request) {
       // ============================================================
       case 'checkout.session.completed': {
         const session = event.data.object
-        const { pool_id, user_id, member_id, platform_fee, buy_in, fee_handling } = session.metadata
+        const { pool_id, user_id, member_id, platform_fee, buy_in, fee_handling, bet_id, is_creator } = session.metadata
 
+        // Handle pool payments
         if (member_id) {
           // Update payment status
           await supabase
@@ -50,6 +51,42 @@ export async function POST(request) {
 
           console.log(`✅ Payment confirmed: member ${member_id} in pool ${pool_id}`)
           console.log(`   Amount: $${(session.amount_total / 100).toFixed(2)}, Platform fee: $${(platform_fee / 100).toFixed(2)}`)
+        }
+
+        // Handle 1v1 bet payments
+        if (bet_id) {
+          const paidField = is_creator === 'true' ? 'creator_paid' : 'opponent_paid'
+          const paymentField = is_creator === 'true' ? 'creator_payment_intent' : 'opponent_payment_intent'
+          
+          // Mark as paid
+          const { error: updateError } = await supabase
+            .from('bets')
+            .update({
+              [paidField]: true,
+              [paymentField]: session.payment_intent,
+            })
+            .eq('id', bet_id)
+
+          if (!updateError) {
+            // Check if both have paid
+            const { data: bet } = await supabase
+              .from('bets')
+              .select('creator_paid, opponent_paid')
+              .eq('id', bet_id)
+              .single()
+
+            if (bet?.creator_paid && bet?.opponent_paid) {
+              // Both paid - activate the bet!
+              await supabase
+                .from('bets')
+                .update({ status: 'active' })
+                .eq('id', bet_id)
+
+              console.log(`🎮 Bet ${bet_id} is now ACTIVE - both parties paid!`)
+            }
+          }
+
+          console.log(`✅ Bet payment confirmed: bet ${bet_id}, ${is_creator === 'true' ? 'creator' : 'opponent'}`)
         }
         break
       }
