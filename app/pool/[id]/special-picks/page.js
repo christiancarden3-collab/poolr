@@ -780,6 +780,40 @@ export default function SpecialPicksPage() {
         </div>
       </div>
 
+      {/* Save Button */}
+      {!isLocked && (
+        <div className="save-section">
+          <button 
+            className="save-btn" 
+            onClick={async () => {
+              setSaving({ all: true })
+              try {
+                const picks = []
+                if (champion) picks.push({ pick_type: 'champion', team_code: champion.c, team_name: champion.n, player_name: null })
+                if (runnerUp) picks.push({ pick_type: 'runner_up', team_code: runnerUp.c, team_name: runnerUp.n, player_name: null })
+                if (topScorer) picks.push({ pick_type: 'top_scorer', team_code: topScorer.team, team_name: topScorer.teamName, player_name: topScorer.name })
+                if (bestKeeper) picks.push({ pick_type: 'best_keeper', team_code: bestKeeper.team, team_name: bestKeeper.teamName, player_name: bestKeeper.name })
+                
+                for (const pick of picks) {
+                  await supabase
+                    .from('special_picks')
+                    .upsert({ pool_member_id: poolMember.id, ...pick }, { onConflict: 'pool_member_id,pick_type' })
+                }
+                alert('Picks saved!')
+              } catch (err) {
+                console.error('Error saving picks:', err)
+                alert('Error saving picks')
+              } finally {
+                setSaving({})
+              }
+            }}
+            disabled={saving.all}
+          >
+            {saving.all ? 'Saving...' : 'Save Picks'}
+          </button>
+        </div>
+      )}
+
       {/* Deadline Banner */}
       <div className="deadline-banner">
         <span>🏆</span>
@@ -969,6 +1003,12 @@ export default function SpecialPicksPage() {
         .pi-n { font-size: 0.85rem; font-weight: 500; color: #f0ede8; }
         .pi-t { font-size: 0.72rem; color: #8a8780; }
         .pi-p { font-family: 'Barlow Condensed', sans-serif; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-left: auto; padding: 0.12rem 0.45rem; border-radius: 2px; }
+
+        /* SAVE BUTTON */
+        .save-section { display: flex; justify-content: center; padding: 1rem; max-width: 640px; margin: 0 auto; }
+        .save-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: #c9a84c; color: #000; padding: 0.85rem 2.5rem; border-radius: 4px; border: none; cursor: pointer; transition: all 0.15s; }
+        .save-btn:hover { background: #e6c76a; transform: translateY(-1px); }
+        .save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         @media (max-width: 520px) {
           .grid { max-width: 100%; }
