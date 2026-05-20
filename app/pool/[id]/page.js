@@ -235,6 +235,7 @@ export default function PoolDetailPage() {
             <div className="user-avatar">{userInitials}</div>
             {userName}
           </Link>
+          <button className="signout-btn" onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }}>Sign Out</button>
         </div>
       </div>
 
@@ -559,6 +560,8 @@ export default function PoolDetailPage() {
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
         .user-pill { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--f2); text-decoration: none; cursor: pointer; transition: color 0.15s; }
         .user-pill:hover { color: var(--gold); }
+        .signout-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--f4); color: var(--f3); padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; margin-left: 0.75rem; }
+        .signout-btn:hover { border-color: var(--gold); color: var(--gold); }
         .user-avatar {
           width: 26px; height: 26px; border-radius: 50%; background: var(--gold);
           display: flex; align-items: center; justify-content: center;
