@@ -2,16 +2,17 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export async function POST(request) {
   try {
-    // Check if Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
       return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 })
     }
-    
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
     const body = await request.text()
@@ -28,9 +29,12 @@ export async function POST(request) {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     switch (event.type) {
+      // ============================================================
+      // CHECKOUT COMPLETED - Player paid for pool entry
+      // ============================================================
       case 'checkout.session.completed': {
         const session = event.data.object
-        const { pool_id, user_id, member_id } = session.metadata
+        const { pool_id, user_id, member_id, platform_fee, buy_in, fee_handling } = session.metadata
 
         if (member_id) {
           // Update payment status
@@ -44,29 +48,39 @@ export async function POST(request) {
             })
             .eq('id', member_id)
 
-          console.log(`Payment confirmed for member ${member_id} in pool ${pool_id}`)
+          console.log(`✅ Payment confirmed: member ${member_id} in pool ${pool_id}`)
+          console.log(`   Amount: $${(session.amount_total / 100).toFixed(2)}, Platform fee: $${(platform_fee / 100).toFixed(2)}`)
         }
         break
       }
 
+      // ============================================================
+      // CHECKOUT EXPIRED - Session timed out
+      // ============================================================
       case 'checkout.session.expired': {
         const session = event.data.object
         const { member_id } = session.metadata
 
         if (member_id) {
-          // Clear the session ID since it expired
           await supabase
             .from('pool_members')
-            .update({ stripe_payment_id: null })
+            .update({ 
+              stripe_payment_id: null,
+              payment_status: 'pending'
+            })
             .eq('id', member_id)
+
+          console.log(`⏰ Checkout expired for member ${member_id}`)
         }
         break
       }
 
+      // ============================================================
+      // REFUND - Player refunded
+      // ============================================================
       case 'charge.refunded': {
         const charge = event.data.object
-        
-        // Find member by payment ID
+
         const { data: member } = await supabase
           .from('pool_members')
           .select('*')
@@ -78,7 +92,36 @@ export async function POST(request) {
             .from('pool_members')
             .update({ payment_status: 'refunded' })
             .eq('id', member.id)
+
+          console.log(`💸 Refund processed for member ${member.id}`)
         }
+        break
+      }
+
+      // ============================================================
+      // CONNECT: Account updated (onboarding status)
+      // ============================================================
+      case 'account.updated': {
+        const account = event.data.object
+
+        if (account.metadata?.user_id) {
+          const isReady = account.charges_enabled && account.payouts_enabled
+
+          console.log(`🔗 Connect account ${account.id} updated:`)
+          console.log(`   User: ${account.metadata.user_id}`)
+          console.log(`   Charges enabled: ${account.charges_enabled}`)
+          console.log(`   Payouts enabled: ${account.payouts_enabled}`)
+          console.log(`   Ready: ${isReady}`)
+        }
+        break
+      }
+
+      // ============================================================
+      // TRANSFER: Money sent to commissioner
+      // ============================================================
+      case 'transfer.created': {
+        const transfer = event.data.object
+        console.log(`💰 Transfer created: $${(transfer.amount / 100).toFixed(2)} to ${transfer.destination}`)
         break
       }
 

@@ -1,16 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 
-export default function CreatePoolPage() {
+function CreatePoolContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [createdPoolId, setCreatedPoolId] = useState(null)
+  
+  // Stripe Connect state
+  const [stripeStatus, setStripeStatus] = useState(null) // null, 'checking', 'not_connected', 'pending', 'ready'
+  const [stripeLoading, setStripeLoading] = useState(false)
+  const [userId, setUserId] = useState(null)
   
   // Form state
   const [poolName, setPoolName] = useState('')
@@ -24,6 +30,71 @@ export default function CreatePoolPage() {
   const [feeType, setFeeType] = useState('on_top')
   const [prizeType, setPrizeType] = useState('winner')
   const [prizes, setPrizes] = useState([{ place: 1, percent: 100 }])
+  
+  // Check Stripe Connect status on mount and after redirect
+  useEffect(() => {
+    const checkStripeStatus = async () => {
+      const user = await getCurrentUser()
+      if (!user) return
+      setUserId(user.id)
+      
+      setStripeStatus('checking')
+      try {
+        const res = await fetch(`/api/stripe/connect?user_id=${user.id}`)
+        const data = await res.json()
+        
+        if (data.onboarding_complete) {
+          setStripeStatus('ready')
+        } else if (data.connected) {
+          setStripeStatus('pending')
+        } else {
+          setStripeStatus('not_connected')
+        }
+      } catch (err) {
+        console.error('Stripe status check failed:', err)
+        setStripeStatus('not_connected')
+      }
+    }
+    
+    checkStripeStatus()
+    
+    // Handle return from Stripe onboarding
+    if (searchParams.get('stripe_connected') === 'true') {
+      checkStripeStatus()
+    }
+  }, [searchParams])
+  
+  // Start Stripe Connect onboarding
+  const handleConnectStripe = async () => {
+    if (!userId) {
+      router.push('/login')
+      return
+    }
+    
+    setStripeLoading(true)
+    try {
+      const res = await fetch('/api/stripe/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          return_url: window.location.href
+        })
+      })
+      
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Failed to start Stripe setup: ' + (data.error || 'Unknown error'))
+      }
+    } catch (err) {
+      console.error('Stripe connect error:', err)
+      alert('Failed to connect Stripe')
+    } finally {
+      setStripeLoading(false)
+    }
+  }
 
   const generateCode = () => {
     const codes = ['pool26', 'wc2026', 'group26', 'amigos26', 'champs26', 'final26', 'mypool', 'picks26']
@@ -49,24 +120,8 @@ export default function CreatePoolPage() {
 
   const prizeTotal = prizes.reduce((sum, p) => sum + (p.percent || 0), 0)
 
-  const tournamentNames = {
-    wc2026: 'FIFA World Cup 2026',
-    ucl2526: 'UEFA Champions League 2025-26',
-    copa2024: 'Copa America 2024',
-    nflplayoffs26: 'NFL Playoffs 2025-26',
-    superbowl60: 'Super Bowl LX',
-    cfp2526: 'College Football Playoff 2025-26',
-    marchmadness26: 'March Madness 2026',
-    nbaplayoffs26: 'NBA Playoffs 2026',
-    mlbplayoffs26: 'MLB Playoffs 2026',
-    worldseries26: 'World Series 2026',
-    stanleycup26: 'Stanley Cup Playoffs 2026',
-    masters26: 'The Masters 2026',
-    usopen26: 'US Open 2026',
-    britishopen26: 'The Open Championship 2026',
-    pgachamp26: 'PGA Championship 2026'
-  }
-  const getTournamentName = () => tournamentNames[tournament] || 'World Cup 2026'
+  // Only World Cup 2026 for now - more tournaments added as needed
+  const getTournamentName = () => 'World Cup 2026'
 
   const handleCreate = async () => {
     setLoading(true)
@@ -97,14 +152,35 @@ export default function CreatePoolPage() {
 
       if (poolError) throw poolError
 
-      // Add commissioner as member
+      // Add commissioner as member (pending payment if paid pool)
+      const isPaidPool = poolType === 'paid' && parseFloat(buyinAmount) > 0
       await supabase.from('pool_members').insert({
         pool_id: pool.id,
         user_id: user.id,
-        payment_status: 'paid'
+        payment_status: isPaidPool ? 'pending' : 'paid'
       })
 
       setCreatedPoolId(pool.id)
+
+      // If paid pool, redirect commissioner to payment
+      if (isPaidPool) {
+        const res = await fetch('/api/stripe/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            poolId: pool.id,
+            amount: parseFloat(buyinAmount),
+            feeHandling: feeType,
+            returnUrl: `${window.location.origin}/pool/${pool.id}?created=true`
+          })
+        })
+        const data = await res.json()
+        if (data.url) {
+          window.location.href = data.url
+          return
+        }
+      }
+
       setSuccess(true)
       setStep(6)
     } catch (err) {
@@ -239,36 +315,10 @@ export default function CreatePoolPage() {
                   </div>
                   <div className="field">
                     <label className="field-label">Tournament</label>
-                    <select className="field-input field-select" value={tournament} onChange={(e) => setTournament(e.target.value)}>
-                      <optgroup label="Soccer">
-                        <option value="wc2026">FIFA World Cup 2026 · USA, Canada & Mexico</option>
-                        <option value="ucl2526">UEFA Champions League 2025-26</option>
-                        <option value="copa2024">Copa America 2024</option>
-                      </optgroup>
-                      <optgroup label="Football">
-                        <option value="nflplayoffs26">NFL Playoffs 2025-26</option>
-                        <option value="superbowl60">Super Bowl LX · Feb 2026</option>
-                        <option value="cfp2526">College Football Playoff 2025-26</option>
-                      </optgroup>
-                      <optgroup label="Basketball">
-                        <option value="marchmadness26">March Madness 2026</option>
-                        <option value="nbaplayoffs26">NBA Playoffs 2026</option>
-                      </optgroup>
-                      <optgroup label="Baseball">
-                        <option value="mlbplayoffs26">MLB Playoffs 2026</option>
-                        <option value="worldseries26">World Series 2026</option>
-                      </optgroup>
-                      <optgroup label="Hockey">
-                        <option value="stanleycup26">Stanley Cup Playoffs 2026</option>
-                      </optgroup>
-                      <optgroup label="Golf">
-                        <option value="masters26">The Masters 2026</option>
-                        <option value="usopen26">US Open 2026</option>
-                        <option value="britishopen26">The Open Championship 2026</option>
-                        <option value="pgachamp26">PGA Championship 2026</option>
-                      </optgroup>
-                    </select>
-                    <div className="field-hint">Pick a tournament to set up your prediction pool</div>
+                    <div className="field-input" style={{ background: 'var(--b2)', cursor: 'default' }}>
+                      🏆 FIFA World Cup 2026 · USA, Canada & Mexico
+                    </div>
+                    <div className="field-hint">More tournaments coming soon</div>
                   </div>
                   <div className="field">
                     <label className="field-label">Picks deadline</label>
@@ -367,7 +417,7 @@ export default function CreatePoolPage() {
                       </div>
                       <div className={`option-card ${poolType === 'paid' ? 'selected' : ''}`} onClick={() => setPoolType('paid')}>
                         <div className="oc-header"><div className="oc-title">Paid Pool</div><div className="oc-check"></div></div>
-                        <div className="oc-desc">Players pay a buy-in via Stripe. Funds held in escrow.</div>
+                        <div className="oc-desc">Players pay a buy-in via Stripe. Funds go to you.</div>
                         <span className="oc-badge badge-paid">5% platform fee</span>
                       </div>
                     </div>
@@ -380,6 +430,54 @@ export default function CreatePoolPage() {
                   )}
                   {poolType === 'paid' && (
                     <>
+                      {/* STRIPE CONNECT SECTION */}
+                      <div className="stripe-connect-section" style={{ marginTop: '1rem' }}>
+                        <label className="field-label">Connect your bank account</label>
+                        {stripeStatus === 'checking' && (
+                          <div className="stripe-status checking">
+                            <span className="status-icon">⏳</span>
+                            <span>Checking Stripe status...</span>
+                          </div>
+                        )}
+                        {stripeStatus === 'not_connected' && (
+                          <div className="stripe-connect-box">
+                            <div className="scb-icon">💳</div>
+                            <div className="scb-text">
+                              <div className="scb-title">Set up payments to receive funds</div>
+                              <div className="scb-desc">Connect with Stripe to receive buy-ins directly. Takes 2 minutes.</div>
+                            </div>
+                            <button 
+                              className="btn-stripe-connect" 
+                              onClick={handleConnectStripe}
+                              disabled={stripeLoading}
+                            >
+                              {stripeLoading ? 'Connecting...' : 'Connect with Stripe →'}
+                            </button>
+                          </div>
+                        )}
+                        {stripeStatus === 'pending' && (
+                          <div className="stripe-status pending">
+                            <span className="status-icon">⚠️</span>
+                            <div>
+                              <strong>Stripe setup incomplete</strong>
+                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Finish setting up your account to receive payments.</div>
+                            </div>
+                            <button className="btn-ghost small" onClick={handleConnectStripe} disabled={stripeLoading}>
+                              {stripeLoading ? 'Loading...' : 'Continue Setup'}
+                            </button>
+                          </div>
+                        )}
+                        {stripeStatus === 'ready' && (
+                          <div className="stripe-status ready">
+                            <span className="status-icon">✓</span>
+                            <div>
+                              <strong>Stripe connected</strong>
+                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>You&apos;ll receive payments directly to your bank account.</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       <div className="field" style={{ marginTop: '1rem' }}>
                         <label className="field-label">Buy-in amount per player</label>
                         <div className="amount-wrap">
@@ -407,18 +505,24 @@ export default function CreatePoolPage() {
                       </div>
                       <div className="stripe-panel">
                         <div className="stripe-panel-title">🔒 <span className="stripe-logo">stripe</span> Secure payments</div>
-                        <div className="stripe-panel-desc">Players pay via Stripe Checkout. Funds held in escrow until tournament ends.</div>
+                        <div className="stripe-panel-desc">Players pay via Stripe Checkout. Funds go directly to your connected account, minus the 5% platform fee.</div>
                       </div>
                     </>
                   )}
                 </div>
                 <div className="form-actions">
                   <button className="btn-ghost" onClick={prevStep}>← Back</button>
-                  <button className="btn-primary" onClick={nextStep}>Next →</button>
+                  <button 
+                    className="btn-primary" 
+                    onClick={nextStep}
+                    disabled={poolType === 'paid' && stripeStatus !== 'ready'}
+                  >
+                    {poolType === 'paid' && stripeStatus !== 'ready' ? 'Connect Stripe First' : 'Next →'}
+                  </button>
                 </div>
               </div>
             </div>
-            <PaymentSidebar poolType={poolType} buyinAmount={buyinAmount} feeType={feeType} />
+            <PaymentSidebar poolType={poolType} buyinAmount={buyinAmount} feeType={feeType} stripeStatus={stripeStatus} />
           </>
         )}
 
@@ -557,10 +661,11 @@ function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode, tournam
   )
 }
 
-function PaymentSidebar({ poolType, buyinAmount, feeType }) {
+function PaymentSidebar({ poolType, buyinAmount, feeType, stripeStatus }) {
   const buyin = parseFloat(buyinAmount) || 0
   const fee = buyin * 0.05
   const total = feeType === 'on_top' ? buyin + fee : buyin
+  const youReceive = feeType === 'on_top' ? buyin : buyin - fee
   
   return (
     <div>
@@ -571,14 +676,35 @@ function PaymentSidebar({ poolType, buyinAmount, feeType }) {
           <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyin > 0 ? `$${buyin.toFixed(2)}` : '-'}</div></div>
           <div className="preview-row"><div className="preview-label">Platform fee</div><div className="preview-val">{poolType === 'free' ? 'None' : feeType === 'on_top' ? '+5% on top' : '5% from pot'}</div></div>
           <div className="preview-row highlight"><div className="preview-label">Each player pays</div><div className="preview-val gold">{poolType === 'free' ? 'Free' : `$${total.toFixed(2)}`}</div></div>
+          {poolType === 'paid' && buyin > 0 && (
+            <div className="preview-row"><div className="preview-label">You receive (per player)</div><div className="preview-val green">${youReceive.toFixed(2)}</div></div>
+          )}
         </div>
       </div>
-      <div className="sidebar-card gold-bg">
-        <div className="sc-head gold"><div className="sc-title gold">About the 5% fee</div></div>
-        <div className="sc-body">
-          <p className="info-text">Only applies to paid Stripe pools. Free pools have zero platform fee.</p>
+      {poolType === 'paid' && (
+        <div className={`sidebar-card ${stripeStatus === 'ready' ? 'green-bg' : 'gold-bg'}`}>
+          <div className={`sc-head ${stripeStatus === 'ready' ? 'green' : 'gold'}`}>
+            <div className={`sc-title ${stripeStatus === 'ready' ? 'green' : 'gold'}`}>
+              {stripeStatus === 'ready' ? '✓ Stripe Connected' : 'Stripe Setup Required'}
+            </div>
+          </div>
+          <div className="sc-body">
+            <p className="info-text">
+              {stripeStatus === 'ready' 
+                ? 'Payments will go directly to your bank account. 5% platform fee is automatically deducted.'
+                : 'Connect your Stripe account to receive payments from players.'}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+      {poolType === 'free' && (
+        <div className="sidebar-card gold-bg">
+          <div className="sc-head gold"><div className="sc-title gold">About the 5% fee</div></div>
+          <div className="sc-body">
+            <p className="info-text">Only applies to paid Stripe pools. Free pools have zero platform fee.</p>
+          </div>
+        </div>
+      )}
       <style jsx global>{`${sidebarStyles}`}</style>
     </div>
   )
@@ -633,6 +759,10 @@ const sidebarStyles = `
     background: rgba(201,168,76,0.05);
     border-color: var(--gold-line);
   }
+  .sidebar-card.green-bg {
+    background: rgba(44,182,125,0.05);
+    border-color: rgba(44,182,125,0.25);
+  }
   .sc-head {
     background: var(--bg3);
     padding: 0.6rem 1rem;
@@ -641,6 +771,10 @@ const sidebarStyles = `
   .sc-head.gold {
     background: rgba(201,168,76,0.08);
     border-color: rgba(201,168,76,0.15);
+  }
+  .sc-head.green {
+    background: rgba(44,182,125,0.08);
+    border-color: rgba(44,182,125,0.15);
   }
   .sc-title {
     font-family: 'Barlow Condensed', sans-serif;
@@ -651,6 +785,7 @@ const sidebarStyles = `
     color: var(--f3);
   }
   .sc-title.gold { color: var(--gold); }
+  .sc-title.green { color: var(--green); }
   .sc-body { padding: 1rem; }
   .preview-name {
     font-family: 'Barlow Condensed', sans-serif;
@@ -1109,6 +1244,86 @@ const wizardStyles = `
     line-height: 1.6;
   }
 
+  /* STRIPE CONNECT UI */
+  .stripe-connect-section {
+    margin-bottom: 1rem;
+  }
+  .stripe-connect-box {
+    background: rgba(99,91,255,0.06);
+    border: 1px solid rgba(99,91,255,0.25);
+    border-radius: 4px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .scb-icon {
+    font-size: 1.5rem;
+  }
+  .scb-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .scb-desc {
+    font-size: 0.75rem;
+    color: var(--f3);
+  }
+  .btn-stripe-connect {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: #635bff;
+    color: #fff;
+    padding: 0.65rem 1.25rem;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    align-self: flex-start;
+  }
+  .btn-stripe-connect:hover:not(:disabled) {
+    background: #7c75ff;
+  }
+  .btn-stripe-connect:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .stripe-status {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+  }
+  .stripe-status.checking {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
+    color: var(--f3);
+  }
+  .stripe-status.pending {
+    background: rgba(255,193,7,0.08);
+    border: 1px solid rgba(255,193,7,0.25);
+    color: #ffc107;
+  }
+  .stripe-status.ready {
+    background: rgba(44,182,125,0.08);
+    border: 1px solid rgba(44,182,125,0.25);
+    color: var(--green);
+  }
+  .status-icon {
+    font-size: 1.1rem;
+  }
+  .btn-ghost.small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+    margin-left: auto;
+  }
+
   .prize-rows {
     display: flex;
     flex-direction: column;
@@ -1352,3 +1567,12 @@ const wizardStyles = `
     .review-grid { grid-template-columns: 1fr; }
   }
 `
+
+// Wrap in Suspense for useSearchParams
+export default function CreatePoolPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>}>
+      <CreatePoolContent />
+    </Suspense>
+  )
+}

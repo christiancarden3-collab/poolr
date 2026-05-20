@@ -2,16 +2,17 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export async function POST(request) {
   try {
-    // Check if Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json({ error: 'Stripe is not configured. Add STRIPE_SECRET_KEY to environment.' }, { status: 503 })
     }
-    
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const { pool_id, user_id, return_url } = await request.json()
 
@@ -21,10 +22,13 @@ export async function POST(request) {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get pool details
+    // Get pool details with commissioner info
     const { data: pool, error: poolError } = await supabase
       .from('pools')
-      .select('*')
+      .select(`
+        *,
+        commissioner:profiles!commissioner_id(stripe_account_id, username)
+      `)
       .eq('id', pool_id)
       .single()
 
@@ -34,6 +38,24 @@ export async function POST(request) {
 
     if (pool.payment_method !== 'stripe') {
       return NextResponse.json({ error: 'Pool does not use Stripe payments' }, { status: 400 })
+    }
+
+    // Verify commissioner has connected Stripe account
+    const commissionerStripeId = pool.commissioner?.stripe_account_id
+    if (!commissionerStripeId) {
+      return NextResponse.json({ 
+        error: 'Commissioner has not set up Stripe payments yet',
+        code: 'COMMISSIONER_NOT_CONNECTED'
+      }, { status: 400 })
+    }
+
+    // Verify commissioner's account is fully onboarded
+    const commissionerAccount = await stripe.accounts.retrieve(commissionerStripeId)
+    if (!commissionerAccount.charges_enabled) {
+      return NextResponse.json({ 
+        error: 'Commissioner Stripe account is not fully set up',
+        code: 'COMMISSIONER_NOT_VERIFIED'
+      }, { status: 400 })
     }
 
     // Get pool member
@@ -52,12 +74,25 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Already paid' }, { status: 400 })
     }
 
-    // Calculate amount with fee
-    const buyIn = pool.buy_in * 100 // Convert to cents
-    const platformFee = Math.round(buyIn * 0.05) // 5% fee
-    const totalAmount = pool.fee_handling === 'on_top' ? buyIn + platformFee : buyIn
+    // Calculate amounts
+    const buyIn = Math.round(pool.buy_in * 100) // Convert to cents
+    const platformFeePercent = 5
+    const platformFee = Math.round(buyIn * (platformFeePercent / 100)) // 5% fee
 
-    // Create Stripe Checkout Session
+    // Total player pays depends on fee handling
+    // - "on_top": Player pays buy-in + 5% fee
+    // - "absorbed": Player pays buy-in, fee comes out of pool
+    const totalAmount = pool.fee_handling === 'on_top' 
+      ? buyIn + platformFee 
+      : buyIn
+
+    // For "absorbed" fee handling, the application_fee is still 5% of total
+    // For "on_top", the application_fee is the extra amount
+    const applicationFee = platformFee
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pickpoolr.com'
+
+    // Create Stripe Checkout Session with Connected Account
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -65,8 +100,8 @@ export async function POST(request) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `${pool.name} - Pool Buy-in`,
-              description: `World Cup 2026 Prediction Pool Entry`,
+              name: `${pool.name} - Pool Entry`,
+              description: `Buy-in for World Cup 2026 Prediction Pool`,
             },
             unit_amount: totalAmount,
           },
@@ -74,27 +109,39 @@ export async function POST(request) {
         },
       ],
       mode: 'payment',
-      success_url: `${return_url || process.env.NEXT_PUBLIC_APP_URL}/pool/${pool_id}?payment=success`,
-      cancel_url: `${return_url || process.env.NEXT_PUBLIC_APP_URL}/pool/${pool_id}?payment=cancelled`,
+      success_url: `${return_url || appUrl}/pool/${pool_id}?payment=success`,
+      cancel_url: `${return_url || appUrl}/pool/${pool_id}?payment=cancelled`,
       metadata: {
         pool_id,
         user_id,
         member_id: member.id,
-        platform_fee: platformFee,
+        platform_fee: applicationFee,
+        buy_in: buyIn,
+        fee_handling: pool.fee_handling,
       },
-      // Application fee for platform (5%)
-      // Note: This requires a connected account. For now, we just track it.
+      // STRIPE CONNECT: Route payment to commissioner, take platform fee
+      payment_intent_data: {
+        application_fee_amount: applicationFee,
+        transfer_data: {
+          destination: commissionerStripeId,
+        },
+      },
     })
 
     // Store session ID on member record
     await supabase
       .from('pool_members')
-      .update({ stripe_payment_id: session.id })
+      .update({ 
+        stripe_payment_id: session.id,
+        payment_status: 'pending'
+      })
       .eq('id', member.id)
 
     return NextResponse.json({
       url: session.url,
       session_id: session.id,
+      amount: totalAmount,
+      fee: applicationFee,
     })
   } catch (error) {
     console.error('Stripe checkout error:', error)
