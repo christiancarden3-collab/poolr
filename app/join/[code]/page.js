@@ -12,7 +12,9 @@ export default function JoinPoolPage() {
   const [pool, setPool] = useState(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [alreadyMember, setAlreadyMember] = useState(false)
   const [error, setError] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -45,6 +47,20 @@ export default function JoinPoolPage() {
           return
         }
 
+        // Check if user is already a member
+        if (currentUser) {
+          const { data: existingMember } = await supabase
+            .from('pool_members')
+            .select('id')
+            .eq('pool_id', poolData.id)
+            .eq('user_id', currentUser.id)
+            .single()
+          
+          if (existingMember) {
+            setAlreadyMember(true)
+          }
+        }
+
         // Get member count
         const { count } = await supabase
           .from('pool_members')
@@ -73,38 +89,54 @@ export default function JoinPoolPage() {
     loadData()
   }, [params.code])
 
-  const handleJoin = async () => {
+  // Check if pool is paid
+  const isPaidPool = pool && parseFloat(pool.buy_in) > 0
+
+  const handleJoinClick = async () => {
+    if (!user || !pool) return
+    
+    // Check if already a member
+    const { data: existing } = await supabase
+      .from('pool_members')
+      .select('id')
+      .eq('pool_id', pool.id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (existing) {
+      // Already a member, just redirect
+      router.push(`/pool/${pool.id}`)
+      return
+    }
+
+    if (isPaidPool) {
+      // Redirect to payment page
+      router.push(`/pool/${pool.id}/pay?join=true`)
+    } else {
+      // Show confirmation for free pools
+      setShowConfirm(true)
+    }
+  }
+
+  const handleConfirmJoin = async () => {
     if (!user || !pool) return
     setJoining(true)
     setError(null)
     
     try {
-      // Check if already a member
-      const { data: existing } = await supabase
-        .from('pool_members')
-        .select('id')
-        .eq('pool_id', pool.id)
-        .eq('user_id', user.id)
-        .single()
-
-      if (existing) {
-        // Already a member, just redirect
-        router.push(`/pool/${pool.id}`)
-        return
-      }
-
       // Add user to pool
       const { error: joinError } = await supabase
         .from('pool_members')
         .insert({
           pool_id: pool.id,
           user_id: user.id,
-          role: 'member'
+          payment_status: 'paid' // Free pool, so mark as paid
         })
 
       if (joinError) throw joinError
       
       setSuccess(true)
+      setShowConfirm(false)
     } catch (err) {
       console.error('Error joining pool:', err)
       setError(err.message || 'Failed to join pool')
@@ -127,7 +159,18 @@ export default function JoinPoolPage() {
       if (authError) throw authError
 
       setUser(data.user)
-      // After setting user, they can click join
+      
+      // Check if already a member after login
+      const { data: existingMember } = await supabase
+        .from('pool_members')
+        .select('id')
+        .eq('pool_id', pool.id)
+        .eq('user_id', data.user.id)
+        .single()
+      
+      if (existingMember) {
+        setAlreadyMember(true)
+      }
     } catch (err) {
       setError(err.message || 'Invalid email or password')
     } finally {
@@ -161,7 +204,7 @@ export default function JoinPoolPage() {
   }
 
   // Format buy-in display
-  const buyinDisplay = pool?.buy_in ? `$${pool.buy_in}` : 'Free'
+  const buyinDisplay = isPaidPool ? `$${pool.buy_in}` : 'Free'
   const visibilityDisplay = pool?.visibility === 'private' ? 'Private' : 'Public'
   const tournamentDates = 'Jun 11 – Jul 19'
 
@@ -186,6 +229,30 @@ export default function JoinPoolPage() {
         </div>
 
         <div className="auth-card">
+          {/* CONFIRMATION MODAL FOR FREE POOLS */}
+          {showConfirm && (
+            <div className="confirm-overlay">
+              <div className="confirm-modal">
+                <div className="confirm-icon">🏆</div>
+                <div className="confirm-title">Confirm Join</div>
+                <div className="confirm-text">
+                  Are you sure you want to join <strong>{pool?.name}</strong>?
+                </div>
+                <div className="confirm-details">
+                  <div>Tournament: {pool?.tournament || 'FIFA World Cup 2026'}</div>
+                  <div>Buy-in: {buyinDisplay}</div>
+                  <div>Players: {pool?.player_count}</div>
+                </div>
+                <button className="btn-full green" onClick={handleConfirmJoin} disabled={joining}>
+                  {joining ? 'Joining...' : 'Yes, Join Pool →'}
+                </button>
+                <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => setShowConfirm(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           {!success ? (
             <>
               <div className="auth-card-head">
@@ -203,13 +270,20 @@ export default function JoinPoolPage() {
                   <div className="ppc-tournament">{pool?.tournament || 'FIFA World Cup 2026'} · {tournamentDates}</div>
                   <div className="ppc-stats">
                     <div className="ppc-stat"><div className="ppc-stat-val">{pool?.player_count}</div><div className="ppc-stat-label">Players</div></div>
-                    <div className="ppc-stat"><div className="ppc-stat-val">{buyinDisplay}</div><div className="ppc-stat-label">Buy-in</div></div>
+                    <div className="ppc-stat"><div className={`ppc-stat-val ${isPaidPool ? 'paid' : ''}`}>{buyinDisplay}</div><div className="ppc-stat-label">Buy-in</div></div>
                     <div className="ppc-stat"><div className="ppc-stat-val">{visibilityDisplay}</div><div className="ppc-stat-label">Visibility</div></div>
                   </div>
                   <div className="commissioner-row">
                     <div className="commissioner-avatar">{pool?.commissioner?.initials}</div>
                     <div className="commissioner-info">Hosted by <span className="commissioner-name">{pool?.commissioner?.name}</span></div>
                   </div>
+                  
+                  {isPaidPool && (
+                    <div className="payment-notice">
+                      <span className="payment-icon">💳</span>
+                      <span>Payment of <strong>${pool.buy_in}</strong> required to join</span>
+                    </div>
+                  )}
                 </div>
 
                 {user ? (
@@ -218,10 +292,21 @@ export default function JoinPoolPage() {
                       <span className="signed-in-dot"></span>
                       Signed in as <strong>{user.email}</strong>
                     </div>
-                    <button className="btn-full green" onClick={handleJoin} disabled={joining}>
-                      {joining ? 'Joining...' : 'Join Pool →'}
-                    </button>
-                    <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => { supabase.auth.signOut(); setUser(null); }}>
+                    
+                    {alreadyMember ? (
+                      <div>
+                        <div className="already-member-msg">✓ You&apos;re already a member of this pool</div>
+                        <Link href={`/pool/${pool?.id}`} className="btn-full">
+                          Go to Pool →
+                        </Link>
+                      </div>
+                    ) : (
+                      <button className="btn-full green" onClick={handleJoinClick} disabled={joining}>
+                        {isPaidPool ? `Pay $${pool.buy_in} & Join →` : 'Join Pool →'}
+                      </button>
+                    )}
+                    
+                    <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => { supabase.auth.signOut(); setUser(null); setAlreadyMember(false); }}>
                       Not you? Sign in with a different account
                     </button>
                   </div>
@@ -237,7 +322,7 @@ export default function JoinPoolPage() {
                       <input className="field-input" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
                     <button type="submit" className="btn-full green" disabled={authLoading}>
-                      {authLoading ? 'Signing in...' : 'Sign in & Join Pool →'}
+                      {authLoading ? 'Signing in...' : isPaidPool ? 'Sign in to Pay & Join →' : 'Sign in & Join Pool →'}
                     </button>
                     <div className="or-divider"><div className="or-line"></div><div className="or-text">new to poolr?</div><div className="or-line"></div></div>
                     <Link href={`/register?redirect=/join/${params.code}`} className="btn-outline-full">Create account & join</Link>
@@ -294,14 +379,20 @@ export default function JoinPoolPage() {
         .ppc-stat { padding: 0.6rem 0.75rem; border-right: 1px solid var(--line); text-align: center; }
         .ppc-stat:last-child { border-right: none; }
         .ppc-stat-val { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 900; color: var(--gold); }
+        .ppc-stat-val.paid { color: var(--green); }
         .ppc-stat-label { font-size: 0.6rem; color: var(--f4); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; margin-top: 2px; }
         .commissioner-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--line); }
         .commissioner-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 900; color: #000; flex-shrink: 0; }
         .commissioner-info { font-size: 0.75rem; color: var(--f3); }
         .commissioner-name { color: var(--f1); font-weight: 600; }
 
+        .payment-notice { display: flex; align-items: center; gap: 0.5rem; background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); border-radius: 4px; padding: 0.6rem 0.85rem; margin-top: 0.85rem; font-size: 0.78rem; color: var(--green); }
+        .payment-icon { font-size: 1rem; }
+
         .signed-in-msg { font-size: 0.78rem; color: var(--f3); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .signed-in-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+        .already-member-msg { background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: var(--green); padding: 0.75rem 1rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; font-weight: 600; }
 
         .field { margin-bottom: 1rem; }
         .field-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--f2); margin-bottom: 0.4rem; display: block; }
@@ -325,6 +416,16 @@ export default function JoinPoolPage() {
         .js-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .js-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 0.4rem; }
         .js-sub { font-size: 0.8rem; color: var(--f3); line-height: 1.6; margin-bottom: 1.25rem; }
+
+        /* Confirmation Modal */
+        .confirm-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem; }
+        .confirm-modal { background: var(--bg2); border: 1px solid var(--gold-line); border-radius: 6px; padding: 1.75rem; max-width: 340px; width: 100%; text-align: center; }
+        .confirm-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .confirm-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 0.5rem; }
+        .confirm-text { font-size: 0.85rem; color: var(--f3); margin-bottom: 1rem; line-height: 1.5; }
+        .confirm-details { background: var(--bg3); border-radius: 4px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.75rem; color: var(--f3); text-align: left; }
+        .confirm-details div { padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
+        .confirm-details div:last-child { border-bottom: none; }
 
         @keyframes pitchFloat { 0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); } 50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); } }
 
