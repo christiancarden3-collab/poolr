@@ -14,7 +14,7 @@ const PLAYERS = [
   {n:'Kylian Mbappé',t:'fr',tn:'France',p:'FWD'},{n:'Erling Haaland',t:'no',tn:'Norway',p:'FWD'},{n:'Lionel Messi',t:'ar',tn:'Argentina',p:'FWD'},{n:'Cristiano Ronaldo',t:'pt',tn:'Portugal',p:'FWD'},{n:'Lautaro Martínez',t:'ar',tn:'Argentina',p:'FWD'},{n:'Julián Álvarez',t:'ar',tn:'Argentina',p:'FWD'},{n:'Harry Kane',t:'gb-eng',tn:'England',p:'FWD'},{n:'Vinícius Jr.',t:'br',tn:'Brazil',p:'FWD'},{n:'Bukayo Saka',t:'gb-eng',tn:'England',p:'FWD'},{n:'Alexander Isak',t:'se',tn:'Sweden',p:'FWD'},{n:'Viktor Gyökeres',t:'se',tn:'Sweden',p:'FWD'},{n:'Darwin Núñez',t:'uy',tn:'Uruguay',p:'FWD'},{n:'Santiago Giménez',t:'mx',tn:'Mexico',p:'FWD'},{n:'Luis Díaz',t:'co',tn:'Colombia',p:'FWD'},{n:'Cody Gakpo',t:'nl',tn:'Netherlands',p:'FWD'},{n:'Mohamed Salah',t:'eg',tn:'Egypt',p:'FWD'},{n:'Emiliano Martínez',t:'ar',tn:'Argentina',p:'GK'},{n:'Thibaut Courtois',t:'be',tn:'Belgium',p:'GK'},{n:'Mike Maignan',t:'fr',tn:'France',p:'GK'},{n:'Alisson Becker',t:'br',tn:'Brazil',p:'GK'},{n:'Jordan Pickford',t:'gb-eng',tn:'England',p:'GK'},{n:'Manuel Neuer',t:'de',tn:'Germany',p:'GK'},{n:'Diogo Costa',t:'pt',tn:'Portugal',p:'GK'},{n:'Yann Sommer',t:'ch',tn:'Switzerland',p:'GK'},{n:'Bart Verbruggen',t:'nl',tn:'Netherlands',p:'GK'},{n:'Unai Simón',t:'es',tn:'Spain',p:'GK'},{n:'Ørjan Nyland',t:'no',tn:'Norway',p:'GK'}
 ]
 
-const fl = (c, sm) => `https://flagcdn.com/w${sm ? 40 : 80}/${c.replace('gb-', '')}.png`
+const fl = (c, sm) => `https://flagcdn.com/w${sm ? 40 : 80}/${c}.png`
 
 export default function SpecialPicksPage() {
   const params = useParams()
@@ -246,8 +246,8 @@ export default function SpecialPicksPage() {
         onReady={() => {
           console.log('Three.js ready')
           // Define helper functions
-          window.fl = (c, sm) => 'https://flagcdn.com/w' + (sm ? 40 : 80) + '/' + c.replace('gb-', '') + '.png';
-          window.flHD = c => 'https://flagcdn.com/w320/' + c.replace('gb-', '') + '.png';
+          window.fl = (c, sm) => 'https://flagcdn.com/w' + (sm ? 40 : 80) + '/' + c + '.png';
+          window.flHD = c => 'https://flagcdn.com/w320/' + c + '.png';
           window.flagScenes = {};
           window.mkMat = (c, r, m, x) => Object.assign(new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m }), x || {});
           window.mkRenderer = (id, w, h) => {
