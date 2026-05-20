@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 
 export default function PoolDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [pool, setPool] = useState(null)
   const [user, setUser] = useState(null)
   const [members, setMembers] = useState([])
-  const [activeTab, setActiveTab] = useState('picks')
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'lb')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showTeamNameModal, setShowTeamNameModal] = useState(false)
