@@ -126,21 +126,9 @@ export default function JoinPoolPage() {
       return
     }
     
-    // Check pool password if required
-    if (pool.password && pool.password.trim()) {
-      if (!poolPassword) {
-        setPasswordError('This pool requires a password')
-        return
-      }
-      if (poolPassword !== pool.password) {
-        setPasswordError('Incorrect password')
-        return
-      }
-    }
-    
+    // Direct link = trusted, no password check needed
     setJoining(true)
     setError(null)
-    setPasswordError('')
     
     try {
       // Add user to pool with team name
@@ -270,20 +258,6 @@ export default function JoinPoolPage() {
                   />
                   <div className="field-hint">This is how you'll appear on the leaderboard</div>
                 </div>
-                {pool?.password && (
-                  <div className="team-name-field">
-                    <label className="field-label">Pool Password *</label>
-                    <input 
-                      className={`field-input ${passwordError ? 'error' : ''}`}
-                      type="password" 
-                      placeholder="Enter pool password" 
-                      value={poolPassword} 
-                      onChange={(e) => { setPoolPassword(e.target.value); setPasswordError(''); }}
-                    />
-                    {passwordError && <div className="field-error">{passwordError}</div>}
-                    <div className="field-hint">Ask the commissioner for the password</div>
-                  </div>
-                )}
                 <div className="confirm-details">
                   <div>Tournament: {pool?.tournament || 'FIFA World Cup 2026'}</div>
                   <div>Buy-in: {buyinDisplay}</div>

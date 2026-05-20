@@ -15,7 +15,10 @@ export default function BrowsePage() {
   const [joiningPool, setJoiningPool] = useState(null)
   const [showTeamNameModal, setShowTeamNameModal] = useState(false)
   const [pendingPoolId, setPendingPoolId] = useState(null)
+  const [pendingPool, setPendingPool] = useState(null)
   const [teamNameInput, setTeamNameInput] = useState('')
+  const [poolPasswordInput, setPoolPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [previewPool, setPreviewPool] = useState(null)
 
   useEffect(() => {
@@ -101,14 +104,32 @@ export default function BrowsePage() {
       return
     }
 
+    // Find the pool to check if it has a password
+    const pool = pools.find(p => p.id === poolId)
+    
     // Show team name modal
     setPendingPoolId(poolId)
+    setPendingPool(pool)
     setTeamNameInput('')
+    setPoolPasswordInput('')
+    setPasswordError('')
     setShowTeamNameModal(true)
   }
 
   const confirmJoin = async () => {
     if (!pendingPoolId) return
+
+    // Check password if pool has one
+    if (pendingPool?.password && pendingPool.password.trim()) {
+      if (!poolPasswordInput) {
+        setPasswordError('This pool requires a password')
+        return
+      }
+      if (poolPasswordInput !== pendingPool.password) {
+        setPasswordError('Incorrect password')
+        return
+      }
+    }
 
     setJoiningPool(pendingPoolId)
     setShowTeamNameModal(false)
@@ -135,6 +156,7 @@ export default function BrowsePage() {
     } finally {
       setJoiningPool(null)
       setPendingPoolId(null)
+      setPendingPool(null)
     }
   }
 
@@ -287,6 +309,21 @@ export default function BrowsePage() {
                 autoFocus
               />
               <p className="modal-hint">Your display name on the leaderboard. You can change it later.</p>
+              
+              {pendingPool?.password && (
+                <>
+                  <label className="modal-label" style={{ marginTop: '1rem' }}>Pool Password *</label>
+                  <input
+                    type="password"
+                    className={`modal-input ${passwordError ? 'input-error' : ''}`}
+                    placeholder="Enter pool password"
+                    value={poolPasswordInput}
+                    onChange={(e) => { setPoolPasswordInput(e.target.value); setPasswordError(''); }}
+                  />
+                  {passwordError && <p className="modal-error">{passwordError}</p>}
+                  <p className="modal-hint">This pool is password protected</p>
+                </>
+              )}
             </div>
             <div className="modal-actions">
               <button className="modal-btn-cancel" onClick={() => setShowTeamNameModal(false)}>
@@ -793,6 +830,14 @@ export default function BrowsePage() {
           font-size: 0.75rem;
           color: var(--f4);
           margin-top: 0.5rem;
+        }
+        .modal-error {
+          font-size: 0.75rem;
+          color: var(--red);
+          margin-top: 0.5rem;
+        }
+        .modal-input.input-error {
+          border-color: var(--red);
         }
         .modal-actions {
           display: flex;
