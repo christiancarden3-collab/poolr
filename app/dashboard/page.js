@@ -67,9 +67,8 @@ export default function DashboardPage() {
       <div className="topbar">
         <div className="topbar-links">
           <a href="/dashboard" className="tb-link active">Dashboard</a>
-          <a href="/dashboard" className="tb-link">My Pools</a>
-          <a href="#" className="tb-link">World Cup 2026</a>
-          <a href="#" className="tb-link">Results</a>
+          <a href="/browse" className="tb-link">Browse Pools</a>
+          <a href="/profile" className="tb-link">My Profile</a>
         </div>
         <div className="topbar-right">
           <Link href="/profile" className="user-pill">
@@ -86,7 +85,7 @@ export default function DashboardPage() {
         <div className="nav-items">
           <a href="/" className="nav-item">Home</a>
           <a href="/dashboard" className="nav-item active">My Pools</a>
-          <a href="#" className="nav-item">World Cup 2026</a>
+          <a href="/browse" className="nav-item">Browse</a>
         </div>
         <a href="/create" className="nav-cta">+ Create Pool</a>
       </nav>
