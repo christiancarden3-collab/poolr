@@ -55,7 +55,8 @@ export default function PoolDetailPage() {
             *,
             profiles:user_id (
               id,
-              name
+              name,
+              team_name
             )
           `)
           .eq('pool_id', params.id)
@@ -63,11 +64,14 @@ export default function PoolDetailPage() {
 
         // Format members for leaderboard
         const formattedMembers = (membersData || []).map((m, index) => {
-          const name = m.profiles?.name || 'Player'
+          const teamName = m.profiles?.team_name || null
+          const fullName = m.profiles?.name || 'Player'
           return {
             rank: index + 1,
             user_id: m.user_id,
-            name: name,
+            teamName: teamName,
+            fullName: fullName,
+            displayName: teamName || fullName,
             points: m.total_points || 0,
             paid: m.payment_status === 'paid',
             isYou: m.user_id === currentUser.id,
@@ -281,9 +285,12 @@ export default function PoolDetailPage() {
                         {player.change}
                       </div>
                       <div className="lb-player">
-                        {player.isYou ? 'You' : player.name}
-                        {player.paid && <span className="paid-dot"></span>}
-                        {player.isYou && <span className="lb-you-tag">You</span>}
+                        <div className="lb-player-main">
+                          <span className="lb-team-name">{player.displayName}</span>
+                          {player.isYou && <span className="lb-you-tag">(You)</span>}
+                          {player.paid && <span className="paid-dot"></span>}
+                        </div>
+                        {player.teamName && <div className="lb-real-name">{player.fullName}</div>}
                       </div>
                       <div className="lb-pts">{player.points}</div>
                     </div>
@@ -759,11 +766,24 @@ export default function PoolDetailPage() {
         .mv-flat { color: var(--f4); }
         .lb-player {
           display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 0.15rem;
+        }
+        .lb-player-main {
+          display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-size: 0.82rem;
-          font-weight: 600;
+          gap: 0.4rem;
+        }
+        .lb-team-name {
+          font-size: 0.85rem;
+          font-weight: 700;
           color: var(--f1);
+        }
+        .lb-real-name {
+          font-size: 0.68rem;
+          color: var(--f4);
+          font-weight: 400;
         }
         .paid-dot {
           width: 5px;

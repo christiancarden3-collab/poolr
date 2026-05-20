@@ -9,7 +9,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [username, setUsername] = useState('')
+  const [teamName, setTeamName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [language, setLanguage] = useState('English')
@@ -20,8 +20,8 @@ export default function RegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault()
-    if (!email || !password || password.length < 8 || !username || username.length < 3) {
-      setError('Please fill all fields. Username must be at least 3 characters. Password must be at least 8 characters.')
+    if (!email || !password || password.length < 8 || !firstName) {
+      setError('Please fill all required fields. Password must be at least 8 characters.')
       return
     }
     if (!terms) {
@@ -32,18 +32,27 @@ export default function RegisterPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             first_name: firstName,
             last_name: lastName,
-            username: username,
+            team_name: teamName,
             preferred_language: language
           }
         }
       })
+      
+      // Update profile with team name
+      if (authData?.user && teamName) {
+        await supabase.from('profiles').upsert({
+          id: authData.user.id,
+          name: `${firstName} ${lastName}`.trim(),
+          team_name: teamName
+        })
+      }
       if (error) throw error
       router.push('/dashboard')
     } catch (err) {
@@ -124,15 +133,15 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <div className="field">
-                  <label className="field-label">Username</label>
+                  <label className="field-label">Team Name <span className="optional-tag">(optional)</span></label>
                   <input 
                     className="field-input"
                     type="text" 
-                    placeholder="juangarcia26"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    placeholder="The Golden Boots"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
                   />
-                  <div className="field-hint">Letters, numbers, underscores only</div>
+                  <div className="field-hint">Your display name on leaderboards</div>
                 </div>
                 <div className="field">
                   <label className="field-label">Email address</label>
@@ -445,6 +454,13 @@ export default function RegisterPage() {
           font-size: 0.72rem;
           color: var(--f4);
           margin-top: 0.3rem;
+        }
+        .optional-tag {
+          font-weight: 400;
+          font-size: 0.6rem;
+          color: var(--f4);
+          text-transform: none;
+          letter-spacing: 0.02em;
         }
         .terms-row {
           display: flex;
