@@ -48,6 +48,61 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 
+// Helper to check if picks for a match date are locked (1 hour before first game of that day)
+function isDateLocked(matchDate, matchTime) {
+  // Parse date like "Jun 11" and time like "5:00 PM ET"
+  const year = 2026
+  const months = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
+  const [monthStr, dayStr] = matchDate.split(' ')
+  const month = months[monthStr]
+  const day = parseInt(dayStr)
+  
+  // Parse time
+  const timeMatch = matchTime.match(/(\d+):(\d+)\s*(AM|PM)/i)
+  if (!timeMatch) return false
+  
+  let hours = parseInt(timeMatch[1])
+  const mins = parseInt(timeMatch[2])
+  const ampm = timeMatch[3].toUpperCase()
+  
+  if (ampm === 'PM' && hours !== 12) hours += 12
+  if (ampm === 'AM' && hours === 12) hours = 0
+  
+  // Create the match datetime (ET timezone approximation)
+  const matchDateTime = new Date(year, month, day, hours, mins)
+  
+  // Lock 1 hour before
+  const lockTime = new Date(matchDateTime.getTime() - 60 * 60 * 1000)
+  
+  return new Date() >= lockTime
+}
+
+// Group matches by date and get earliest time for each date
+function getDateLockStatus(matches) {
+  const dateGroups = {}
+  
+  matches.forEach(m => {
+    if (!dateGroups[m.date]) {
+      dateGroups[m.date] = { matches: [], earliestTime: m.time }
+    }
+    dateGroups[m.date].matches.push(m)
+    
+    // Keep track of earliest time for this date
+    // Simple comparison - assumes times are in same format
+    if (m.time < dateGroups[m.date].earliestTime) {
+      dateGroups[m.date].earliestTime = m.time
+    }
+  })
+  
+  // Check if each date is locked
+  const lockStatus = {}
+  Object.keys(dateGroups).forEach(date => {
+    lockStatus[date] = isDateLocked(date, dateGroups[date].earliestTime)
+  })
+  
+  return lockStatus
+}
+
 export default function PredictionsPage() {
   const params = useParams()
   const router = useRouter()
@@ -60,6 +115,7 @@ export default function PredictionsPage() {
   const [poolMember, setPoolMember] = useState(null)
   const [pool, setPool] = useState(null)
   const [deadline, setDeadline] = useState(null)
+  const [dateLockStatus, setDateLockStatus] = useState({})
 
   // Load data on mount and matchday change
   const loadData = useCallback(async () => {
@@ -98,6 +154,7 @@ export default function PredictionsPage() {
       
       if (data.success && data.matches && data.matches.length > 0) {
         setMatches(data.matches)
+        setDateLockStatus(getDateLockStatus(data.matches))
         
         // Find earliest match time for deadline
         if (data.matches.length > 0) {
@@ -110,6 +167,7 @@ export default function PredictionsPage() {
         // Fallback to demo data if database is empty
         const demoMatches = getDemoMatches(matchday)
         setMatches(demoMatches)
+        setDateLockStatus(getDateLockStatus(demoMatches))
         // Set demo deadline to next June 11
         setDeadline(new Date('2026-06-11T12:00:00-04:00'))
       }
@@ -343,7 +401,8 @@ export default function PredictionsPage() {
             {matches.map(match => {
               const status = getMatchStatus(match)
               const pick = picks[match.id] || {}
-              const isLocked = ['live', 'ft', 'locked'].includes(status)
+              const dateIsLocked = dateLockStatus[match.date] || false
+              const isLocked = ['live', 'ft', 'locked'].includes(status) || dateIsLocked
               
               return (
                 <div key={match.id} className={`mpc ${status === 'saved' ? 'submitted' : ''} ${isLocked ? 'locked-card' : ''}`}>
@@ -351,12 +410,12 @@ export default function PredictionsPage() {
                     <div className="mpc-info">
                       {match.group ? `Group ${match.group} · ` : ''}{match.date} · {match.time}
                     </div>
-                    <div className={`mpc-status s-${status}`}>
-                      {status === 'open' && 'Open'}
-                      {status === 'saved' && '✓ Saved'}
+                    <div className={`mpc-status s-${dateIsLocked && status !== 'live' && status !== 'ft' ? 'locked' : status}`}>
+                      {status === 'open' && !dateIsLocked && 'Open'}
+                      {status === 'saved' && !dateIsLocked && '✓ Saved'}
                       {status === 'live' && <><span className="live-dot"></span>Live</>}
                       {status === 'ft' && 'FT'}
-                      {status === 'locked' && '🔒 Locked'}
+                      {(status === 'locked' || (dateIsLocked && status !== 'live' && status !== 'ft')) && '🔒 Locked'}
                     </div>
                   </div>
                   <div className="mpc-body">
