@@ -30,26 +30,42 @@ export default function BrowsePage() {
       .from('pools')
       .select(`
         *,
-        pool_members(
-          id,
-          team_name,
-          user_id,
-          profiles:user_id(name, display_name)
-        )
+        pool_members(id, team_name, user_id)
       `)
       .eq('visibility', 'public')
       .eq('status', 'open')
       .order('created_at', { ascending: false })
 
     if (publicPools) {
-      setPools(publicPools.map(p => ({
-        ...p,
-        player_count: p.pool_members?.length || 0,
-        members: (p.pool_members || []).map(m => ({
-          id: m.id,
-          name: m.team_name || m.profiles?.name || m.profiles?.display_name || 'Player'
+      // Get member names for each pool
+      const poolsWithMembers = await Promise.all(publicPools.map(async (p) => {
+        const memberList = p.pool_members || []
+        
+        // Get profile names for members without team_name
+        const membersWithNames = await Promise.all(memberList.map(async (m) => {
+          if (m.team_name) {
+            return { id: m.id, name: m.team_name }
+          }
+          // Fetch profile name
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, display_name')
+            .eq('id', m.user_id)
+            .single()
+          return { 
+            id: m.id, 
+            name: profile?.name || profile?.display_name || 'Player' 
+          }
         }))
-      })))
+
+        return {
+          ...p,
+          player_count: memberList.length,
+          members: membersWithNames
+        }
+      }))
+      
+      setPools(poolsWithMembers)
     }
 
     // Load user's memberships if logged in
@@ -81,7 +97,7 @@ export default function BrowsePage() {
           pool_id: poolId,
           user_id: user.id,
           role: 'player',
-          paid: false,
+          payment_status: 'pending',
           total_points: 0
         })
 
