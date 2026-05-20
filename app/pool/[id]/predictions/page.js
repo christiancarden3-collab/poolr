@@ -152,36 +152,39 @@ export default function PredictionsPage() {
       const response = await fetch(`/api/matches?matchday=${matchday}`)
       const data = await response.json()
       
+      // Determine which matches to use (API or demo)
+      let matchList = []
       if (data.success && data.matches && data.matches.length > 0) {
-        setMatches(data.matches)
-        setDateLockStatus(getDateLockStatus(data.matches))
-        
+        matchList = data.matches
         // Find earliest match time for deadline
-        if (data.matches.length > 0) {
-          const earliestMatch = data.matches.reduce((earliest, match) => 
-            new Date(match.matchTime) < new Date(earliest.matchTime) ? match : earliest
-          )
-          setDeadline(new Date(earliestMatch.matchTime))
-        }
+        const earliestMatch = matchList.reduce((earliest, match) => 
+          new Date(match.matchTime) < new Date(earliest.matchTime) ? match : earliest
+        )
+        setDeadline(new Date(earliestMatch.matchTime))
       } else {
         // Fallback to demo data if database is empty
-        const demoMatches = getDemoMatches(matchday)
-        setMatches(demoMatches)
-        setDateLockStatus(getDateLockStatus(demoMatches))
+        matchList = getDemoMatches(matchday)
         // Set demo deadline to next June 11
         setDeadline(new Date('2026-06-11T12:00:00-04:00'))
       }
+      
+      setMatches(matchList)
+      setDateLockStatus(getDateLockStatus(matchList))
 
-      // Load existing picks for this user
-      if (memberData && data.matches) {
-        const matchIds = data.matches.map(m => m.id)
-        const { data: existingPicks } = await supabase
+      // Load existing picks for this user (always try if we have memberData and matches)
+      if (memberData && matchList.length > 0) {
+        const matchIds = matchList.map(m => m.id)
+        console.log('Loading picks for member:', memberData.id, 'matches:', matchIds)
+        
+        const { data: existingPicks, error: picksError } = await supabase
           .from('match_picks')
           .select('*')
           .eq('pool_member_id', memberData.id)
           .in('match_id', matchIds)
 
-        if (existingPicks) {
+        console.log('Existing picks loaded:', existingPicks, 'error:', picksError)
+
+        if (existingPicks && existingPicks.length > 0) {
           const picksMap = {}
           existingPicks.forEach(pick => {
             picksMap[pick.match_id] = {
