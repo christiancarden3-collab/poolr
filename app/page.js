@@ -38,13 +38,13 @@ export default function LandingPage() {
 
       {/* TICKER */}
       <div className="ticker">
-        <div className="ticker-label">Live</div>
+        <div className="ticker-label">World Cup 2026</div>
         <div className="ticker-items">
-          <span className="ticker-item">ARG 3 – 1 FRA &nbsp;●&nbsp; 78&apos;</span>
-          <span className="ticker-item">BRA 2 – 2 GER &nbsp;●&nbsp; 86&apos;</span>
-          <span className="ticker-item">MEX 1 – 0 POR &nbsp;●&nbsp; FT</span>
-          <span className="ticker-item">ESP 0 – 0 NED &nbsp;●&nbsp; 34&apos;</span>
-          <span className="ticker-item">USA 1 – 2 JPN &nbsp;●&nbsp; HT</span>
+          <span className="ticker-item">48 Teams</span>
+          <span className="ticker-item">104 Matches</span>
+          <span className="ticker-item">16 Host Cities</span>
+          <span className="ticker-item">USA · Canada · Mexico</span>
+          <span className="ticker-item">June 11 – July 19, 2026</span>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export default function LandingPage() {
             <div className="match-panel">
               <div className="mp-header">
                 <div className="mp-title">Amigos WC26 · Round of 16</div>
-                <div className="mp-live"><span className="live-dot"></span>Live</div>
+                <div className="mp-live"><span className="live-dot" style={{ background: 'var(--gold)' }}></span>Coming Soon</div>
               </div>
               <div className="match-row">
                 <div className="t-name home">Argentina</div>

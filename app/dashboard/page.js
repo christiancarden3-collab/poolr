@@ -92,13 +92,13 @@ export default function DashboardPage() {
 
       {/* TICKER */}
       <div className="ticker">
-        <div className="ticker-label">Live</div>
+        <div className="ticker-label">World Cup 2026</div>
         <div className="ticker-items">
-          <span className="ticker-item">ARG 3 – 1 FRA &nbsp;●&nbsp; 78&apos;</span>
-          <span className="ticker-item">BRA 2 – 2 GER &nbsp;●&nbsp; 86&apos;</span>
-          <span className="ticker-item">MEX 1 – 0 ZAF &nbsp;●&nbsp; FT</span>
-          <span className="ticker-item">ESP 2 – 0 CPV &nbsp;●&nbsp; HT</span>
-          <span className="ticker-item">ENG 1 – 1 CRO &nbsp;●&nbsp; 67&apos;</span>
+          <span className="ticker-item">48 Teams</span>
+          <span className="ticker-item">104 Matches</span>
+          <span className="ticker-item">16 Host Cities</span>
+          <span className="ticker-item">USA · Canada · Mexico</span>
+          <span className="ticker-item">Kicks off June 11, 2026</span>
         </div>
       </div>
 
