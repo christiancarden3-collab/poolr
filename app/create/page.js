@@ -121,7 +121,10 @@ function CreatePoolContent() {
   const prizeTotal = prizes.reduce((sum, p) => sum + (p.percent || 0), 0)
 
   // Only World Cup 2026 for now - more tournaments added as needed
-  const getTournamentName = () => 'World Cup 2026'
+  const getTournamentName = () => {
+    if (tournament === 'nba2026') return 'NBA Western Conference Finals 2026'
+    return 'World Cup 2026'
+  }
 
   const handleCreate = async () => {
     setLoading(true)
@@ -315,10 +318,14 @@ function CreatePoolContent() {
                   </div>
                   <div className="field">
                     <label className="field-label">Tournament</label>
-                    <div className="field-input" style={{ background: 'var(--b2)', cursor: 'default' }}>
-                      🏆 FIFA World Cup 2026 · USA, Canada & Mexico
-                    </div>
-                    <div className="field-hint">More tournaments coming soon</div>
+                    <select 
+                      className="field-input field-select"
+                      value={tournament}
+                      onChange={(e) => setTournament(e.target.value)}
+                    >
+                      <option value="wc2026">🏆 FIFA World Cup 2026 · USA, Canada & Mexico</option>
+                      <option value="nba2026">🏀 NBA Western Conference Finals 2026</option>
+                    </select>
                   </div>
                   <div className="field">
                     <label className="field-label">Picks deadline</label>
