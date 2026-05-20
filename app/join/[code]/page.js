@@ -20,6 +20,8 @@ export default function JoinPoolPage() {
   const [password, setPassword] = useState('')
   const [teamName, setTeamName] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
+  const [poolPassword, setPoolPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -123,8 +125,22 @@ export default function JoinPoolPage() {
       setError('Please enter a team name')
       return
     }
+    
+    // Check pool password if required
+    if (pool.password && pool.password.trim()) {
+      if (!poolPassword) {
+        setPasswordError('This pool requires a password')
+        return
+      }
+      if (poolPassword !== pool.password) {
+        setPasswordError('Incorrect password')
+        return
+      }
+    }
+    
     setJoining(true)
     setError(null)
+    setPasswordError('')
     
     try {
       // Add user to pool with team name
@@ -254,6 +270,20 @@ export default function JoinPoolPage() {
                   />
                   <div className="field-hint">This is how you'll appear on the leaderboard</div>
                 </div>
+                {pool?.password && (
+                  <div className="team-name-field">
+                    <label className="field-label">Pool Password *</label>
+                    <input 
+                      className={`field-input ${passwordError ? 'error' : ''}`}
+                      type="password" 
+                      placeholder="Enter pool password" 
+                      value={poolPassword} 
+                      onChange={(e) => { setPoolPassword(e.target.value); setPasswordError(''); }}
+                    />
+                    {passwordError && <div className="field-error">{passwordError}</div>}
+                    <div className="field-hint">Ask the commissioner for the password</div>
+                  </div>
+                )}
                 <div className="confirm-details">
                   <div>Tournament: {pool?.tournament || 'FIFA World Cup 2026'}</div>
                   <div>Buy-in: {buyinDisplay}</div>
@@ -448,6 +478,8 @@ export default function JoinPoolPage() {
         .team-name-field .field-input::placeholder { color: var(--f4); font-weight: 400; }
         .team-name-field .field-label { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
         .team-name-field .field-hint { font-size: 0.7rem; color: var(--f4); margin-top: 0.4rem; }
+        .team-name-field .field-error { font-size: 0.72rem; color: var(--red); margin-top: 0.4rem; }
+        .field-input.error { border-color: var(--red); }
 
         @keyframes pitchFloat { 0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); } 50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); } }
 
