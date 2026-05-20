@@ -83,15 +83,13 @@ export default function CreatePoolPage() {
         .insert({
           name: poolName,
           description,
-          tournament_id: tournament,
-          tournament_name: getTournamentName(),
           commissioner_id: user.id,
           invite_code: inviteCode,
-          is_public: privacy === 'public',
-          max_players: maxPlayers ? parseInt(maxPlayers) : null,
-          buy_in_amount: poolType === 'paid' ? parseFloat(buyinAmount) : 0,
-          fee_type: poolType === 'paid' ? feeType : null,
-          prize_distribution: JSON.stringify(prizes),
+          visibility: privacy === 'public' ? 'public' : 'private',
+          buy_in: poolType === 'paid' ? parseFloat(buyinAmount) : 0,
+          fee_handling: poolType === 'paid' ? feeType : 'absorbed',
+          prize_structure: prizes.reduce((acc, p) => ({ ...acc, [p.place]: p.percent }), {}),
+          payment_method: poolType === 'paid' ? 'stripe' : 'external',
           status: 'open'
         })
         .select()
@@ -103,8 +101,7 @@ export default function CreatePoolPage() {
       await supabase.from('pool_members').insert({
         pool_id: pool.id,
         user_id: user.id,
-        role: 'commissioner',
-        has_paid: true
+        payment_status: 'paid'
       })
 
       setCreatedPoolId(pool.id)
