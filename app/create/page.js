@@ -284,7 +284,7 @@ export default function CreatePoolPage() {
                 </div>
               </div>
             </div>
-            <Sidebar poolName={poolName} privacy={privacy} buyinAmount={buyinAmount} poolType={poolType} />
+            <Sidebar poolName={poolName} privacy={privacy} buyinAmount={buyinAmount} poolType={poolType} tournamentName={getTournamentName()} />
           </>
         )}
 
@@ -342,7 +342,7 @@ export default function CreatePoolPage() {
                 </div>
               </div>
             </div>
-            <Sidebar poolName={poolName} privacy={privacy} buyinAmount={buyinAmount} poolType={poolType} inviteCode={inviteCode} />
+            <Sidebar poolName={poolName} privacy={privacy} buyinAmount={buyinAmount} poolType={poolType} inviteCode={inviteCode} tournamentName={getTournamentName()} />
           </>
         )}
 
@@ -540,13 +540,13 @@ export default function CreatePoolPage() {
   )
 }
 
-function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode }) {
+function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode, tournamentName }) {
   return (
     <div className="sidebar-card">
       <div className="sc-head"><div className="sc-title">Pool Preview</div></div>
       <div className="sc-body">
         <div className="preview-name">{poolName || 'Your Pool Name'}</div>
-        <div className="preview-meta">{getTournamentName()}</div>
+        <div className="preview-meta">{tournamentName || 'World Cup 2026'}</div>
         <div className="preview-row"><div className="preview-label">Privacy</div><div className="preview-val">{privacy === 'private' ? 'Private' : 'Public'}</div></div>
         {inviteCode && <div className="preview-row"><div className="preview-label">Invite link</div><div className="preview-val gold small">pickpoolr.com/join/{inviteCode}</div></div>}
         <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyinAmount ? `$${buyinAmount}` : 'Free'}</div></div>
