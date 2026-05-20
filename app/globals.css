@@ -10,11 +10,34 @@
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* Force Barlow Condensed on all elements that need it */
-.lbl, .pts, .tn, .pn-full, .ph-title, .ph-eyebrow, .tab, .nav-logo, .nav-item, .nav-cta,
+.lbl, .pts, .tn, .pn-full, .ph-title, .ph-eyebrow, .nav-logo, .nav-item, .nav-cta,
 .tb-link, .signout-btn, .user-avatar, .sh-title, .sh-close, .topt-n, .pi-p, .cta,
 .deadline-banner strong, [class*="barlow"] {
   font-family: 'Barlow Condensed', sans-serif !important;
 }
+
+/* TAB STYLES — global for all pool pages */
+.tab-nav { background: var(--bg2, #111318); border-bottom: 1px solid var(--line, rgba(255,255,255,0.07)); }
+.tab-nav-inner { max-width: 1100px; margin: 0 auto; display: flex; }
+.tab, a.tab, span.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 1.5rem;
+  height: 44px;
+  font-family: 'Barlow Condensed', sans-serif !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--f3, #8a8780);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.tab:hover { color: var(--f1, #f0ede8); }
+.tab.active { color: var(--white, #fff); border-bottom-color: var(--gold, #c9a84c); }
 
 /* Override inline opacity:0 once CSS loads - prevents FOUC */
 body { opacity: 1 !important; }
