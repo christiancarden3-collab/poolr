@@ -63,7 +63,7 @@ export default function PoolDetailPage() {
             )
           `)
           .eq('pool_id', params.id)
-          .order('points', { ascending: false })
+          .order('total_points', { ascending: false, nullsFirst: false })
 
         // Format members for leaderboard
         const formattedMembers = (membersData || []).map((m, index) => {
@@ -72,8 +72,8 @@ export default function PoolDetailPage() {
             rank: index + 1,
             user_id: m.user_id,
             name: name,
-            points: m.points || 0,
-            paid: m.paid || false,
+            points: m.total_points || 0,
+            paid: m.payment_status === 'paid',
             isYou: m.user_id === currentUser.id,
             change: '-' // TODO: calculate from previous standings
           }
