@@ -240,6 +240,7 @@ export default function SpecialPicksPage() {
 
   return (
     <>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');`}</style>
       <Script 
         src="https://unpkg.com/three@0.128.0/build/three.min.js" 
         strategy="afterInteractive"
@@ -892,10 +893,10 @@ export default function SpecialPicksPage() {
         .tab.active { color: #f0ede8; border-bottom-color: #c9a84c; }
 
         /* GRID */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; background: #0a0c10; max-width: 500px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; background: #0a0c10; max-width: 640px; margin: 0 auto; }
 
         /* CARD */
-        .card { position: relative; border-radius: 10px; overflow: hidden; background: #111318; border: 1px solid rgba(255,255,255,0.08); min-height: 230px; display: flex; flex-direction: column; cursor: pointer; transition: border-color 0.2s; }
+        .card { position: relative; border-radius: 10px; overflow: hidden; background: #111318; border: 1px solid rgba(255,255,255,0.08); min-height: 290px; display: flex; flex-direction: column; cursor: pointer; transition: border-color 0.2s; }
         .card:hover:not(.locked) { border-color: rgba(255,255,255,0.2); }
         .card.gold { border: 2px solid #c9a84c; background: #0d0f09; }
         .card.silver { border: 2px solid #b8cce0; background: #0d0f15; }
