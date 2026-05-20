@@ -9,6 +9,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(true)
   const [showMagic, setShowMagic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -20,8 +21,23 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password,
+        options: {
+          // When remember me is checked, session persists longer
+          persistSession: rememberMe
+        }
+      })
       if (error) throw error
+      
+      // Store remember me preference
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true')
+      } else {
+        localStorage.removeItem('rememberMe')
+      }
+      
       router.push('/dashboard')
     } catch (err) {
       setError(err.message)
@@ -100,6 +116,18 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                </div>
+                <div className="remember-row">
+                  <label className="remember-label">
+                    <input 
+                      type="checkbox" 
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="remember-check"
+                    />
+                    <span className="remember-box"></span>
+                    <span className="remember-text">Remember me</span>
+                  </label>
                 </div>
                 {error && <div className="error-msg">{error}</div>}
                 <button type="submit" className="btn-full" disabled={loading}>
@@ -374,6 +402,59 @@ export default function LoginPage() {
           color: var(--red);
           margin-top: 0.5rem;
           margin-bottom: 0.5rem;
+        }
+        
+        /* REMEMBER ME */
+        .remember-row {
+          margin-top: 1rem;
+          margin-bottom: 0.25rem;
+        }
+        .remember-label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
+          user-select: none;
+        }
+        .remember-check {
+          position: absolute;
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .remember-box {
+          width: 18px;
+          height: 18px;
+          border: 1.5px solid var(--f4);
+          border-radius: 3px;
+          background: var(--bg3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+        }
+        .remember-box::after {
+          content: '✓';
+          font-size: 11px;
+          color: var(--gold);
+          opacity: 0;
+          transform: scale(0.5);
+          transition: all 0.15s;
+        }
+        .remember-check:checked + .remember-box {
+          border-color: var(--gold);
+          background: rgba(201,168,76,0.1);
+        }
+        .remember-check:checked + .remember-box::after {
+          opacity: 1;
+          transform: scale(1);
+        }
+        .remember-text {
+          font-size: 0.8rem;
+          color: var(--f3);
+        }
+        .remember-label:hover .remember-box {
+          border-color: var(--f3);
         }
 
         /* BUTTONS */

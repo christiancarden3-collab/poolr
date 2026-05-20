@@ -10,42 +10,102 @@ export default function PoolDetailPage() {
   const router = useRouter()
   const [pool, setPool] = useState(null)
   const [user, setUser] = useState(null)
-  const [leaderboard, setLeaderboard] = useState([])
+  const [members, setMembers] = useState([])
   const [activeTab, setActiveTab] = useState('picks')
   const [loading, setLoading] = useState(true)
-
-  // Mock data for display
-  const mockPool = {
-    id: params.id,
-    name: 'Amigos WC26 Pool',
-    tournament_name: 'FIFA World Cup 2026',
-    player_count: 14,
-    pot_amount: 280,
-    status: 'live',
-    commissioner_name: 'Juan D.',
-    user_points: 47,
-    user_rank: 3
-  }
-
-  const mockLeaderboard = [
-    { rank: 1, name: 'Carlos M.', points: 84, change: '+2', paid: true },
-    { rank: 2, name: 'Ana R.', points: 79, change: '-', paid: true },
-    { rank: 3, name: 'You', points: 47, change: '+1', paid: true, isYou: true },
-    { rank: 4, name: 'Valentina S.', points: 44, change: '+3', paid: false },
-    { rank: 5, name: 'Rafa G.', points: 41, change: '-1', paid: true },
-  ]
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function loadData() {
-      const currentUser = await getCurrentUser()
-      if (!currentUser) {
-        router.push('/login')
-        return
+      try {
+        const currentUser = await getCurrentUser()
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        setUser(currentUser)
+
+        // Fetch pool with commissioner info
+        const { data: poolData, error: poolError } = await supabase
+          .from('pools')
+          .select(`
+            *,
+            profiles:commissioner_id (
+              id,
+              username,
+              full_name,
+              email
+            )
+          `)
+          .eq('id', params.id)
+          .single()
+
+        if (poolError || !poolData) {
+          setError('Pool not found')
+          setLoading(false)
+          return
+        }
+
+        // Format commissioner name
+        const commName = poolData.profiles?.full_name || poolData.profiles?.username || poolData.profiles?.email?.split('@')[0] || 'Unknown'
+        const commInitials = commName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
+        // Fetch pool members with their profiles
+        const { data: membersData, error: membersError } = await supabase
+          .from('pool_members')
+          .select(`
+            *,
+            profiles:user_id (
+              id,
+              username,
+              full_name,
+              email
+            )
+          `)
+          .eq('pool_id', params.id)
+          .order('points', { ascending: false })
+
+        // Format members for leaderboard
+        const formattedMembers = (membersData || []).map((m, index) => {
+          const name = m.profiles?.full_name || m.profiles?.username || m.profiles?.email?.split('@')[0] || 'Player'
+          return {
+            rank: index + 1,
+            user_id: m.user_id,
+            name: name,
+            points: m.points || 0,
+            paid: m.paid || false,
+            isYou: m.user_id === currentUser.id,
+            change: '-' // TODO: calculate from previous standings
+          }
+        })
+
+        // Calculate pot amount
+        const buyIn = poolData.buy_in || 0
+        const playerCount = formattedMembers.length
+        const platformFee = poolData.fee_handling === 'from_pot' ? 0.05 : 0
+        const potAmount = buyIn * playerCount * (1 - platformFee)
+
+        // Get current user's stats
+        const currentUserMember = formattedMembers.find(m => m.user_id === currentUser.id)
+
+        setPool({
+          ...poolData,
+          commissioner_name: commName,
+          commissioner_initials: commInitials,
+          player_count: playerCount,
+          pot_amount: potAmount,
+          user_points: currentUserMember?.points || 0,
+          user_rank: currentUserMember?.rank || '-',
+          isCommissioner: poolData.commissioner_id === currentUser.id
+        })
+
+        setMembers(formattedMembers)
+      } catch (err) {
+        console.error('Error loading pool:', err)
+        setError('Failed to load pool')
+      } finally {
+        setLoading(false)
       }
-      setUser(currentUser)
-      setPool(mockPool)
-      setLeaderboard(mockLeaderboard)
-      setLoading(false)
     }
     loadData()
   }, [router, params.id])
@@ -57,6 +117,37 @@ export default function PoolDetailPage() {
       </div>
     )
   }
+
+  if (error) {
+    return (
+      <>
+        <nav>
+          <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
+        </nav>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 56px)', color: 'var(--f3)', textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>😕</div>
+          <div style={{ fontSize: '1.2rem', color: 'var(--f1)', marginBottom: '0.5rem' }}>Pool Not Found</div>
+          <div style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>{error}</div>
+          <Link href="/dashboard" style={{ color: 'var(--gold)' }}>← Back to dashboard</Link>
+        </div>
+        <style jsx global>{`
+          nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; }
+          .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; text-decoration: none; }
+          .nav-logo span { color: var(--gold); }
+        `}</style>
+      </>
+    )
+  }
+
+  // Format display values
+  const buyinDisplay = pool?.buy_in ? `$${pool.buy_in}` : 'Free'
+  const potDisplay = pool?.pot_amount > 0 ? `$${pool.pot_amount.toFixed(0)}` : 'Free'
+  const visibilityDisplay = pool?.visibility === 'private' ? 'Private' : 'Public'
+  const rankSuffix = pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'
+
+  // Get user display name for header
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'
+  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
     <>
@@ -70,8 +161,8 @@ export default function PoolDetailPage() {
         </div>
         <div className="topbar-right">
           <div className="user-pill">
-            <div className="user-avatar">JD</div>
-            Juan D.
+            <div className="user-avatar">{userInitials}</div>
+            {userName}
           </div>
         </div>
       </div>
@@ -88,11 +179,11 @@ export default function PoolDetailPage() {
 
       {/* TICKER */}
       <div className="ticker">
-        <div className="ticker-label">Live</div>
+        <div className="ticker-label">World Cup 2026</div>
         <div className="ticker-items">
-          <span className="ticker-item">ARG 3 – 1 FRA &nbsp;●&nbsp; 78&apos;</span>
-          <span className="ticker-item">BRA 2 – 2 GER &nbsp;●&nbsp; 86&apos;</span>
-          <span className="ticker-item">MEX 1 – 0 ZAF &nbsp;●&nbsp; FT</span>
+          <span className="ticker-item">48 Teams</span>
+          <span className="ticker-item">104 Matches</span>
+          <span className="ticker-item">Kicks off June 11, 2026</span>
         </div>
       </div>
 
@@ -102,11 +193,16 @@ export default function PoolDetailPage() {
           <div className="ph-left">
             <div className="ph-eyebrow">My Pools › {pool?.name}</div>
             <div className="ph-title">{pool?.name}</div>
-            <div className="ph-meta">{pool?.tournament_name} · {pool?.player_count} players · Private · Commissioner: {pool?.commissioner_name}</div>
+            <div className="ph-meta">
+              {pool?.tournament || 'FIFA World Cup 2026'} · {pool?.player_count} player{pool?.player_count !== 1 ? 's' : ''} · {visibilityDisplay} · Commissioner: {pool?.commissioner_name}
+              {pool?.isCommissioner && <span className="commish-badge">You</span>}
+            </div>
           </div>
           <div className="ph-right">
             <div className="ph-score">{pool?.user_points} pts</div>
-            <div className="ph-rank">{pool?.user_rank}{pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'} place · +8 behind 2nd</div>
+            <div className="ph-rank">
+              {typeof pool?.user_rank === 'number' ? `${pool.user_rank}${rankSuffix} place` : 'Not ranked'}
+            </div>
           </div>
         </div>
       </div>
@@ -114,14 +210,16 @@ export default function PoolDetailPage() {
       {/* TAB NAV */}
       <div className="tab-nav">
         <div className="tab-nav-inner">
-          <Link href={`/pool/${params.id}/predictions`} className={`tab ${activeTab === 'picks' ? 'active' : ''}`} onClick={() => setActiveTab('picks')}>
-            Match Picks<span className="tab-badge">2</span>
+          <Link href={`/pool/${params.id}/predictions`} className={`tab ${activeTab === 'picks' ? 'active' : ''}`}>
+            Match Picks
           </Link>
-          <Link href={`/pool/${params.id}/special-picks`} className={`tab ${activeTab === 'special' ? 'active' : ''}`} onClick={() => setActiveTab('special')}>
+          <Link href={`/pool/${params.id}/special-picks`} className={`tab ${activeTab === 'special' ? 'active' : ''}`}>
             Special Picks
           </Link>
           <span className={`tab ${activeTab === 'lb' ? 'active' : ''}`} onClick={() => setActiveTab('lb')}>Leaderboard</span>
-          <span className={`tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Settings</span>
+          {pool?.isCommissioner && (
+            <span className={`tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Settings</span>
+          )}
         </div>
       </div>
 
@@ -152,10 +250,10 @@ export default function PoolDetailPage() {
             {/* Deadline banner */}
             <div className="deadline-banner">
               <div>
-                <div className="db-left">Matchday 3 · Picks close Jun 25, 3:00 PM ET</div>
+                <div className="db-left">Tournament starts Jun 11, 2026</div>
                 <div className="db-sub">Submit all picks before the first match kicks off</div>
               </div>
-              <div className="db-countdown">11:42:07</div>
+              <div className="db-countdown">Coming Soon</div>
             </div>
 
             {/* Leaderboard preview */}
@@ -164,29 +262,54 @@ export default function PoolDetailPage() {
                 <div className="card-title">Standings</div>
                 <span className="card-link">Full table →</span>
               </div>
-              <div className="lb-cols">
-                <div className="lb-col-label">#</div>
-                <div className="lb-col-label">+/-</div>
-                <div className="lb-col-label">Player</div>
-                <div className="lb-col-label r">Pts</div>
-              </div>
-              {leaderboard.map((player, i) => (
-                <div key={i} className={`lb-row ${player.isYou ? 'you' : ''}`}>
-                  <div className={`lb-rank ${player.rank === 1 ? 'rank-gold' : player.rank === 2 ? 'rank-silver' : player.rank === 3 ? 'rank-bronze' : 'rank-other'}`}>
-                    {player.rank}
-                  </div>
-                  <div className={`lb-mv ${player.change.startsWith('+') ? 'mv-up' : player.change.startsWith('-') ? 'mv-dn' : 'mv-flat'}`}>
-                    {player.change}
-                  </div>
-                  <div className="lb-player">
-                    {player.name}
-                    {player.paid && <span className="paid-dot"></span>}
-                    {player.isYou && <span className="lb-you-tag">You</span>}
-                  </div>
-                  <div className="lb-pts">{player.points}</div>
+              {members.length === 0 ? (
+                <div className="card-body" style={{ textAlign: 'center', color: 'var(--f3)', padding: '2rem' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👥</div>
+                  <div>No players yet</div>
+                  <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Share your invite link to get started</div>
                 </div>
-              ))}
+              ) : (
+                <>
+                  <div className="lb-cols">
+                    <div className="lb-col-label">#</div>
+                    <div className="lb-col-label">+/-</div>
+                    <div className="lb-col-label">Player</div>
+                    <div className="lb-col-label r">Pts</div>
+                  </div>
+                  {members.slice(0, 5).map((player, i) => (
+                    <div key={i} className={`lb-row ${player.isYou ? 'you' : ''}`}>
+                      <div className={`lb-rank ${player.rank === 1 ? 'rank-gold' : player.rank === 2 ? 'rank-silver' : player.rank === 3 ? 'rank-bronze' : 'rank-other'}`}>
+                        {player.rank}
+                      </div>
+                      <div className={`lb-mv ${player.change.startsWith('+') ? 'mv-up' : player.change.startsWith('-') && player.change !== '-' ? 'mv-dn' : 'mv-flat'}`}>
+                        {player.change}
+                      </div>
+                      <div className="lb-player">
+                        {player.isYou ? 'You' : player.name}
+                        {player.paid && <span className="paid-dot"></span>}
+                        {player.isYou && <span className="lb-you-tag">You</span>}
+                      </div>
+                      <div className="lb-pts">{player.points}</div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
+
+            {/* Invite link for commissioner */}
+            {pool?.isCommissioner && pool?.invite_code && (
+              <div className="card">
+                <div className="card-head">
+                  <div className="card-title">Invite Link</div>
+                </div>
+                <div className="card-body">
+                  <div className="invite-link-box">
+                    <code>pickpoolr.com/join/{pool.invite_code}</code>
+                    <button onClick={() => navigator.clipboard.writeText(`https://pickpoolr.com/join/${pool.invite_code}`)}>Copy</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* SIDEBAR */}
@@ -194,20 +317,21 @@ export default function PoolDetailPage() {
             <div className="card">
               <div className="card-head"><div className="card-title">Pool Info</div></div>
               <div className="card-body">
-                <div className="sc-row"><div className="sc-label">Tournament</div><div className="sc-val">{pool?.tournament_name}</div></div>
+                <div className="sc-row"><div className="sc-label">Tournament</div><div className="sc-val">{pool?.tournament || 'FIFA World Cup 2026'}</div></div>
                 <div className="sc-row"><div className="sc-label">Players</div><div className="sc-val">{pool?.player_count}</div></div>
-                <div className="sc-row"><div className="sc-label">Prize pot</div><div className="sc-val gold">${pool?.pot_amount}</div></div>
-                <div className="sc-row"><div className="sc-label">Status</div><div className="sc-val" style={{ color: 'var(--red)' }}>Live</div></div>
+                <div className="sc-row"><div className="sc-label">Buy-in</div><div className="sc-val">{buyinDisplay}</div></div>
+                <div className="sc-row"><div className="sc-label">Prize pot</div><div className="sc-val gold">{potDisplay}</div></div>
+                <div className="sc-row"><div className="sc-label">Status</div><div className="sc-val" style={{ color: 'var(--gold)' }}>Open</div></div>
               </div>
             </div>
 
             <div className="card">
               <div className="card-head"><div className="card-title">Your Stats</div></div>
               <div className="card-body">
-                <div className="sc-row"><div className="sc-label">Total points</div><div className="sc-val gold">{pool?.user_points}</div></div>
-                <div className="sc-row"><div className="sc-label">Current rank</div><div className="sc-val gold">{pool?.user_rank}{pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'}</div></div>
-                <div className="sc-row"><div className="sc-label">Picks submitted</div><div className="sc-val green">32 / 48</div></div>
-                <div className="sc-row"><div className="sc-label">Special picks</div><div className="sc-val green">3 / 4</div></div>
+                <div className="sc-row"><div className="sc-label">Total points</div><div className="sc-val gold">{pool?.user_points || 0}</div></div>
+                <div className="sc-row"><div className="sc-label">Current rank</div><div className="sc-val gold">{typeof pool?.user_rank === 'number' ? `${pool.user_rank}${rankSuffix}` : '-'}</div></div>
+                <div className="sc-row"><div className="sc-label">Picks submitted</div><div className="sc-val">0 / 48</div></div>
+                <div className="sc-row"><div className="sc-label">Special picks</div><div className="sc-val">0 / 4</div></div>
               </div>
             </div>
 
@@ -382,7 +506,19 @@ export default function PoolDetailPage() {
           letter-spacing: 0.02em;
           color: var(--white);
         }
-        .ph-meta { font-size: 0.78rem; color: var(--f3); margin-top: 0.2rem; }
+        .ph-meta { font-size: 0.78rem; color: var(--f3); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .commish-badge {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.6rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--gold);
+          background: rgba(201,168,76,0.15);
+          border: 1px solid var(--gold-line);
+          padding: 0.1rem 0.4rem;
+          border-radius: 2px;
+        }
         .ph-right { text-align: right; }
         .ph-score {
           font-family: 'Barlow Condensed', sans-serif;
@@ -429,18 +565,6 @@ export default function PoolDetailPage() {
         }
         .tab:hover { color: var(--f1); }
         .tab.active { color: var(--white); border-bottom-color: var(--gold); }
-        .tab-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: var(--gold);
-          color: #000;
-          font-size: 0.6rem;
-          font-weight: 900;
-        }
 
         /* LAYOUT */
         .wrap {
@@ -515,7 +639,7 @@ export default function PoolDetailPage() {
         .db-sub { font-size: 0.7rem; color: var(--f3); margin-top: 1px; }
         .db-countdown {
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 1.4rem;
+          font-size: 1.1rem;
           font-weight: 900;
           color: var(--gold);
           letter-spacing: 0.04em;
@@ -556,6 +680,36 @@ export default function PoolDetailPage() {
           text-decoration: none;
         }
         .card-body { padding: 1rem; }
+
+        /* INVITE LINK */
+        .invite-link-box {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          background: var(--bg3);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          padding: 0.5rem 0.75rem;
+        }
+        .invite-link-box code {
+          flex: 1;
+          font-size: 0.8rem;
+          color: var(--gold);
+          word-break: break-all;
+        }
+        .invite-link-box button {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          border: none;
+          padding: 0.35rem 0.75rem;
+          border-radius: 2px;
+          cursor: pointer;
+        }
 
         /* LEADERBOARD */
         .lb-cols {

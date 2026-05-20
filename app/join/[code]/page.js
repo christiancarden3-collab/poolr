@@ -13,51 +13,157 @@ export default function JoinPoolPage() {
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
-  // Mock pool data
-  const mockPool = {
-    id: 1,
-    name: 'Amigos WC26 Pool',
-    tournament_name: 'FIFA World Cup 2026',
-    dates: 'Jun 11 to Jul 19',
-    player_count: 14,
-    buyin: 'Free',
-    visibility: 'Private',
-    commissioner: { initials: 'JD', name: 'Juan D.' }
-  }
+  const [authLoading, setAuthLoading] = useState(false)
 
   useEffect(() => {
     async function loadData() {
-      const currentUser = await getCurrentUser()
-      setUser(currentUser)
-      
-      // In real app, load pool by invite code
-      setPool(mockPool)
-      setLoading(false)
+      try {
+        const currentUser = await getCurrentUser()
+        setUser(currentUser)
+        
+        // Fetch pool by invite code with commissioner info
+        const { data: poolData, error: poolError } = await supabase
+          .from('pools')
+          .select(`
+            *,
+            profiles:commissioner_id (
+              id,
+              username,
+              full_name,
+              email
+            )
+          `)
+          .eq('invite_code', params.code)
+          .single()
+
+        if (poolError || !poolData) {
+          setError('Pool not found or invite link is invalid')
+          setLoading(false)
+          return
+        }
+
+        // Get member count
+        const { count } = await supabase
+          .from('pool_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('pool_id', poolData.id)
+
+        // Format commissioner name and initials
+        const commName = poolData.profiles?.full_name || poolData.profiles?.username || poolData.profiles?.email?.split('@')[0] || 'Unknown'
+        const initials = commName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
+        setPool({
+          ...poolData,
+          player_count: count || 0,
+          commissioner: {
+            name: commName,
+            initials: initials
+          }
+        })
+      } catch (err) {
+        console.error('Error loading pool:', err)
+        setError('Failed to load pool')
+      } finally {
+        setLoading(false)
+      }
     }
     loadData()
   }, [params.code])
 
   const handleJoin = async () => {
-    if (!user) return
+    if (!user || !pool) return
     setJoining(true)
+    setError(null)
     
     try {
-      // In real app: add user to pool
-      await new Promise(r => setTimeout(r, 500))
+      // Check if already a member
+      const { data: existing } = await supabase
+        .from('pool_members')
+        .select('id')
+        .eq('pool_id', pool.id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (existing) {
+        // Already a member, just redirect
+        router.push(`/pool/${pool.id}`)
+        return
+      }
+
+      // Add user to pool
+      const { error: joinError } = await supabase
+        .from('pool_members')
+        .insert({
+          pool_id: pool.id,
+          user_id: user.id,
+          role: 'member'
+        })
+
+      if (joinError) throw joinError
+      
       setSuccess(true)
     } catch (err) {
-      console.error(err)
+      console.error('Error joining pool:', err)
+      setError(err.message || 'Failed to join pool')
     } finally {
       setJoining(false)
+    }
+  }
+
+  const handleSignInAndJoin = async (e) => {
+    e.preventDefault()
+    setAuthLoading(true)
+    setError(null)
+
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (authError) throw authError
+
+      setUser(data.user)
+      // After setting user, they can click join
+    } catch (err) {
+      setError(err.message || 'Invalid email or password')
+    } finally {
+      setAuthLoading(false)
     }
   }
 
   if (loading) {
     return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: 'var(--f3)' }}>Loading...</div>
   }
+
+  if (error && !pool) {
+    return (
+      <>
+        <nav>
+          <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
+        </nav>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 56px)', color: 'var(--f3)', textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>😕</div>
+          <div style={{ fontSize: '1.2rem', color: 'var(--f1)', marginBottom: '0.5rem' }}>Pool Not Found</div>
+          <div style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>{error}</div>
+          <Link href="/" style={{ color: 'var(--gold)' }}>← Back to home</Link>
+        </div>
+        <style jsx global>{`
+          nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; }
+          .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; text-decoration: none; }
+          .nav-logo span { color: var(--gold); }
+        `}</style>
+      </>
+    )
+  }
+
+  // Format buy-in display
+  const buyinDisplay = pool?.buy_in ? `$${pool.buy_in}` : 'Free'
+  const visibilityDisplay = pool?.visibility === 'private' ? 'Private' : 'Public'
+  const tournamentDates = 'Jun 11 – Jul 19'
 
   return (
     <>
@@ -89,18 +195,20 @@ export default function JoinPoolPage() {
               </div>
 
               <div className="auth-body">
+                {error && <div className="error-msg">{error}</div>}
+                
                 {/* Pool preview */}
                 <div className="pool-preview-card">
                   <div className="ppc-name">{pool?.name}</div>
-                  <div className="ppc-tournament">{pool?.tournament_name} · {pool?.dates}</div>
+                  <div className="ppc-tournament">{pool?.tournament || 'FIFA World Cup 2026'} · {tournamentDates}</div>
                   <div className="ppc-stats">
                     <div className="ppc-stat"><div className="ppc-stat-val">{pool?.player_count}</div><div className="ppc-stat-label">Players</div></div>
-                    <div className="ppc-stat"><div className="ppc-stat-val">{pool?.buyin}</div><div className="ppc-stat-label">Buy-in</div></div>
-                    <div className="ppc-stat"><div className="ppc-stat-val">{pool?.visibility}</div><div className="ppc-stat-label">Visibility</div></div>
+                    <div className="ppc-stat"><div className="ppc-stat-val">{buyinDisplay}</div><div className="ppc-stat-label">Buy-in</div></div>
+                    <div className="ppc-stat"><div className="ppc-stat-val">{visibilityDisplay}</div><div className="ppc-stat-label">Visibility</div></div>
                   </div>
                   <div className="commissioner-row">
-                    <div className="commissioner-avatar">{pool?.commissioner.initials}</div>
-                    <div className="commissioner-info">Hosted by <span className="commissioner-name">{pool?.commissioner.name}</span></div>
+                    <div className="commissioner-avatar">{pool?.commissioner?.initials}</div>
+                    <div className="commissioner-info">Hosted by <span className="commissioner-name">{pool?.commissioner?.name}</span></div>
                   </div>
                 </div>
 
@@ -113,23 +221,27 @@ export default function JoinPoolPage() {
                     <button className="btn-full green" onClick={handleJoin} disabled={joining}>
                       {joining ? 'Joining...' : 'Join Pool →'}
                     </button>
-                    <button className="btn-outline-full" style={{ marginTop: '0.6rem' }}>Not you? Sign in with a different account</button>
+                    <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => { supabase.auth.signOut(); setUser(null); }}>
+                      Not you? Sign in with a different account
+                    </button>
                   </div>
                 ) : (
-                  <div>
+                  <form onSubmit={handleSignInAndJoin}>
                     <div className="or-divider"><div className="or-line"></div><div className="or-text">Sign in to join</div><div className="or-line"></div></div>
                     <div className="field">
                       <label className="field-label">Email address</label>
-                      <input className="field-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                      <input className="field-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                     <div className="field">
                       <label className="field-label">Password</label>
-                      <input className="field-input" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <input className="field-input" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <button className="btn-full green">Sign in & Join Pool →</button>
+                    <button type="submit" className="btn-full green" disabled={authLoading}>
+                      {authLoading ? 'Signing in...' : 'Sign in & Join Pool →'}
+                    </button>
                     <div className="or-divider"><div className="or-line"></div><div className="or-text">new to poolr?</div><div className="or-line"></div></div>
-                    <Link href="/register" className="btn-outline-full">Create account & join</Link>
-                  </div>
+                    <Link href={`/register?redirect=/join/${params.code}`} className="btn-outline-full">Create account & join</Link>
+                  </form>
                 )}
               </div>
             </>
@@ -140,7 +252,7 @@ export default function JoinPoolPage() {
                 <div className="js-title">You&apos;re in!</div>
                 <div className="js-sub">You&apos;ve joined <strong style={{ color: 'var(--gold)' }}>{pool?.name}</strong>. Submit your picks before Jun 11 when special picks lock.</div>
                 <Link href={`/pool/${pool?.id}`} className="btn-full">Go to Pool →</Link>
-                <Link href={`/pool/${pool?.id}/predictions`} className="btn-outline-full">Submit picks now</Link>
+                <Link href={`/pool/${pool?.id}/predictions`} className="btn-outline-full" style={{ marginTop: '0.6rem' }}>Submit picks now</Link>
               </div>
             </div>
           )}
@@ -172,6 +284,8 @@ export default function JoinPoolPage() {
         .auth-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; color: var(--white); line-height: 1; }
         .auth-sub { font-size: 0.8rem; color: var(--f3); margin-top: 0.4rem; line-height: 1.5; }
         .auth-body { padding: 1.5rem 1.75rem; }
+
+        .error-msg { background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.3); color: #ff6b7a; padding: 0.75rem 1rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 1rem; }
 
         .pool-preview-card { background: var(--bg3); border: 1px solid var(--gold-line); border-radius: 4px; padding: 1.25rem; margin-bottom: 1.25rem; }
         .ppc-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 0.2rem; }
