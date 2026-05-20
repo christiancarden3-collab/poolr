@@ -27,7 +27,7 @@ export async function GET() {
     match_number: 1,
     home_team_id: 'sa-spurs',
     away_team_id: 'okc-thunder',
-    kickoff: new Date('2026-05-20T21:00:00-04:00').toISOString(), // 9 PM ET tonight
+    match_time: new Date('2026-05-20T21:00:00-04:00').toISOString(), // 9 PM ET tonight
     venue: 'AT&T Center, San Antonio',
     stage: 'Western Conference Finals',
     status: 'scheduled',
