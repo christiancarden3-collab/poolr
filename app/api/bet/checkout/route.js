@@ -55,8 +55,8 @@ export async function POST(request) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pickpoolr.com'
 
-    // Create Stripe Checkout - money goes to platform account
-    // We'll transfer to winner when bet settles
+    // Create Stripe Checkout - money stays in PLATFORM account
+    // No transfer_data - funds held until we transfer to winner
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -80,6 +80,15 @@ export async function POST(request) {
         user_id,
         is_creator: isCreator ? 'true' : 'false',
         platform_fee: platformFee,
+      },
+      // Capture payment immediately, hold in platform account
+      payment_intent_data: {
+        capture_method: 'automatic',
+        metadata: {
+          bet_id,
+          user_id,
+          type: 'bet_entry',
+        },
       },
     })
 

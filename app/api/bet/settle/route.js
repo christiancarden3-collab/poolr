@@ -66,43 +66,64 @@ export async function POST(request) {
 
     if (updateError) throw updateError
 
-    // If winner has Stripe Connect, do automatic payout
+    // Automatic payout to winner's Stripe Connect account
     let payoutResult = null
-    if (winnerProfile?.stripe_account_id) {
+    
+    if (!winnerProfile?.stripe_account_id) {
+      // Winner needs to connect Stripe first
+      payoutResult = { 
+        error: 'Winner must connect Stripe to receive payout',
+        action_needed: 'connect_stripe',
+        winner_email: winnerProfile?.email,
+        amount: winnerPayout,
+      }
+    } else {
       try {
-        // Transfer winnings to winner's connected account
-        const transfer = await stripe.transfers.create({
-          amount: Math.round(winnerPayout * 100), // cents
-          currency: 'usd',
-          destination: winnerProfile.stripe_account_id,
-          description: `1v1 Bet win: ${bet.title}`,
-          metadata: {
-            bet_id,
-            winner_id: winnerId,
-          },
-        })
-
-        payoutResult = { transfer_id: transfer.id, amount: winnerPayout }
-
-        // Update bet as paid out
-        await supabase
-          .from('bets')
-          .update({
-            status: 'paid_out',
-            payout_transfer_id: transfer.id,
-            paid_out_at: new Date().toISOString(),
+        // Verify winner's Stripe account can receive payouts
+        const winnerAccount = await stripe.accounts.retrieve(winnerProfile.stripe_account_id)
+        
+        if (!winnerAccount.payouts_enabled) {
+          payoutResult = {
+            error: 'Winner Stripe account not fully set up for payouts',
+            action_needed: 'complete_stripe_setup',
+            amount: winnerPayout,
+          }
+        } else {
+          // Transfer winnings to winner's connected account
+          // Stripe will then payout to their bank automatically
+          const transfer = await stripe.transfers.create({
+            amount: Math.round(winnerPayout * 100), // cents
+            currency: 'usd',
+            destination: winnerProfile.stripe_account_id,
+            description: `🏆 1v1 Bet win: ${bet.title}`,
+            metadata: {
+              bet_id,
+              winner_id: winnerId,
+              original_pot: bet.amount * 2,
+              platform_fee: platformFee,
+            },
           })
-          .eq('id', bet_id)
 
+          payoutResult = { 
+            success: true,
+            transfer_id: transfer.id, 
+            amount: winnerPayout,
+            message: 'Payout sent to winner Stripe account! Funds will hit their bank in 1-2 days.',
+          }
+
+          // Update bet as paid out
+          await supabase
+            .from('bets')
+            .update({
+              status: 'paid_out',
+              payout_transfer_id: transfer.id,
+              paid_out_at: new Date().toISOString(),
+            })
+            .eq('id', bet_id)
+        }
       } catch (transferError) {
         console.error('Transfer error:', transferError)
         payoutResult = { error: transferError.message }
-      }
-    } else {
-      payoutResult = { 
-        note: 'Winner does not have Stripe Connect. Manual payout needed.',
-        winner_email: winnerProfile?.email,
-        amount: winnerPayout,
       }
     }
 
