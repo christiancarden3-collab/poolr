@@ -30,7 +30,7 @@ export default function DashboardPage() {
         setPools(memberships.map(m => ({
           ...m.pool,
           role: m.role,
-          points: m.points || 0
+          points: m.total_points || 0
         })))
       }
       setLoading(false)
