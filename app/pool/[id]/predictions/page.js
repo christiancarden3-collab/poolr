@@ -599,11 +599,11 @@ export default function PredictionsPage() {
         .ph-score { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; color: var(--gold); line-height: 1; }
         .ph-rank { font-size: 0.72rem; color: var(--f3); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; margin-top: 2px; }
 
-        .tab-nav { background: var(--bg2); border-bottom: 1px solid var(--line); }
-        .tab-nav-inner { max-width: 1100px; margin: 0 auto; display: flex; }
-        .tab { display: flex; align-items: center; gap: 0.4rem; padding: 0 1.5rem; height: 44px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f3); border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; text-decoration: none; white-space: nowrap; }
-        .tab:hover { color: var(--f1); }
-        .tab.active { color: var(--white); border-bottom-color: var(--gold); }
+        :global(.tab-nav) { background: var(--bg2); border-bottom: 1px solid var(--line); }
+        :global(.tab-nav-inner) { max-width: 1100px; margin: 0 auto; display: flex; }
+        :global(.tab) { display: flex; align-items: center; gap: 0.4rem; padding: 0 1.5rem; height: 44px; font-family: 'Barlow Condensed', sans-serif !important; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f3); border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; text-decoration: none; white-space: nowrap; }
+        :global(.tab:hover) { color: var(--f1); }
+        :global(.tab.active) { color: var(--white); border-bottom-color: var(--gold); }
         .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--gold); color: #000; font-size: 0.6rem; font-weight: 900; }
 
         .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem; }
