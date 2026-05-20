@@ -13,6 +13,9 @@ export default function BrowsePage() {
   const [user, setUser] = useState(null)
   const [userMemberships, setUserMemberships] = useState([])
   const [joiningPool, setJoiningPool] = useState(null)
+  const [showTeamNameModal, setShowTeamNameModal] = useState(false)
+  const [pendingPoolId, setPendingPoolId] = useState(null)
+  const [teamNameInput, setTeamNameInput] = useState('')
 
   useEffect(() => {
     loadData()
@@ -89,27 +92,40 @@ export default function BrowsePage() {
       return
     }
 
-    setJoiningPool(poolId)
+    // Show team name modal
+    setPendingPoolId(poolId)
+    setTeamNameInput('')
+    setShowTeamNameModal(true)
+  }
+
+  const confirmJoin = async () => {
+    if (!pendingPoolId) return
+
+    setJoiningPool(pendingPoolId)
+    setShowTeamNameModal(false)
+    
     try {
       const { error } = await supabase
         .from('pool_members')
         .insert({
-          pool_id: poolId,
+          pool_id: pendingPoolId,
           user_id: user.id,
           role: 'player',
           payment_status: 'pending',
-          total_points: 0
+          total_points: 0,
+          team_name: teamNameInput.trim() || null
         })
 
       if (error) throw error
 
-      setUserMemberships([...userMemberships, poolId])
-      router.push(`/pool/${poolId}`)
+      setUserMemberships([...userMemberships, pendingPoolId])
+      router.push(`/pool/${pendingPoolId}`)
     } catch (err) {
       console.error('Error joining pool:', err)
       alert('Failed to join pool: ' + err.message)
     } finally {
       setJoiningPool(null)
+      setPendingPoolId(null)
     }
   }
 
@@ -248,6 +264,38 @@ export default function BrowsePage() {
           </div>
         )}
       </div>
+
+      {/* Team Name Modal */}
+      {showTeamNameModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <div className="modal-header">
+              <h3>Join Pool</h3>
+            </div>
+            <div className="modal-body">
+              <label className="modal-label">Team Name (optional)</label>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="e.g., The Golden Boots"
+                value={teamNameInput}
+                onChange={(e) => setTeamNameInput(e.target.value)}
+                maxLength={30}
+                autoFocus
+              />
+              <p className="modal-hint">Your display name on the leaderboard. You can change it later.</p>
+            </div>
+            <div className="modal-actions">
+              <button className="modal-btn-cancel" onClick={() => setShowTeamNameModal(false)}>
+                Cancel
+              </button>
+              <button className="modal-btn-confirm" onClick={confirmJoin}>
+                Join Pool
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         nav {
@@ -615,6 +663,105 @@ export default function BrowsePage() {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.35; }
+        }
+
+        /* MODAL */
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.85);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 1rem;
+        }
+        .modal-card {
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          max-width: 400px;
+          width: 100%;
+          overflow: hidden;
+        }
+        .modal-header {
+          background: var(--bg3);
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid var(--line);
+        }
+        .modal-header h3 {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.1rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--white);
+          margin: 0;
+        }
+        .modal-body {
+          padding: 1.25rem;
+        }
+        .modal-label {
+          display: block;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--f3);
+          margin-bottom: 0.5rem;
+        }
+        .modal-input {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: var(--bg);
+          border: 1px solid var(--f4);
+          border-radius: 4px;
+          color: var(--f1);
+          font-size: 1rem;
+        }
+        .modal-input:focus {
+          outline: none;
+          border-color: var(--gold);
+        }
+        .modal-hint {
+          font-size: 0.75rem;
+          color: var(--f4);
+          margin-top: 0.5rem;
+        }
+        .modal-actions {
+          display: flex;
+          gap: 0.75rem;
+          justify-content: flex-end;
+          padding: 1rem 1.25rem;
+          background: var(--bg3);
+          border-top: 1px solid var(--line);
+        }
+        .modal-btn-cancel {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          background: transparent;
+          border: 1px solid var(--f4);
+          color: var(--f3);
+          padding: 0.6rem 1.25rem;
+          border-radius: 3px;
+          cursor: pointer;
+        }
+        .modal-btn-confirm {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          background: var(--gold);
+          border: none;
+          color: #000;
+          padding: 0.6rem 1.25rem;
+          border-radius: 3px;
+          cursor: pointer;
         }
 
         @media (max-width: 768px) {

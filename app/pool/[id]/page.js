@@ -358,7 +358,20 @@ export default function PoolDetailPage() {
                       </div>
                       <div className="lb-player">
                         <div className="lb-player-main">
-                          <span className="lb-team-name">{player.displayName}</span>
+                          {player.isYou ? (
+                            <span 
+                              className="lb-team-name clickable" 
+                              onClick={() => {
+                                setTeamNameInput(currentMember?.team_name || '')
+                                setShowTeamNameModal(true)
+                              }}
+                              title="Click to change your team name"
+                            >
+                              {player.displayName} ✎
+                            </span>
+                          ) : (
+                            <span className="lb-team-name">{player.displayName}</span>
+                          )}
                           {player.isYou && <span className="lb-you-tag">(You)</span>}
                           {player.paid && <span className="paid-dot"></span>}
                         </div>
@@ -943,6 +956,17 @@ export default function PoolDetailPage() {
           font-size: 0.85rem;
           font-weight: 700;
           color: var(--f1);
+        }
+        .lb-team-name.clickable {
+          cursor: pointer;
+          padding: 0.15rem 0.4rem;
+          margin: -0.15rem -0.4rem;
+          border-radius: 3px;
+          transition: background 0.15s;
+        }
+        .lb-team-name.clickable:hover {
+          background: rgba(201,168,76,0.15);
+          color: var(--gold);
         }
         .lb-real-name {
           font-size: 0.68rem;
