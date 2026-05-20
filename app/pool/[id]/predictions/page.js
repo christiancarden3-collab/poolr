@@ -321,8 +321,39 @@ export default function PredictionsPage() {
     )
   }
 
+  // Format user name like dashboard
+  const getUserName = () => {
+    if (!user) return 'User'
+    const meta = user.user_metadata || {}
+    if (meta.first_name) return `${meta.first_name} ${meta.last_name?.[0] || ''}.`
+    return user.email?.split('@')[0] || 'User'
+  }
+  
+  const getUserInitials = () => {
+    if (!user) return 'U'
+    const meta = user.user_metadata || {}
+    const first = meta.first_name?.[0] || user.email?.[0] || 'U'
+    const last = meta.last_name?.[0] || ''
+    return (first + last).toUpperCase()
+  }
+
   return (
     <>
+      {/* TOPBAR */}
+      <div className="topbar">
+        <div className="topbar-links">
+          <Link href="/dashboard" className="tb-link">Dashboard</Link>
+          <span className="tb-link active">{pool?.name || 'Pool'}</span>
+        </div>
+        <div className="topbar-right">
+          <Link href="/profile" className="user-pill">
+            <div className="user-avatar">{getUserInitials()}</div>
+            {getUserName()}
+          </Link>
+          <button className="signout-btn" onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }}>Sign Out</button>
+        </div>
+      </div>
+
       {/* NAV */}
       <nav>
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
@@ -538,6 +569,18 @@ export default function PredictionsPage() {
       </div>
 
       <style jsx>{`
+        /* TOPBAR */
+        .topbar { background: var(--bg); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 36px; }
+        .topbar-links { display: flex; gap: 1.5rem; }
+        .tb-link { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--f4); text-decoration: none; }
+        .tb-link:hover, .tb-link.active { color: var(--f2); }
+        .topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+        .user-pill { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--f2); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+        .user-pill:hover { color: var(--gold); }
+        .user-avatar { width: 22px; height: 22px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 800; color: #000; }
+        .signout-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--f4); color: var(--f3); padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; }
+        .signout-btn:hover { border-color: var(--gold); color: var(--gold); }
+
         nav { background: var(--bg); border-bottom: 3px solid var(--gold); display: flex; align-items: center; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 200; }
         .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); text-transform: uppercase; margin-right: 2rem; padding-right: 2rem; border-right: 1px solid var(--f4); text-decoration: none; }
         .nav-logo span { color: var(--gold); }
