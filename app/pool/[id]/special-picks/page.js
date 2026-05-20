@@ -203,6 +203,7 @@ export default function SpecialPicksPage() {
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
+          <Link href="/results" className="nav-item">Scores</Link>
           <Link href={`/pool/${params.id}`} className="nav-item active">{pool?.name || 'Pool'}</Link>
         </div>
         <Link href="/create" className="nav-cta">+ Create Pool</Link>

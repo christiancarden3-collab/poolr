@@ -54,6 +54,7 @@ export default function LandingPage() {
           <a href="/" className="nav-item active">Home</a>
           <a href="/dashboard" className="nav-item">My Pools</a>
           <a href="/browse" className="nav-item">Browse</a>
+          <a href="/results" className="nav-item">Scores</a>
         </div>
         <div className="nav-right">
           {user ? (

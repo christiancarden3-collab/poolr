@@ -111,6 +111,7 @@ export default function BrowsePage() {
           <Link href="/" className="nav-item">Home</Link>
           <Link href="/dashboard" className="nav-item">My Pools</Link>
           <Link href="/browse" className="nav-item active">Browse</Link>
+          <Link href="/results" className="nav-item">Scores</Link>
         </div>
         <div className="nav-right">
           {user ? (
