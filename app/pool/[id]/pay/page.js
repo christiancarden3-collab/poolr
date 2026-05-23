@@ -11,8 +11,6 @@ export default function PaymentPage({ params }) {
   const [pool, setPool] = useState(null)
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState('')
 
   useEffect(() => {
     loadData()
@@ -26,7 +24,6 @@ export default function PaymentPage({ params }) {
     }
     setUser(currentUser)
 
-    // Get pool
     const { data: poolData } = await supabase
       .from('pools')
       .select('*')
@@ -39,7 +36,6 @@ export default function PaymentPage({ params }) {
     }
     setPool(poolData)
 
-    // Get membership
     const { data: memberData } = await supabase
       .from('pool_members')
       .select('*')
@@ -52,7 +48,6 @@ export default function PaymentPage({ params }) {
       return
     }
 
-    // If already paid, redirect to pool
     if (memberData.payment_status === 'paid') {
       router.push(`/pool/${params.id}`)
       return
@@ -62,39 +57,10 @@ export default function PaymentPage({ params }) {
     setLoading(false)
   }
 
-  const handleStripePayment = async () => {
-    setProcessing(true)
-    setError('')
-
-    try {
-      const response = await fetch('/api/stripe/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pool_id: pool.id,
-          user_id: user.id,
-          return_url: window.location.origin,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.error) {
-        throw new Error(data.error)
-      }
-
-      // Redirect to Stripe Checkout
-      window.location.href = data.url
-    } catch (err) {
-      setError(err.message)
-      setProcessing(false)
-    }
-  }
-
   if (loading) {
     return (
       <div className="loading-screen">
-        <div className="logo">Poolr</div>
+        <div className="logo">PickPoolr</div>
         <p>Loading...</p>
         <style jsx global>{`
           .loading-screen {
@@ -119,13 +85,9 @@ export default function PaymentPage({ params }) {
     )
   }
 
-  const totalAmount = pool.fee_handling === 'on_top' 
-    ? pool.buy_in * 1.05 
-    : pool.buy_in
-
   return (
     <div className="payment-screen">
-      <div className="logo">Poolr</div>
+      <div className="logo">PickPoolr</div>
       
       <div className="payment-card">
         <Link href={`/pool/${pool.id}`} className="back-link">← Back to pool</Link>
@@ -135,39 +97,18 @@ export default function PaymentPage({ params }) {
 
         <div className="amount-box">
           <span className="amount-label">Amount Due</span>
-          <span className="amount-value">${totalAmount.toFixed(2)}</span>
-          {pool.fee_handling === 'on_top' && (
-            <span className="amount-breakdown">
-              ${pool.buy_in} buy-in + ${(pool.buy_in * 0.05).toFixed(2)} fee
-            </span>
-          )}
+          <span className="amount-value">${pool.buy_in || 0}</span>
         </div>
 
-        {error && <div className="error-msg">{error}</div>}
-
-        {pool.payment_method === 'stripe' ? (
-          <button 
-            onClick={handleStripePayment} 
-            disabled={processing}
-            className="btn-gold full-width"
-          >
-            {processing ? 'Redirecting to Stripe...' : 'Pay with Card'}
-          </button>
-        ) : (
-          <div className="external-payment">
-            <h3>Payment Instructions</h3>
-            <p>{pool.payment_instructions || 'Contact the pool commissioner for payment details.'}</p>
-            <div className="pending-notice">
-              Your payment status will be updated by the commissioner once received.
-            </div>
-            <Link href={`/pool/${pool.id}`} className="btn-outline full-width">
-              I've Sent Payment
-            </Link>
+        <div className="external-payment">
+          <h3>Payment Instructions</h3>
+          <p className="instructions">{pool.payment_instructions || 'Contact the pool commissioner for payment details.'}</p>
+          <div className="pending-notice">
+            Your payment status will be updated by the commissioner once received.
           </div>
-        )}
-
-        <div className="security-note">
-          🔒 Payments are securely processed
+          <Link href={`/pool/${pool.id}`} className="btn-confirm">
+            I've Sent Payment
+          </Link>
         </div>
       </div>
 
@@ -248,48 +189,28 @@ export default function PaymentPage({ params }) {
           color: var(--gold2);
         }
 
-        .amount-breakdown {
-          display: block;
-          font-size: 0.8rem;
-          color: var(--muted);
-          margin-top: 0.5rem;
-        }
-
-        .error-msg {
-          background: rgba(224, 108, 117, 0.1);
-          border: 1px solid var(--error);
-          color: var(--error);
-          padding: 0.75rem 1rem;
-          border-radius: 6px;
-          font-size: 0.85rem;
-          margin-bottom: 1rem;
-        }
-
-        .full-width {
-          width: 100%;
-        }
-
         .external-payment {
           background: var(--ink3);
           border-radius: 12px;
           padding: 1.5rem;
-          margin-bottom: 1.5rem;
         }
 
         .external-payment h3 {
-          font-family: 'Outfit', sans-serif;
+          font-family: 'Barlow Condensed', sans-serif;
           font-size: 0.8rem;
-          font-weight: 600;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
           color: var(--gold);
-          margin-bottom: 0.75rem;
+          margin-bottom: 1rem;
         }
 
-        .external-payment p {
+        .instructions {
           color: var(--body);
           font-size: 0.9rem;
+          line-height: 1.6;
           margin-bottom: 1rem;
+          white-space: pre-wrap;
         }
 
         .pending-notice {
@@ -299,13 +220,28 @@ export default function PaymentPage({ params }) {
           border-radius: 6px;
           font-size: 0.85rem;
           margin-bottom: 1rem;
+          text-align: center;
         }
 
-        .security-note {
+        .btn-confirm {
+          display: block;
+          width: 100%;
           text-align: center;
-          font-size: 0.8rem;
-          color: var(--muted);
-          margin-top: 1.5rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.9rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          background: #c9a84c;
+          color: #000;
+          padding: 0.9rem;
+          border-radius: 4px;
+          text-decoration: none;
+          transition: background 0.15s;
+        }
+
+        .btn-confirm:hover {
+          background: #e6c76a;
         }
       `}</style>
     </div>

@@ -13,10 +13,6 @@ function CreatePoolContent() {
   const [success, setSuccess] = useState(false)
   const [createdPoolId, setCreatedPoolId] = useState(null)
   
-  // Stripe Connect state - Platform holds funds now, so commissioners don't need Connect
-  // Only winners need Connect to receive payouts
-  const [stripeStatus, setStripeStatus] = useState('ready') // Always ready - platform handles payments
-  const [stripeLoading, setStripeLoading] = useState(false)
   const [userId, setUserId] = useState(null)
   
   // Form state
@@ -33,7 +29,7 @@ function CreatePoolContent() {
   const [prizes, setPrizes] = useState([{ place: 1, percent: 100 }])
   const [predictionDeadline, setPredictionDeadline] = useState('1h_before_matchday')
   
-  // Get user ID on mount (Stripe Connect no longer required for commissioners)
+  // Get user ID on mount
   useEffect(() => {
     const loadUser = async () => {
       const user = await getCurrentUser()
@@ -41,38 +37,6 @@ function CreatePoolContent() {
     }
     loadUser()
   }, [])
-  
-  // Start Stripe Connect onboarding
-  const handleConnectStripe = async () => {
-    if (!userId) {
-      router.push('/login')
-      return
-    }
-    
-    setStripeLoading(true)
-    try {
-      const res = await fetch('/api/stripe/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          return_url: window.location.href
-        })
-      })
-      
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        alert('Failed to start Stripe setup: ' + (data.error || 'Unknown error'))
-      }
-    } catch (err) {
-      console.error('Stripe connect error:', err)
-      alert('Failed to connect Stripe')
-    } finally {
-      setStripeLoading(false)
-    }
-  }
 
   const generateCode = () => {
     // Generate unique code with random suffix
@@ -132,7 +96,7 @@ function CreatePoolContent() {
           buy_in: poolType === 'paid' ? parseFloat(buyinAmount) : 0,
           fee_handling: poolType === 'paid' ? feeType : 'absorbed',
           prize_structure: prizes.reduce((acc, p) => ({ ...acc, [p.place]: p.percent }), {}),
-          payment_method: poolType === 'paid' ? 'stripe' : 'external',
+          payment_method: 'external',
           prediction_deadline: predictionDeadline,
           status: 'open'
         })
@@ -150,28 +114,6 @@ function CreatePoolContent() {
       })
 
       setCreatedPoolId(pool.id)
-
-      // If paid pool, redirect commissioner to payment
-      if (isPaidPool) {
-        const res = await fetch('/api/stripe/create-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pool_id: pool.id,
-            user_id: user.id,
-            return_url: `${window.location.origin}/pool/${pool.id}?created=true&payment=success`
-          })
-        })
-        const data = await res.json()
-        if (data.url) {
-          window.location.href = data.url
-          return
-        } else {
-          console.error('Checkout error:', data.error)
-          alert('Payment setup failed: ' + (data.error || 'Unknown error'))
-        }
-      }
-
       setSuccess(true)
       setStep(6)
     } catch (err) {
@@ -414,8 +356,8 @@ function CreatePoolContent() {
                       </div>
                       <div className={`option-card ${poolType === 'paid' ? 'selected' : ''}`} onClick={() => setPoolType('paid')}>
                         <div className="oc-header"><div className="oc-title">Paid Pool</div><div className="oc-check"></div></div>
-                        <div className="oc-desc">Players pay a buy-in via Stripe. Funds go to you.</div>
-                        <span className="oc-badge badge-paid">5% platform fee</span>
+                        <div className="oc-desc">Set a buy-in. Collect payments via Zelle, PayPal, etc.</div>
+                        <span className="oc-badge badge-paid">External payments</span>
                       </div>
                     </div>
                   </div>
@@ -427,54 +369,6 @@ function CreatePoolContent() {
                   )}
                   {poolType === 'paid' && (
                     <>
-                      {/* STRIPE CONNECT SECTION */}
-                      <div className="stripe-connect-section" style={{ marginTop: '1rem' }}>
-                        <label className="field-label">Connect your bank account</label>
-                        {stripeStatus === 'checking' && (
-                          <div className="stripe-status checking">
-                            <span className="status-icon">⏳</span>
-                            <span>Checking Stripe status...</span>
-                          </div>
-                        )}
-                        {stripeStatus === 'not_connected' && (
-                          <div className="stripe-connect-box">
-                            <div className="scb-icon">💳</div>
-                            <div className="scb-text">
-                              <div className="scb-title">Set up payments to receive funds</div>
-                              <div className="scb-desc">Connect with Stripe to receive buy-ins directly. Takes 2 minutes.</div>
-                            </div>
-                            <button 
-                              className="btn-stripe-connect" 
-                              onClick={handleConnectStripe}
-                              disabled={stripeLoading}
-                            >
-                              {stripeLoading ? 'Connecting...' : 'Connect with Stripe →'}
-                            </button>
-                          </div>
-                        )}
-                        {stripeStatus === 'pending' && (
-                          <div className="stripe-status pending">
-                            <span className="status-icon">⚠️</span>
-                            <div>
-                              <strong>Stripe setup incomplete</strong>
-                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Finish setting up your account to receive payments.</div>
-                            </div>
-                            <button className="btn-ghost small" onClick={handleConnectStripe} disabled={stripeLoading}>
-                              {stripeLoading ? 'Loading...' : 'Continue Setup'}
-                            </button>
-                          </div>
-                        )}
-                        {stripeStatus === 'ready' && (
-                          <div className="stripe-status ready">
-                            <span className="status-icon">✓</span>
-                            <div>
-                              <strong>Stripe connected</strong>
-                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Stripe holds funds securely until pool ends, then pays winners.</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
                       <div className="field" style={{ marginTop: '1rem' }}>
                         <label className="field-label">Buy-in amount per player</label>
                         <div className="amount-wrap">
@@ -484,42 +378,32 @@ function CreatePoolContent() {
                             type="number" 
                             min="1" 
                             max="10000" 
-                            placeholder="20"
+                            placeholder="25"
                             value={buyinAmount}
                             onChange={(e) => setBuyinAmount(e.target.value)}
                           />
                         </div>
                       </div>
-                      <div className="field">
-                        <label className="field-label">Platform fee handling</label>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--f3)', marginBottom: '0.5rem' }}>
-                          The 5% PickPoolr fee can be structured either way.
+                      <div className="payment-info-panel">
+                        <div className="pip-title">External Payments</div>
+                        <div className="pip-desc">
+                          Collect payments directly via Zelle, PayPal, Venmo, or cash. 
+                          You can add your payment instructions in Pool Settings after creating the pool.
+                          Mark members as paid in the Manage Payments page.
                         </div>
-                        <div className="fee-toggle">
-                          <button className={`fee-opt ${feeType === 'on_top' ? 'active' : ''}`} onClick={() => setFeeType('on_top')}>Players pay +5%</button>
-                          <button className={`fee-opt ${feeType === 'absorbed' ? 'active' : ''}`} onClick={() => setFeeType('absorbed')}>Deduct from pot</button>
-                        </div>
-                      </div>
-                      <div className="stripe-panel">
-                        <div className="stripe-panel-title">🔒 <span className="stripe-logo">stripe</span> Secure payments</div>
-                        <div className="stripe-panel-desc">Players pay via Stripe. Funds held securely in escrow by Stripe until tournament ends, then distributed to winners (5% platform fee).</div>
                       </div>
                     </>
                   )}
                 </div>
                 <div className="form-actions">
                   <button className="btn-ghost" onClick={prevStep}>← Back</button>
-                  <button 
-                    className="btn-primary" 
-                    onClick={nextStep}
-                    disabled={poolType === 'paid' && stripeStatus !== 'ready'}
-                  >
-                    {poolType === 'paid' && stripeStatus !== 'ready' ? 'Connect Stripe First' : 'Next →'}
+                  <button className="btn-primary" onClick={nextStep}>
+                    Next →
                   </button>
                 </div>
               </div>
             </div>
-            <PaymentSidebar poolType={poolType} buyinAmount={buyinAmount} feeType={feeType} stripeStatus={stripeStatus} />
+            <PaymentSidebar poolType={poolType} buyinAmount={buyinAmount} />
           </>
         )}
 
@@ -658,7 +542,7 @@ function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode, tournam
   )
 }
 
-function PaymentSidebar({ poolType, buyinAmount, feeType, stripeStatus }) {
+function PaymentSidebar({ poolType, buyinAmount }) {
   const buyin = parseFloat(buyinAmount) || 0
   const fee = buyin * 0.05
   const total = feeType === 'on_top' ? buyin + fee : buyin
@@ -671,7 +555,7 @@ function PaymentSidebar({ poolType, buyinAmount, feeType, stripeStatus }) {
         <div className="sc-body">
           <div className="preview-row"><div className="preview-label">Pool type</div><div className={`preview-val ${poolType === 'free' ? 'green' : 'gold'}`}>{poolType === 'free' ? 'Free' : 'Paid'}</div></div>
           <div className="preview-row"><div className="preview-label">Buy-in</div><div className="preview-val">{poolType === 'paid' && buyin > 0 ? `$${buyin.toFixed(2)}` : '-'}</div></div>
-          <div className="preview-row"><div className="preview-label">Platform fee</div><div className="preview-val">{poolType === 'free' ? 'None' : feeType === 'on_top' ? '+5% on top' : '5% from pot'}</div></div>
+          <div className="preview-row"><div className="preview-label">Platform fee</div><div className="preview-val">None</div></div>
           <div className="preview-row highlight"><div className="preview-label">Each player pays</div><div className="preview-val gold">{poolType === 'free' ? 'Free' : `$${total.toFixed(2)}`}</div></div>
           {poolType === 'paid' && buyin > 0 && (
             <div className="preview-row"><div className="preview-label">You receive (per player)</div><div className="preview-val green">${youReceive.toFixed(2)}</div></div>
@@ -679,26 +563,14 @@ function PaymentSidebar({ poolType, buyinAmount, feeType, stripeStatus }) {
         </div>
       </div>
       {poolType === 'paid' && (
-        <div className={`sidebar-card ${stripeStatus === 'ready' ? 'green-bg' : 'gold-bg'}`}>
-          <div className={`sc-head ${stripeStatus === 'ready' ? 'green' : 'gold'}`}>
-            <div className={`sc-title ${stripeStatus === 'ready' ? 'green' : 'gold'}`}>
-              {stripeStatus === 'ready' ? '✓ Stripe Connected' : 'Stripe Setup Required'}
-            </div>
+        <div className="sidebar-card gold-bg">
+          <div className="sc-head gold">
+            <div className="sc-title gold">External Payments</div>
           </div>
           <div className="sc-body">
             <p className="info-text">
-              {stripeStatus === 'ready' 
-                ? 'Funds held securely by Stripe. Winners paid out when tournament ends (5% platform fee).'
-                : 'Connect your Stripe account to receive payments from players.'}
+              Collect payments via Zelle, PayPal, Venmo, or cash. Add payment instructions after creating your pool.
             </p>
-          </div>
-        </div>
-      )}
-      {poolType === 'free' && (
-        <div className="sidebar-card gold-bg">
-          <div className="sc-head gold"><div className="sc-title gold">About the 5% fee</div></div>
-          <div className="sc-body">
-            <p className="info-text">Only applies to paid Stripe pools. Free pools have zero platform fee.</p>
           </div>
         </div>
       )}
@@ -1208,6 +1080,28 @@ const wizardStyles = `
   }
   .fee-opt:last-child { border-right: none; }
   .fee-opt.active { background: var(--gold); color: #000; }
+
+  .payment-info-panel {
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+  }
+  .pip-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .pip-desc {
+    font-size: 0.8rem;
+    color: var(--f3);
+    line-height: 1.6;
+  }
 
   .stripe-panel {
     background: rgba(99,91,255,0.06);
