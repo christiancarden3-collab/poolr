@@ -580,8 +580,40 @@ export default function PredictionsPage() {
               </div>
             )}
 
-            {/* Match cards */}
-            {matches.map(match => {
+            {/* Match cards - grouped by date */}
+            {(() => {
+              // Group matches by date
+              const matchesByDate = matches.reduce((acc, match) => {
+                if (!acc[match.date]) acc[match.date] = []
+                acc[match.date].push(match)
+                return acc
+              }, {})
+              
+              // Sort dates chronologically
+              const sortedDates = Object.keys(matchesByDate).sort((a, b) => {
+                const parseDate = (d) => {
+                  const months = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7 }
+                  const [mon, day] = d.split(' ')
+                  return new Date(2026, months[mon], parseInt(day))
+                }
+                return parseDate(a) - parseDate(b)
+              })
+              
+              return sortedDates.map(date => {
+                const dayMatches = matchesByDate[date]
+                const isDateLockedStatus = dateLockStatus[date] || false
+                
+                return (
+                  <div key={date} className="date-group">
+                    {/* Date Header */}
+                    <div className={`date-header ${isDateLockedStatus ? 'locked' : ''}`}>
+                      <div className="dh-date">{date}, 2026</div>
+                      <div className="dh-count">{dayMatches.length} match{dayMatches.length > 1 ? 'es' : ''}</div>
+                      {isDateLockedStatus && <div className="dh-lock">🔒 Locked</div>}
+                    </div>
+                    
+                    {/* Matches for this date */}
+                    {dayMatches.map(match => {
               const status = getMatchStatus(match)
               const pick = picks[match.id] || {}
               // Check lock status: per-match for '30m_before_match', otherwise per-date
@@ -594,7 +626,7 @@ export default function PredictionsPage() {
                 <div key={match.id} className={`mpc ${status === 'saved' ? 'submitted' : ''} ${isLocked ? 'locked-card' : ''}`}>
                   <div className="mpc-head">
                     <div className="mpc-info">
-                      {match.group ? `Group ${match.group} · ` : ''}{match.date} · {match.time}
+                      {match.group ? `Group ${match.group} · ` : ''}{match.time}
                     </div>
                     <div className={`mpc-status s-${isTimeLocked && status !== 'live' && status !== 'ft' ? 'locked' : status}`}>
                       {status === 'open' && !isTimeLocked && 'Open'}
@@ -691,6 +723,10 @@ export default function PredictionsPage() {
                 </div>
               )
             })}
+                  </div>
+                )
+              })
+            })()}
           </div>
 
           {/* Sidebar */}
@@ -759,6 +795,15 @@ export default function PredictionsPage() {
 
         .wrap { max-width: 1100px; margin: 0 auto; padding: 2rem; }
         .two-col { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
+
+        /* Date Group Headers */
+        .date-group { margin-bottom: 1.5rem; }
+        .date-header { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: linear-gradient(90deg, rgba(201,168,76,0.15) 0%, transparent 100%); border-left: 3px solid var(--gold); border-radius: 0 4px 4px 0; margin-bottom: 0.5rem; }
+        .date-header.locked { background: linear-gradient(90deg, rgba(100,100,100,0.15) 0%, transparent 100%); border-left-color: var(--f4); }
+        .dh-date { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); }
+        .date-header.locked .dh-date { color: var(--f3); }
+        .dh-count { font-family: 'Inter', sans-serif; font-size: 0.72rem; color: var(--f3); }
+        .dh-lock { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f4); margin-left: auto; }
 
         .md-strip { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem; }
         .md-btn { flex: 1; padding: 0.45rem 0; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: var(--bg2); color: var(--f3); border: none; cursor: pointer; border-right: 1px solid var(--line); transition: all 0.15s; }
