@@ -687,7 +687,7 @@ export default function SpecialPicksPage() {
           <div className="ph-left">
             <div className="ph-eyebrow">My Pools › {pool?.name}</div>
             <div className="ph-title">Special Picks</div>
-            <div className="ph-meta">FIFA World Cup 2026 · 27 pts available</div>
+            <div className="ph-meta">FIFA World Cup 2026 · 30 pts available</div>
           </div>
         </div>
       </div>
@@ -727,7 +727,7 @@ export default function SpecialPicksPage() {
 
         {/* RUNNER-UP */}
         <div className={`card silver ${runnerUp ? 'picked' : ''} ${isLocked ? 'locked' : ''}`} onClick={() => openTeamModal('runner')}>
-          <div className="pts sv">7 pts</div>
+          <div className="pts sv">10 pts</div>
           <canvas className="bg3d" id="cv-runner" width="170" height="170"></canvas>
           <div className="inner">
             <div className="lbl">Runner-Up</div>

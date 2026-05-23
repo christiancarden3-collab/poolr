@@ -234,7 +234,7 @@ export default function LandingPage() {
               <table className="scoring-table">
                 <tbody>
                   <tr><td>Champion</td><td className="pts">10</td></tr>
-                  <tr><td>Runner-up</td><td className="pts">7</td></tr>
+                  <tr><td>Runner-up</td><td className="pts">10</td></tr>
                   <tr><td>Top scorer</td><td className="pts">5</td></tr>
                   <tr><td>Best goalkeeper</td><td className="pts">5</td></tr>
                 </tbody>
