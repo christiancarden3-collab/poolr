@@ -128,6 +128,7 @@ function CreatePoolContent() {
           commissioner_id: user.id,
           invite_code: inviteCode,
           visibility: privacy === 'public' ? 'public' : 'private',
+          tournament: tournament,
           buy_in: poolType === 'paid' ? parseFloat(buyinAmount) : 0,
           fee_handling: poolType === 'paid' ? feeType : 'absorbed',
           prize_structure: prizes.reduce((acc, p) => ({ ...acc, [p.place]: p.percent }), {}),
