@@ -223,6 +223,10 @@ export default function MatchPicksPage() {
     setSaving(prev => ({ ...prev, [matchId]: true }))
     
     try {
+      // Find match info for display
+      const match = matches.find(m => m.id === matchId)
+      const matchInfo = match ? `${match.homeTeam.name} vs ${match.awayTeam.name}` : matchId
+      
       // Save to Supabase
       const { error } = await supabase
         .from('picks')
@@ -239,6 +243,33 @@ export default function MatchPicksPage() {
         })
       
       if (error) throw error
+      
+      // Sync to Google Sheets for backup
+      try {
+        await fetch('/api/sync-sheets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'match_pick',
+            data: {
+              poolId: pool.id,
+              poolName: pool.name,
+              poolMemberId: poolMember?.id,
+              userId: user.id,
+              userName: user.user_metadata?.first_name || user.email,
+              userEmail: user.email,
+              teamName: poolMember?.team_name,
+              matchId: matchId,
+              matchInfo: matchInfo,
+              homeScore: pick.homeScore,
+              awayScore: pick.awayScore,
+              submittedAt: new Date().toISOString()
+            }
+          })
+        })
+      } catch (sheetErr) {
+        console.warn('Sheets sync failed (non-critical):', sheetErr)
+      }
       
       setPicks(prev => ({
         ...prev,
