@@ -503,6 +503,7 @@ export default function MatchPicksPage() {
                 <>
                   <div className="score-group">
                     <div className="score-group-label">Match Picks</div>
+                    <div className="score-row"><div className="score-label">Correct score</div><div className="score-pts">5 pts</div></div>
                     <div className="score-row"><div className="score-label">Correct winner</div><div className="score-pts">1 pt</div></div>
                   </div>
                   <div className="score-group">

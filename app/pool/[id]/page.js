@@ -459,6 +459,7 @@ export default function PoolDetailPage() {
                     {/* Tennis Scoring - Roland Garros */}
                     <div className="sc-group">
                       <div className="sc-group-label">Match Picks</div>
+                      <div className="sc-row"><div className="sc-label">Correct score</div><div className="sc-val gold">5 pts</div></div>
                       <div className="sc-row"><div className="sc-label">Correct winner</div><div className="sc-val gold">1 pt</div></div>
                     </div>
                     <div className="sc-group">
