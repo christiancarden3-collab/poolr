@@ -318,7 +318,7 @@ function CreatePoolContent() {
                   <div className="field">
                     <label className="field-label">Picks deadline</label>
                     <select className="field-input field-select" value={predictionDeadline} onChange={e => setPredictionDeadline(e.target.value)}>
-                      <option value="30m_before_match">30 minutes before each match starts</option>
+                      <option value="30m_before_matchday">30 minutes before first match of each matchday</option>
                       <option value="1h_before_matchday">1 hour before first match of each matchday</option>
                       <option value="2h_before_matchday">2 hours before first match of each matchday</option>
                       <option value="24h_before_matchday">24 hours before first match of each matchday</option>

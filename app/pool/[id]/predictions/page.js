@@ -154,7 +154,7 @@ function parseMatchDateTime(matchDate, matchTime) {
 // Get deadline offset in milliseconds based on deadline type
 function getDeadlineOffset(deadlineType) {
   switch (deadlineType) {
-    case '30m_before_match': return 30 * 60 * 1000       // 30 minutes
+    case '30m_before_matchday': return 30 * 60 * 1000   // 30 minutes before first match of day
     case '1h_before_matchday': return 60 * 60 * 1000    // 1 hour
     case '2h_before_matchday': return 2 * 60 * 60 * 1000 // 2 hours
     case '24h_before_matchday': return 24 * 60 * 60 * 1000 // 24 hours
