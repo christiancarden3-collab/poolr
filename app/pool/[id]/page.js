@@ -471,7 +471,7 @@ export default function PoolDetailPage() {
                     <div className="sc-group">
                       <div className="sc-group-label">Special Picks</div>
                       <div className="sc-row"><div className="sc-label">Champion</div><div className="sc-val gold">10 pts</div></div>
-                      <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">10 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">7 pts</div></div>
                     </div>
                   </>
                 ) : (
