@@ -22,6 +22,8 @@ export default function JoinPoolPage() {
   const [authLoading, setAuthLoading] = useState(false)
   const [poolPassword, setPoolPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('')
+  const [showPaymentStep, setShowPaymentStep] = useState(true)
 
   useEffect(() => {
     async function loadData() {
@@ -131,14 +133,15 @@ export default function JoinPoolPage() {
     setError(null)
     
     try {
-      // Add user to pool with team name
+      // Add user to pool with team name and payment method
       const { error: joinError } = await supabase
         .from('pool_members')
         .insert({
           pool_id: pool.id,
           user_id: user.id,
           team_name: teamName.trim(),
-          payment_status: 'paid' // Free pool, so mark as paid
+          payment_status: paymentMethod ? 'pending' : 'paid', // Pending approval if they selected payment method
+          payment_method: paymentMethod || null
         })
 
       if (joinError) throw joinError
@@ -237,38 +240,95 @@ export default function JoinPoolPage() {
         </div>
 
         <div className="auth-card">
-          {/* CONFIRMATION MODAL FOR FREE POOLS */}
+          {/* CONFIRMATION MODAL WITH PAYMENT INFO */}
           {showConfirm && (
             <div className="confirm-overlay">
-              <div className="confirm-modal">
-                <div className="confirm-icon">🏆</div>
-                <div className="confirm-title">Confirm Join</div>
-                <div className="confirm-text">
-                  Choose your team name for <strong>{pool?.name}</strong>
-                </div>
-                <div className="team-name-field">
-                  <label className="field-label">Team Name *</label>
-                  <input 
-                    className="field-input" 
-                    type="text" 
-                    placeholder="e.g., Los Galácticos, Dream Team..." 
-                    value={teamName} 
-                    onChange={(e) => setTeamName(e.target.value)}
-                    maxLength={30}
-                  />
-                  <div className="field-hint">This is how you'll appear on the leaderboard</div>
-                </div>
-                <div className="confirm-details">
-                  <div>Tournament: {pool?.tournament || 'FIFA World Cup 2026'}</div>
-                  <div>Buy-in: {buyinDisplay}</div>
-                  <div>Players: {pool?.player_count}</div>
-                </div>
-                <button className="btn-full green" onClick={handleConfirmJoin} disabled={joining || !teamName.trim()}>
-                  {joining ? 'Joining...' : 'Yes, Join Pool →'}
-                </button>
-                <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => setShowConfirm(false)}>
-                  Cancel
-                </button>
+              <div className="confirm-modal" style={{maxWidth: showPaymentStep ? '420px' : '340px'}}>
+                {showPaymentStep ? (
+                  <>
+                    <div className="confirm-icon">💳</div>
+                    <div className="confirm-title">Payment Required</div>
+                    <div className="confirm-text">
+                      Para unirte a <strong style={{color:'var(--gold)'}}>{pool?.name}</strong>, primero debes pagar.
+                    </div>
+                    
+                    {/* Payment Options */}
+                    <div className="payment-options">
+                      <div className="payment-option" onClick={() => setPaymentMethod('zelle')}>
+                        <div className={`po-radio ${paymentMethod === 'zelle' ? 'selected' : ''}`}></div>
+                        <div className="po-icon">💜</div>
+                        <div className="po-info">
+                          <div className="po-name">Zelle</div>
+                          <div className="po-detail">christiancarden3@gmail.com</div>
+                        </div>
+                      </div>
+                      <div className="payment-option" onClick={() => setPaymentMethod('paypal')}>
+                        <div className={`po-radio ${paymentMethod === 'paypal' ? 'selected' : ''}`}></div>
+                        <div className="po-icon">🅿️</div>
+                        <div className="po-info">
+                          <div className="po-name">PayPal</div>
+                          <div className="po-detail">@ChristianCarden</div>
+                        </div>
+                      </div>
+                      <div className="payment-option" onClick={() => setPaymentMethod('venmo')}>
+                        <div className={`po-radio ${paymentMethod === 'venmo' ? 'selected' : ''}`}></div>
+                        <div className="po-icon">💙</div>
+                        <div className="po-info">
+                          <div className="po-name">Venmo</div>
+                          <div className="po-detail">@Christian-Carden-1</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Instructions */}
+                    <div className="payment-instructions">
+                      <div className="pi-title">📝 Instrucciones:</div>
+                      <div className="pi-text">Pongan su nombre completo y &quot;Quiniela&quot; cuando paguen, y por donde pagaron para confirmar y aceptarlos a la liga.</div>
+                    </div>
+                    
+                    <button 
+                      className="btn-full green" 
+                      onClick={() => setShowPaymentStep(false)}
+                      disabled={!paymentMethod}
+                    >
+                      Ya pagué por {paymentMethod ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1) : '...'} →
+                    </button>
+                    <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => setShowConfirm(false)}>
+                      Cancelar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="confirm-icon">🏆</div>
+                    <div className="confirm-title">Último Paso</div>
+                    <div className="confirm-text">
+                      Elige tu nombre de equipo para <strong>{pool?.name}</strong>
+                    </div>
+                    <div className="team-name-field">
+                      <label className="field-label">Nombre del Equipo *</label>
+                      <input 
+                        className="field-input" 
+                        type="text" 
+                        placeholder="ej: Los Galácticos, Dream Team..." 
+                        value={teamName} 
+                        onChange={(e) => setTeamName(e.target.value)}
+                        maxLength={30}
+                      />
+                      <div className="field-hint">Así aparecerás en la tabla de posiciones</div>
+                    </div>
+                    <div className="confirm-details">
+                      <div>Torneo: {pool?.tournament === 'rg2026' ? 'Roland Garros 2026' : 'FIFA World Cup 2026'}</div>
+                      <div>Buy-in: {buyinDisplay}</div>
+                      <div>Pagaste por: <strong style={{color:'var(--gold)'}}>{paymentMethod?.charAt(0).toUpperCase() + paymentMethod?.slice(1)}</strong></div>
+                    </div>
+                    <button className="btn-full green" onClick={handleConfirmJoin} disabled={joining || !teamName.trim()}>
+                      {joining ? 'Solicitando...' : 'Solicitar Unirme →'}
+                    </button>
+                    <button className="btn-outline-full" style={{ marginTop: '0.6rem' }} onClick={() => setShowPaymentStep(true)}>
+                      ← Volver
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -454,6 +514,22 @@ export default function JoinPoolPage() {
         .team-name-field .field-hint { font-size: 0.7rem; color: var(--f4); margin-top: 0.4rem; }
         .team-name-field .field-error { font-size: 0.72rem; color: var(--red); margin-top: 0.4rem; }
         .field-input.error { border-color: var(--red); }
+
+        /* Payment Options */
+        .payment-options { margin-bottom: 1rem; }
+        .payment-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; background: var(--bg3); border: 2px solid var(--line); border-radius: 6px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.15s; }
+        .payment-option:hover { border-color: var(--gold-line); background: rgba(201,168,76,0.05); }
+        .po-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--f4); flex-shrink: 0; transition: all 0.15s; }
+        .po-radio.selected { border-color: var(--gold); background: var(--gold); box-shadow: inset 0 0 0 3px var(--bg3); }
+        .po-icon { font-size: 1.3rem; }
+        .po-info { flex: 1; text-align: left; }
+        .po-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 800; text-transform: uppercase; color: var(--f1); }
+        .po-detail { font-size: 0.75rem; color: var(--gold); margin-top: 1px; }
+
+        /* Payment Instructions */
+        .payment-instructions { background: rgba(201,168,76,0.08); border: 1px solid var(--gold-line); border-radius: 6px; padding: 1rem; margin-bottom: 1.25rem; text-align: left; }
+        .pi-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+        .pi-text { font-size: 0.8rem; color: var(--f2); line-height: 1.5; }
 
         @keyframes pitchFloat { 0%, 100% { transform: translateX(-50%) rotateX(64deg) translateY(0); } 50% { transform: translateX(-50%) rotateX(64deg) translateY(-14px); } }
 
