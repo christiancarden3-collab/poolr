@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 import { RG_SCHEDULE, getRanking, getFlag } from '@/lib/rg-matches'
+import { MATCHES as WC_MATCHES, TEAMS as WC_TEAMS } from '@/lib/wc2026-database'
 
 // Roland Garros 2026 fixtures
 function getRGMatches(matchday) {
@@ -21,32 +22,39 @@ function getRGMatches(matchday) {
   }))
 }
 
-// World Cup 2026 fixtures
-function getDemoMatches(matchday) {
-  const realMatchesByDay = {
-    1: [
-      { id: 'md1-1', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'Mexico', flag: 'mx' }, awayTeam: { name: 'South Africa', flag: 'za' }, date: 'Jun 11', time: '5:00 PM ET', status: 'scheduled' },
-      { id: 'md1-2', matchday: 1, stage: 'group', group: 'A', homeTeam: { name: 'Korea Republic', flag: 'kr' }, awayTeam: { name: 'Czechia', flag: 'cz' }, date: 'Jun 11', time: '8:00 PM ET', status: 'scheduled' },
-      { id: 'md1-3', matchday: 1, stage: 'group', group: 'B', homeTeam: { name: 'Canada', flag: 'ca' }, awayTeam: { name: 'Bosnia and Herzegovina', flag: 'ba' }, date: 'Jun 12', time: '2:00 PM ET', status: 'scheduled' },
-      { id: 'md1-4', matchday: 1, stage: 'group', group: 'D', homeTeam: { name: 'USA', flag: 'us' }, awayTeam: { name: 'Paraguay', flag: 'py' }, date: 'Jun 12', time: '8:00 PM ET', status: 'scheduled' },
-      { id: 'md1-5', matchday: 1, stage: 'group', group: 'C', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Morocco', flag: 'ma' }, date: 'Jun 13', time: '5:00 PM ET', status: 'scheduled' },
-      { id: 'md1-6', matchday: 1, stage: 'group', group: 'G', homeTeam: { name: 'Belgium', flag: 'be' }, awayTeam: { name: 'Egypt', flag: 'eg' }, date: 'Jun 15', time: '8:00 PM ET', status: 'scheduled' },
-      { id: 'md1-7', matchday: 1, stage: 'group', group: 'J', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Algeria', flag: 'dz' }, date: 'Jun 16', time: '5:00 PM ET', status: 'scheduled' },
-      { id: 'md1-8', matchday: 1, stage: 'group', group: 'L', homeTeam: { name: 'England', flag: 'gb-eng' }, awayTeam: { name: 'Croatia', flag: 'hr' }, date: 'Jun 17', time: '2:00 PM ET', status: 'scheduled' },
-    ],
-    2: [
-      { id: 'md2-1', matchday: 2, stage: 'group', group: 'A', homeTeam: { name: 'Mexico', flag: 'mx' }, awayTeam: { name: 'Korea Republic', flag: 'kr' }, date: 'Jun 18', time: '9:00 PM ET', status: 'scheduled' },
-      { id: 'md2-2', matchday: 2, stage: 'group', group: 'D', homeTeam: { name: 'USA', flag: 'us' }, awayTeam: { name: 'Australia', flag: 'au' }, date: 'Jun 19', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'md2-3', matchday: 2, stage: 'group', group: 'C', homeTeam: { name: 'Brazil', flag: 'br' }, awayTeam: { name: 'Haiti', flag: 'ht' }, date: 'Jun 19', time: '8:30 PM ET', status: 'scheduled' },
-      { id: 'md2-4', matchday: 2, stage: 'group', group: 'J', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Austria', flag: 'at' }, date: 'Jun 22', time: '1:00 PM ET', status: 'scheduled' },
-      { id: 'md2-5', matchday: 2, stage: 'group', group: 'L', homeTeam: { name: 'England', flag: 'gb-eng' }, awayTeam: { name: 'Ghana', flag: 'gh' }, date: 'Jun 23', time: '4:00 PM ET', status: 'scheduled' },
-    ],
-    3: [
-      { id: 'md3-1', matchday: 3, stage: 'group', group: 'A', homeTeam: { name: 'Czechia', flag: 'cz' }, awayTeam: { name: 'Mexico', flag: 'mx' }, date: 'Jun 24', time: '9:00 PM ET', status: 'scheduled' },
-      { id: 'md3-2', matchday: 3, stage: 'group', group: 'J', homeTeam: { name: 'Argentina', flag: 'ar' }, awayTeam: { name: 'Jordan', flag: 'jo' }, date: 'Jun 26', time: '9:00 PM ET', status: 'scheduled' },
-    ]
+// World Cup 2026 fixtures - using real schedule from database
+function getWCMatches(matchday) {
+  // Build team lookup
+  const teamLookup = {}
+  WC_TEAMS.forEach(t => { teamLookup[t.code] = t })
+  
+  // Filter matches by matchday and format
+  const matches = WC_MATCHES.filter(m => m.md === matchday && m.stage === 'group')
+  
+  // Format date helper
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr + 'T12:00:00')
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
-  return realMatchesByDay[matchday] || []
+  
+  return matches.map(m => {
+    const home = teamLookup[m.home] || { name: m.home, code: m.home }
+    const away = teamLookup[m.away] || { name: m.away, code: m.away }
+    
+    return {
+      id: m.id,
+      matchday: m.md,
+      stage: 'group',
+      group: m.group,
+      homeTeam: { name: home.name, flag: home.code },
+      awayTeam: { name: away.name, flag: away.code },
+      date: formatDate(m.date),
+      time: `${m.timeET} ET`,
+      venue: m.venue,
+      city: m.city,
+      status: 'scheduled'
+    }
+  })
 }
 
 // Tournament helpers
@@ -117,7 +125,7 @@ export default function MatchPicksPage() {
     if (!pool) return
     const matchData = pool.tournament === 'rg2026' 
       ? getRGMatches(matchday)
-      : getDemoMatches(matchday)
+      : getWCMatches(matchday)
     setMatches(matchData)
 
     // Calculate lock status
