@@ -2,31 +2,46 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-// Roland Garros 2026 fixtures by matchday (TEST)
+// Roland Garros 2026 fixtures by matchday (REAL from Flashscore)
+// Tournament: May 18 - Jun 7, 2026
+// Scoring: 5 pts correct winner, 10 pts correct set score
 function getRGMatches(matchday) {
   const rgMatchesByDay = {
-    1: [ // Sunday May 24 - R16
-      { id: 'rg-r16-1', matchday: 1, stage: 'R16', homeTeam: { name: 'Carlos Alcaraz', flag: 'es' }, awayTeam: { name: 'Holger Rune', flag: 'dk' }, date: 'May 24', time: '11:00 AM ET', status: 'scheduled' },
-      { id: 'rg-r16-2', matchday: 1, stage: 'R16', homeTeam: { name: 'Jannik Sinner', flag: 'it' }, awayTeam: { name: 'Ben Shelton', flag: 'us' }, date: 'May 24', time: '1:00 PM ET', status: 'scheduled' },
-      { id: 'rg-r16-3', matchday: 1, stage: 'R16', homeTeam: { name: 'Novak Djokovic', flag: 'rs' }, awayTeam: { name: 'Alex de Minaur', flag: 'au' }, date: 'May 24', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'rg-r16-4', matchday: 1, stage: 'R16', homeTeam: { name: 'Daniil Medvedev', flag: 'ru' }, awayTeam: { name: 'Taylor Fritz', flag: 'us' }, date: 'May 24', time: '5:00 PM ET', status: 'scheduled' },
+    1: [ // Saturday May 23 - R2 Day 1
+      { id: 'rg-r2-1', matchday: 1, stage: 'R2', homeTeam: { name: 'Novak Djokovic', flag: 'rs' }, awayTeam: { name: 'G. Mpetshi Perricard', flag: 'fr' }, date: 'May 23', time: '5:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-2', matchday: 1, stage: 'R2', homeTeam: { name: 'Alexander Zverev', flag: 'de' }, awayTeam: { name: 'Benjamin Bonzi', flag: 'fr' }, date: 'May 23', time: '6:30 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-3', matchday: 1, stage: 'R2', homeTeam: { name: 'Taylor Fritz', flag: 'us' }, awayTeam: { name: 'N. Basavareddy', flag: 'us' }, date: 'May 23', time: '8:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-4', matchday: 1, stage: 'R2', homeTeam: { name: 'Tomas Machac', flag: 'cz' }, awayTeam: { name: 'Zizou Bergs', flag: 'be' }, date: 'May 23', time: '9:30 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-5', matchday: 1, stage: 'R2', homeTeam: { name: 'Joao Fonseca', flag: 'br' }, awayTeam: { name: 'Luka Pavlovic', flag: 'it' }, date: 'May 23', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-6', matchday: 1, stage: 'R2', homeTeam: { name: 'Lorenzo Sonego', flag: 'it' }, awayTeam: { name: 'P.H. Herbert', flag: 'fr' }, date: 'May 23', time: '12:30 PM ET', status: 'scheduled' },
     ],
-    2: [ // Monday May 25 - R16
-      { id: 'rg-r16-5', matchday: 2, stage: 'R16', homeTeam: { name: 'Alexander Zverev', flag: 'de' }, awayTeam: { name: 'Casper Ruud', flag: 'no' }, date: 'May 25', time: '11:00 AM ET', status: 'scheduled' },
-      { id: 'rg-r16-6', matchday: 2, stage: 'R16', homeTeam: { name: 'Stefanos Tsitsipas', flag: 'gr' }, awayTeam: { name: 'Hubert Hurkacz', flag: 'pl' }, date: 'May 25', time: '1:00 PM ET', status: 'scheduled' },
-      { id: 'rg-r16-7', matchday: 2, stage: 'R16', homeTeam: { name: 'Andrey Rublev', flag: 'ru' }, awayTeam: { name: 'Frances Tiafoe', flag: 'us' }, date: 'May 25', time: '3:00 PM ET', status: 'scheduled' },
-      { id: 'rg-r16-8', matchday: 2, stage: 'R16', homeTeam: { name: 'Tommy Paul', flag: 'us' }, awayTeam: { name: 'Lorenzo Musetti', flag: 'it' }, date: 'May 25', time: '5:00 PM ET', status: 'scheduled' },
+    2: [ // Sunday May 24 - R2 Day 2
+      { id: 'rg-r2-7', matchday: 2, stage: 'R2', homeTeam: { name: 'Karen Khachanov', flag: 'ru' }, awayTeam: { name: 'Arthur Gea', flag: 'fr' }, date: 'May 24', time: '5:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-8', matchday: 2, stage: 'R2', homeTeam: { name: 'T. Etcheverry', flag: 'ar' }, awayTeam: { name: 'Nuno Borges', flag: 'pt' }, date: 'May 24', time: '6:30 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-9', matchday: 2, stage: 'R2', homeTeam: { name: 'Jakub Mensik', flag: 'cz' }, awayTeam: { name: 'Titouan Droguet', flag: 'fr' }, date: 'May 24', time: '8:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-10', matchday: 2, stage: 'R2', homeTeam: { name: 'Reilly Opelka', flag: 'us' }, awayTeam: { name: 'Federico Cina', flag: 'it' }, date: 'May 24', time: '9:30 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-11', matchday: 2, stage: 'R2', homeTeam: { name: 'H. Medjedovic', flag: 'rs' }, awayTeam: { name: 'Y. Hanfmann', flag: 'de' }, date: 'May 24', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r2-12', matchday: 2, stage: 'R2', homeTeam: { name: 'Mattia Bellucci', flag: 'it' }, awayTeam: { name: 'Quentin Halys', flag: 'fr' }, date: 'May 24', time: '12:30 PM ET', status: 'scheduled' },
     ],
-    3: [ // Tuesday May 26 - QF
-      { id: 'rg-qf-1', matchday: 3, stage: 'QF', homeTeam: { name: 'Alcaraz/Sinner', flag: 'xx' }, awayTeam: { name: 'Djokovic/Medvedev', flag: 'xx' }, date: 'May 26', time: '12:00 PM ET', status: 'scheduled' },
-      { id: 'rg-qf-2', matchday: 3, stage: 'QF', homeTeam: { name: 'Zverev/Tsitsipas', flag: 'xx' }, awayTeam: { name: 'Rublev/Paul', flag: 'xx' }, date: 'May 26', time: '3:00 PM ET', status: 'scheduled' },
+    3: [ // Monday May 25 - R3
+      { id: 'rg-r3-1', matchday: 3, stage: 'R3', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 25', time: '5:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r3-2', matchday: 3, stage: 'R3', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 25', time: '8:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r3-3', matchday: 3, stage: 'R3', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 25', time: '11:00 AM ET', status: 'scheduled' },
     ],
-    4: [ // Thursday May 28 - SF
-      { id: 'rg-sf-1', matchday: 4, stage: 'SF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 28', time: '12:00 PM ET', status: 'scheduled' },
-      { id: 'rg-sf-2', matchday: 4, stage: 'SF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 28', time: '3:00 PM ET', status: 'scheduled' },
+    4: [ // Wednesday May 28 - R4 (Round of 16)
+      { id: 'rg-r16-1', matchday: 4, stage: 'R16', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 28', time: '6:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r16-2', matchday: 4, stage: 'R16', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 28', time: '9:00 AM ET', status: 'scheduled' },
     ],
-    5: [ // Sunday May 31 - Final
-      { id: 'rg-final', matchday: 5, stage: 'F', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 31', time: '9:00 AM ET', status: 'scheduled' },
+    5: [ // Friday May 30 - QF (1.5x multiplier)
+      { id: 'rg-qf-1', matchday: 5, stage: 'QF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 30', time: '6:00 AM ET', status: 'scheduled' },
+      { id: 'rg-qf-2', matchday: 5, stage: 'QF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 30', time: '9:00 AM ET', status: 'scheduled' },
+    ],
+    6: [ // Saturday May 31 - SF (2x multiplier)
+      { id: 'rg-sf-1', matchday: 6, stage: 'SF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 31', time: '6:00 AM ET', status: 'scheduled' },
+      { id: 'rg-sf-2', matchday: 6, stage: 'SF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 31', time: '9:00 AM ET', status: 'scheduled' },
+    ],
+    7: [ // Sunday Jun 1 - Final (3x multiplier)
+      { id: 'rg-final', matchday: 7, stage: 'F', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'Jun 1', time: '9:00 AM ET', status: 'scheduled' },
     ],
   }
   return rgMatchesByDay[matchday] || []
@@ -514,7 +529,7 @@ export default function PredictionsPage() {
           <div className="ph-left">
             <div className="ph-eyebrow">My Pools › {pool?.name}</div>
             <div className="ph-title">Match Picks</div>
-            <div className="ph-meta">FIFA World Cup 2026 · Matchday {matchday}</div>
+            <div className="ph-meta">{pool?.tournament === 'rg2026' ? 'Roland Garros 2026' : 'FIFA World Cup 2026'} · {pool?.tournament === 'rg2026' ? `Day ${matchday}` : `Matchday ${matchday}`}</div>
           </div>
           <div className="ph-right">
             <div className="ph-score">{poolMember?.total_points || 0} pts</div>
@@ -705,9 +720,19 @@ export default function PredictionsPage() {
             <div className="card">
               <div className="card-head"><div className="card-title">Scoring</div></div>
               <div className="card-body">
-                <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
-                <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
-                <div className="sc-row"><div className="sc-label">Knockout multiplier</div><div className="sc-val gold">1.5x – 3x</div></div>
+                {pool?.tournament === 'rg2026' ? (
+                  <>
+                    <div className="sc-row"><div className="sc-label">Correct set score</div><div className="sc-val gold">10 pts</div></div>
+                    <div className="sc-row"><div className="sc-label">Correct winner only</div><div className="sc-val gold">5 pts</div></div>
+                    <div className="sc-row"><div className="sc-label">QF / SF / Final</div><div className="sc-val gold">1.5x / 2x / 3x</div></div>
+                  </>
+                ) : (
+                  <>
+                    <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
+                    <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
+                    <div className="sc-row"><div className="sc-label">Knockout multiplier</div><div className="sc-val gold">1.5x – 3x</div></div>
+                  </>
+                )}
               </div>
             </div>
           </div>
