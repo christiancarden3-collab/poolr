@@ -17,6 +17,15 @@ const getTournamentStart = (code) => ({
   'nba2026': 'May 18, 2026'
 })[code] || 'Jun 11, 2026'
 
+const getTournamentDeadline = (code) => {
+  const deadlines = {
+    'wc2026': new Date('2026-06-11T17:00:00-04:00'), // Jun 11 5PM ET
+    'rg2026': new Date('2026-05-24T05:00:00-04:00'), // May 24 5AM ET
+    'nba2026': new Date('2026-05-18T20:00:00-04:00')
+  }
+  return deadlines[code] || deadlines['wc2026']
+}
+
 export default function PoolDashboard() {
   const params = useParams()
   const router = useRouter()
@@ -29,6 +38,7 @@ export default function PoolDashboard() {
   const [showTeamNameModal, setShowTeamNameModal] = useState(false)
   const [teamNameInput, setTeamNameInput] = useState('')
   const [savingTeamName, setSavingTeamName] = useState(false)
+  const [countdown, setCountdown] = useState('--:--:--')
 
   useEffect(() => {
     async function loadData() {
@@ -95,6 +105,35 @@ export default function PoolDashboard() {
     }
     loadData()
   }, [params.id, router])
+
+  // Countdown timer
+  useEffect(() => {
+    if (!pool?.tournament) return
+    const deadline = getTournamentDeadline(pool.tournament)
+    
+    const updateCountdown = () => {
+      const now = new Date()
+      const diff = deadline - now
+      if (diff <= 0) {
+        setCountdown('LOCKED')
+        return
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const secs = Math.floor((diff % (1000 * 60)) / 1000)
+      
+      if (days > 0) {
+        setCountdown(`${days}d ${hours}h ${mins}m`)
+      } else {
+        setCountdown(`${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`)
+      }
+    }
+    
+    updateCountdown()
+    const interval = setInterval(updateCountdown, 1000)
+    return () => clearInterval(interval)
+  }, [pool?.tournament])
 
   const handleUpdateTeamName = async () => {
     if (!teamNameInput.trim() || !currentMember) return
@@ -353,7 +392,7 @@ export default function PoolDashboard() {
                 <div className="a-banner-left">Tournament starts {getTournamentStart(pool?.tournament)}</div>
                 <div className="a-banner-sub">Submit all picks before the first match {isRG ? 'starts' : 'kicks off'}</div>
               </div>
-              <div className="a-banner-right">Coming Soon</div>
+              <div className="a-banner-right">{countdown}</div>
             </div>
 
             {/* Standings */}
