@@ -24,6 +24,7 @@ function CreatePoolContent() {
   const [maxPlayers, setMaxPlayers] = useState('')
   const [poolType, setPoolType] = useState('free')
   const [buyinAmount, setBuyinAmount] = useState('')
+  const [paymentInstructions, setPaymentInstructions] = useState('')
   const [feeType, setFeeType] = useState('on_top')
   const [prizeType, setPrizeType] = useState('winner')
   const [prizes, setPrizes] = useState([{ place: 1, percent: 100 }])
@@ -97,6 +98,7 @@ function CreatePoolContent() {
           fee_handling: poolType === 'paid' ? feeType : 'absorbed',
           prize_structure: prizes.reduce((acc, p) => ({ ...acc, [p.place]: p.percent }), {}),
           payment_method: 'external',
+          payment_instructions: poolType === 'paid' ? paymentInstructions : null,
           prediction_deadline: predictionDeadline,
           status: 'open'
         })
@@ -384,12 +386,23 @@ function CreatePoolContent() {
                           />
                         </div>
                       </div>
+                      <div className="field">
+                        <label className="field-label">Your Payment Info</label>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--f3)', marginBottom: '0.5rem' }}>
+                          Tell players how to pay you (shown when they join)
+                        </div>
+                        <textarea 
+                          className="field-textarea"
+                          placeholder={"Zelle: Your Name (555-123-4567)\n\nPayPal: your@email.com\nIMPORTANT: Send as Friends & Family\n\nInclude your name in the payment note."}
+                          value={paymentInstructions}
+                          onChange={(e) => setPaymentInstructions(e.target.value)}
+                          rows={5}
+                        />
+                      </div>
                       <div className="payment-info-panel">
-                        <div className="pip-title">External Payments</div>
+                        <div className="pip-title">How It Works</div>
                         <div className="pip-desc">
-                          Collect payments directly via Zelle, PayPal, Venmo, or cash. 
-                          You can add your payment instructions in Pool Settings after creating the pool.
-                          Mark members as paid in the Manage Payments page.
+                          Players see your payment info when they join. Once they pay you, mark them as paid in Manage Payments.
                         </div>
                       </div>
                     </>
@@ -924,6 +937,23 @@ const wizardStyles = `
     min-height: 80px;
     line-height: 1.5;
   }
+  .field-textarea {
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    background: var(--bg3);
+    border: 1px solid var(--f4);
+    border-radius: 3px;
+    color: var(--f1);
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+  }
+  .field-textarea:focus { border-color: var(--gold); }
+  .field-textarea::placeholder { color: var(--f4); }
   .field-select {
     cursor: pointer;
     appearance: none;
