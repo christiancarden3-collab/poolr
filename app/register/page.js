@@ -544,22 +544,26 @@ export default function RegisterPage() {
         /* BUTTONS */
         .btn-full {
           width: 100%;
+          display: block;
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
           font-weight: 800;
           letter-spacing: 0.1em;
           text-transform: uppercase;
-          background: var(--gold);
+          text-align: center;
+          background: #c9a84c;
           color: #000;
-          padding: 0.75rem;
-          border-radius: 3px;
+          padding: 0.9rem 1rem;
+          border-radius: 4px;
           border: none;
           cursor: pointer;
           transition: background 0.15s;
-          margin-top: 1.1rem;
+          margin-top: 1.25rem;
+          -webkit-appearance: none;
+          appearance: none;
         }
         .btn-full:hover:not(:disabled) {
-          background: var(--gold2);
+          background: #e6c76a;
         }
         .btn-full:disabled {
           opacity: 0.6;
@@ -567,23 +571,27 @@ export default function RegisterPage() {
         }
         .btn-outline-full {
           width: 100%;
+          display: block;
           font-family: 'Barlow Condensed', sans-serif;
-          font-size: 0.85rem;
+          font-size: 0.9rem;
           font-weight: 700;
           letter-spacing: 0.1em;
           text-transform: uppercase;
+          text-align: center;
           background: transparent;
-          color: var(--f2);
-          padding: 0.7rem;
-          border-radius: 3px;
-          border: 1px solid var(--f4);
+          color: #c8c5be;
+          padding: 0.85rem 1rem;
+          border-radius: 4px;
+          border: 1px solid #4a4845;
           cursor: pointer;
           transition: all 0.15s;
-          margin-top: 0.6rem;
+          margin-top: 0.75rem;
+          -webkit-appearance: none;
+          appearance: none;
         }
         .btn-outline-full:hover:not(:disabled) {
-          border-color: var(--f2);
-          color: var(--white);
+          border-color: #c8c5be;
+          color: #fff;
         }
         .btn-outline-full:disabled {
           opacity: 0.6;
