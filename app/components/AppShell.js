@@ -39,6 +39,44 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
 
   return (
     <>
+      {/* SINGLE CONSOLIDATED NAV */}
+      <nav className="main-nav">
+        <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
+        <div className="nav-items">
+          <Link href="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`}>Home</Link>
+          <Link href="/dashboard" className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>My Pools</Link>
+          <Link href="/browse" className={`nav-item ${isActive('/browse') ? 'active' : ''}`}>Browse</Link>
+          <Link href="/scores" className={`nav-item ${isActive('/results') ? 'active' : ''}`}>Scores</Link>
+        </div>
+        <div className="nav-right-section">
+          {user ? (
+            <>
+              {showCreate && <Link href="/create" className="nav-cta">+ Create Pool</Link>}
+              <Link href="/profile" className="nav-profile">
+                <div className="nav-avatar">{getUserInitials()}</div>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="nav-link">Sign In</Link>
+              <Link href="/register" className="nav-cta">Create Account</Link>
+            </>
+          )}
+        </div>
+      </nav>
+
+      {/* TICKER */}
+      <div className="ticker">
+        <div className="ticker-label">World Cup 2026</div>
+        <div className="ticker-items">
+          <span className="ticker-item">48 Teams</span>
+          <span className="ticker-item">104 Matches</span>
+          <span className="ticker-item">16 Host Cities</span>
+          <span className="ticker-item">USA · Canada · Mexico</span>
+          <span className="ticker-item">Kicks off June 11, 2026</span>
+        </div>
+      </div>
+
       {/* PAGE HEADER (optional) */}
       {showPageHeader && pageTitle && (
         <div className="page-header">
@@ -61,6 +99,107 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
       {children}
 
       <style jsx>{`
+        /* NAV - Single consolidated navigation */
+        .main-nav {
+          background: var(--bg);
+          border-bottom: 3px solid var(--gold);
+          display: flex;
+          align-items: center;
+          padding: 0 2rem;
+          height: 56px;
+          position: sticky;
+          top: 0;
+          z-index: 200;
+        }
+        .nav-logo {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 2rem;
+          font-weight: 900;
+          letter-spacing: 0.04em;
+          color: var(--white);
+          text-transform: uppercase;
+          margin-right: 2rem;
+          padding-right: 2rem;
+          border-right: 1px solid var(--f4);
+          text-decoration: none;
+        }
+        .nav-logo span { color: var(--gold); }
+        .nav-items {
+          display: flex;
+          height: 100%;
+        }
+        .nav-right-section {
+          margin-left: auto;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        .nav-link {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .nav-link:hover { color: var(--f1); }
+        .nav-cta {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: var(--gold);
+          color: #000;
+          padding: 0.5rem 1.25rem;
+          border-radius: 2px;
+          text-decoration: none;
+          cursor: pointer;
+          border: none;
+          transition: background 0.15s;
+        }
+        .nav-cta:hover { background: var(--gold2); }
+        .nav-profile { display: flex; align-items: center; text-decoration: none; }
+        .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 800; color: #000; transition: transform 0.15s; }
+        .nav-avatar:hover { transform: scale(1.08); }
+
+        /* TICKER */
+        .ticker {
+          background: var(--gold);
+          padding: 0 2rem;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          overflow: hidden;
+        }
+        .ticker-label {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #000;
+          white-space: nowrap;
+          border-right: 1px solid rgba(0,0,0,0.2);
+          padding-right: 1.5rem;
+        }
+        .ticker-items {
+          display: flex;
+          gap: 2rem;
+        }
+        .ticker-item {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: #000;
+          white-space: nowrap;
+        }
+
         /* PAGE HEADER */
         .page-header {
           background: var(--bg2);
@@ -116,9 +255,38 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
         .btn-primary:hover { background: var(--gold2); }
 
         @media (max-width: 768px) {
+          .main-nav { padding: 0 1rem; }
+          .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
+          .nav-items { display: none; }
+          .nav-right-section { gap: 0.5rem; }
+          .nav-cta { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
+          .nav-avatar { width: 28px; height: 28px; font-size: 0.65rem; }
+          .ticker { padding: 0 1rem; gap: 1rem; }
+          .ticker-items { gap: 1rem; }
           .page-header { padding: 1rem; }
           .page-header-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
         }
+      `}</style>
+
+      <style jsx global>{`
+        .nav-item {
+          display: flex;
+          align-items: center;
+          padding: 0 1.25rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
+          text-decoration: none;
+          border-bottom: 3px solid transparent;
+          margin-bottom: -3px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .nav-item:hover { color: var(--f1); }
+        .nav-item.active { color: var(--white); border-bottom-color: var(--gold); }
       `}</style>
     </>
   )
