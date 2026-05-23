@@ -478,23 +478,24 @@ export default function PoolDetailPage() {
                   <>
                     {/* Soccer Scoring - World Cup */}
                     <div className="sc-group">
-                      <div className="sc-group-label">Group Stage & Knockouts</div>
+                      <div className="sc-group-label">Match Picks</div>
                       <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
-                      <div className="sc-row"><div className="sc-label">Correct winner + 1 score</div><div className="sc-val gold">2 pts</div></div>
-                      <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
+                      <div className="sc-row"><div className="sc-label">Winner + 1 correct score</div><div className="sc-val gold">2 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Correct winner or tie</div><div className="sc-val gold">1 pt</div></div>
+                      <div className="sc-row"><div className="sc-label">Correct qualifier</div><div className="sc-val gold">2 pts</div></div>
                     </div>
                     <div className="sc-group">
-                      <div className="sc-group-label">Knockout Bonus</div>
-                      <div className="sc-row"><div className="sc-label">Round of 32 / 16</div><div className="sc-val dim">×1.5</div></div>
-                      <div className="sc-row"><div className="sc-label">Quarterfinals</div><div className="sc-val dim">×2</div></div>
-                      <div className="sc-row"><div className="sc-label">Semifinals</div><div className="sc-val dim">×2.5</div></div>
-                      <div className="sc-row"><div className="sc-label">Final</div><div className="sc-val dim">×3</div></div>
+                      <div className="sc-group-label">Knockout Winner Bonus</div>
+                      <div className="sc-row"><div className="sc-label">Round of 32</div><div className="sc-val dim">2 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Round of 16</div><div className="sc-val dim">3 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Quarterfinals</div><div className="sc-val dim">4 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Semifinals</div><div className="sc-val dim">5 pts</div></div>
                     </div>
                     <div className="sc-group">
                       <div className="sc-group-label">Special Picks</div>
                       <div className="sc-row"><div className="sc-label">Champion</div><div className="sc-val gold">10 pts</div></div>
                       <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">7 pts</div></div>
-                      <div className="sc-row"><div className="sc-label">Top scorer (Pichichi)</div><div className="sc-val gold">5 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Top scorer</div><div className="sc-val gold">5 pts</div></div>
                       <div className="sc-row"><div className="sc-label">Best goalkeeper</div><div className="sc-val gold">5 pts</div></div>
                     </div>
                   </>
