@@ -389,7 +389,7 @@ export default function PoolDetailPage() {
                   </div>
                   <div className="share-buttons">
                     <a 
-                      href={`https://wa.me/?text=${encodeURIComponent(`Join my World Cup pool "${pool.name}" on PickPoolr! 🏆⚽\n\nhttps://pickpoolr.com/join/${pool.invite_code}`)}`}
+                      href={`https://wa.me/?text=${encodeURIComponent(`Join my ${pool.tournament === 'rg2026' ? 'Roland Garros' : pool.tournament === 'nba2026' ? 'NBA' : 'World Cup'} pool "${pool.name}" on PickPoolr! 🏆\n\nhttps://pickpoolr.com/join/${pool.invite_code}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="share-btn whatsapp"
@@ -398,7 +398,7 @@ export default function PoolDetailPage() {
                       WhatsApp
                     </a>
                     <a 
-                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Join my World Cup pool "${pool.name}" on PickPoolr! 🏆⚽`)}&url=${encodeURIComponent(`https://pickpoolr.com/join/${pool.invite_code}`)}`}
+                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Join my ${pool.tournament === 'rg2026' ? 'Roland Garros' : pool.tournament === 'nba2026' ? 'NBA' : 'World Cup'} pool "${pool.name}" on PickPoolr! 🏆`)}&url=${encodeURIComponent(`https://pickpoolr.com/join/${pool.invite_code}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="share-btn twitter"
@@ -416,7 +416,7 @@ export default function PoolDetailPage() {
                       Facebook
                     </a>
                     <button 
-                      onClick={() => navigator.share?.({ title: pool.name, text: `Join my World Cup pool!`, url: `https://pickpoolr.com/join/${pool.invite_code}` }).catch(() => {})}
+                      onClick={() => navigator.share?.({ title: pool.name, text: `Join my ${pool.tournament === 'rg2026' ? 'Roland Garros' : pool.tournament === 'nba2026' ? 'NBA' : 'World Cup'} pool! 🏆`, url: `https://pickpoolr.com/join/${pool.invite_code}` }).catch(() => {})}
                       className="share-btn more"
                     >
                       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>

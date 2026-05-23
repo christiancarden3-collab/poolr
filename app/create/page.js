@@ -240,7 +240,7 @@ function CreatePoolContent() {
             </div>
           </div>
           <div className="success-actions">
-            <a href={`https://wa.me/?text=Join my World Cup pool! https://pickpoolr.com/join/${inviteCode}`} target="_blank" rel="noopener noreferrer" className="btn-wa">
+            <a href={`https://wa.me/?text=Join my ${tournament === 'rg2026' ? 'Roland Garros' : tournament === 'nba2026' ? 'NBA' : 'World Cup'} pool "${poolName}" on PickPoolr! 🏆 https://pickpoolr.com/join/${inviteCode}`} target="_blank" rel="noopener noreferrer" className="btn-wa">
               Share on WhatsApp
             </a>
             <Link href={`/pool/${createdPoolId || 1}`} className="btn-go">Go to My Pool →</Link>
