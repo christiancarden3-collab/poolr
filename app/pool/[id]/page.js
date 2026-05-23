@@ -219,7 +219,7 @@ export default function PoolDashboard() {
         .a-card:hover { border-color:var(--gold);background:rgba(201,168,76,0.06); }
         .a-card.sil { border-color:rgba(184,204,224,0.18);background:rgba(184,204,224,0.03); }
         .a-card.sil:hover { border-color:#b8cce0;background:rgba(184,204,224,0.06); }
-        .a-card-icon { width:42px;height:42px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);font-size:1.3rem; }
+        .a-card-icon { width:42px;height:42px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2); }
         .a-card.sil .a-card-icon { background:rgba(184,204,224,0.08);border-color:rgba(184,204,224,0.2); }
         .a-card-title { font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#fff;margin-bottom:2px; }
         .a-card-sub { font-size:0.7rem;color:var(--f3);line-height:1.4; }
@@ -361,7 +361,15 @@ export default function PoolDashboard() {
             {/* Action cards */}
             <div className="a-cards">
               <Link href={`/pool/${params.id}/predictions`} className="a-card">
-                <div className="a-card-icon">⚽</div>
+                <div className="a-card-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="18" rx="1"/>
+                    <line x1="12" y1="3" x2="12" y2="21"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M2 8h4v8H2"/>
+                    <path d="M22 8h-4v8h4"/>
+                  </svg>
+                </div>
                 <div style={{flex:1}}>
                   <div className="a-card-title">Match Picks</div>
                   <div className="a-card-sub">{isRG ? 'Predict match winners' : 'Predict scorelines for each matchday'}</div>
@@ -373,7 +381,16 @@ export default function PoolDashboard() {
                 <div className="a-arrow">→</div>
               </Link>
               <Link href={`/pool/${params.id}/special-picks`} className="a-card sil">
-                <div className="a-card-icon">🏆</div>
+                <div className="a-card-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8cce0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 3h12l-1.5 8a5 5 0 0 1-9 0L6 3z"/>
+                    <path d="M6 5H3a1 1 0 0 0-1 1v2a4 4 0 0 0 4 4"/>
+                    <path d="M18 5h3a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4"/>
+                    <line x1="12" y1="16" x2="12" y2="20"/>
+                    <path d="M8 20h8"/>
+                    <path d="M7 22h10" strokeWidth="2"/>
+                  </svg>
+                </div>
                 <div style={{flex:1}}>
                   <div className="a-card-title">Special Picks</div>
                   <div className="a-card-sub">{isRG ? 'Champion, runner-up' : 'Champion, top scorer, goalkeeper'}</div>
