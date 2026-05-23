@@ -142,6 +142,8 @@ export default function SpecialPicksPage() {
     if (!poolMember || isLocked) return
     setSaving(prev => ({ ...prev, [pickType]: true }))
     
+    const submittedAt = new Date().toISOString()
+    
     try {
       const pickData = {
         pool_member_id: poolMember.id,
@@ -154,6 +156,29 @@ export default function SpecialPicksPage() {
       await supabase
         .from('special_picks')
         .upsert(pickData, { onConflict: 'pool_member_id,pick_type' })
+
+      // Sync to Google Sheets (fire and forget - don't block on this)
+      fetch('/api/sync-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'special_pick',
+          data: {
+            poolId: params.id,
+            poolName: pool?.name,
+            poolMemberId: poolMember.id,
+            userId: user?.id,
+            userName: user?.user_metadata?.first_name ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : user?.email,
+            userEmail: user?.email,
+            teamName: poolMember?.team_name,
+            pickType: pickType,
+            teamCode: data.teamCode || null,
+            teamPickName: data.teamName || null,
+            playerName: data.playerName || null,
+            submittedAt: submittedAt,
+          }
+        })
+      }).catch(err => console.warn('Sheets sync failed (non-blocking):', err))
     } catch (err) {
       console.error('Error saving pick:', err)
     } finally {

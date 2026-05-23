@@ -258,6 +258,8 @@ export default function PredictionsPage() {
 
     setSaving(prev => ({ ...prev, [matchId]: true }))
     
+    const submittedAt = new Date().toISOString()
+    
     try {
       // Upsert the pick
       const { error } = await supabase
@@ -268,12 +270,36 @@ export default function PredictionsPage() {
           home_score: pick.homeScore,
           away_score: pick.awayScore,
           locked: false,
-          submitted_at: new Date().toISOString(),
+          submitted_at: submittedAt,
         }, {
           onConflict: 'pool_member_id,match_id'
         })
 
       if (error) throw error
+
+      // Sync to Google Sheets (fire and forget - don't block on this)
+      const match = matches.find(m => m.id === matchId)
+      fetch('/api/sync-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'match_pick',
+          data: {
+            poolId: params.id,
+            poolName: pool?.name,
+            poolMemberId: poolMember.id,
+            userId: user?.id,
+            userName: user?.user_metadata?.first_name ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : user?.email,
+            userEmail: user?.email,
+            teamName: poolMember?.team_name,
+            matchId: matchId,
+            matchInfo: match ? `${match.homeTeam.name} vs ${match.awayTeam.name}` : matchId,
+            homeScore: pick.homeScore,
+            awayScore: pick.awayScore,
+            submittedAt: submittedAt,
+          }
+        })
+      }).catch(err => console.warn('Sheets sync failed (non-blocking):', err))
 
       setPicks(prev => ({
         ...prev,
