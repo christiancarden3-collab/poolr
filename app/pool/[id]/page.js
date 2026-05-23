@@ -74,6 +74,7 @@ export default function PoolDetailPage() {
             profiles:user_id (
               id,
               name,
+              email,
               team_name
             )
           `)
@@ -84,7 +85,10 @@ export default function PoolDetailPage() {
         const formattedMembers = (membersData || []).map((m, index) => {
           // Use team_name from pool_members first, fall back to profiles
           const teamName = m.team_name || m.profiles?.team_name || null
-          const fullName = m.profiles?.name || 'Player'
+          // Get name from profile, or use email username, or fallback to 'Player'
+          const profileName = m.profiles?.name
+          const emailUser = m.profiles?.email?.split('@')[0] || null
+          const fullName = profileName || emailUser || 'Player'
           return {
             rank: index + 1,
             user_id: m.user_id,
