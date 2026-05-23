@@ -151,16 +151,18 @@ function CreatePoolContent() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            poolId: pool.id,
-            amount: parseFloat(buyinAmount),
-            feeHandling: feeType,
-            returnUrl: `${window.location.origin}/pool/${pool.id}?created=true`
+            pool_id: pool.id,
+            user_id: user.id,
+            return_url: `${window.location.origin}/pool/${pool.id}?created=true&payment=success`
           })
         })
         const data = await res.json()
         if (data.url) {
           window.location.href = data.url
           return
+        } else {
+          console.error('Checkout error:', data.error)
+          alert('Payment setup failed: ' + (data.error || 'Unknown error'))
         }
       }
 
