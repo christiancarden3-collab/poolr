@@ -115,6 +115,28 @@ export default function MatchPicksPage() {
         .single()
       
       if (memberData) setPoolMember(memberData)
+      
+      // Load existing picks
+      const { data: existingPicks } = await supabase
+        .from('picks')
+        .select('*')
+        .eq('pool_id', params.id)
+        .eq('user_id', currentUser.id)
+      
+      if (existingPicks && existingPicks.length > 0) {
+        const picksMap = {}
+        existingPicks.forEach(p => {
+          picksMap[p.match_id] = {
+            homeScore: p.home_score,
+            awayScore: p.away_score,
+            winner: p.winner,
+            saved: true,
+            savedAt: 'Saved'
+          }
+        })
+        setPicks(picksMap)
+      }
+      
       setLoading(false)
     }
     loadData()
@@ -196,15 +218,38 @@ export default function MatchPicksPage() {
   const handleSave = async (matchId) => {
     const pick = picks[matchId]
     if (pick?.homeScore === null || pick?.awayScore === null) return
+    if (!user || !pool) return
+    
     setSaving(prev => ({ ...prev, [matchId]: true }))
     
-    // Simulate save
-    await new Promise(r => setTimeout(r, 300))
-    setPicks(prev => ({
-      ...prev,
-      [matchId]: { ...prev[matchId], saved: true, savedAt: new Date().toLocaleTimeString() }
-    }))
-    setSaving(prev => ({ ...prev, [matchId]: false }))
+    try {
+      // Save to Supabase
+      const { error } = await supabase
+        .from('picks')
+        .upsert({
+          user_id: user.id,
+          pool_id: pool.id,
+          match_id: matchId,
+          home_score: pick.homeScore,
+          away_score: pick.awayScore,
+          winner: pick.winner || null,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,pool_id,match_id'
+        })
+      
+      if (error) throw error
+      
+      setPicks(prev => ({
+        ...prev,
+        [matchId]: { ...prev[matchId], saved: true, savedAt: new Date().toLocaleTimeString() }
+      }))
+    } catch (err) {
+      console.error('Save error:', err)
+      alert('Failed to save pick: ' + err.message)
+    } finally {
+      setSaving(prev => ({ ...prev, [matchId]: false }))
+    }
   }
 
   const handleClear = (matchId) => {
