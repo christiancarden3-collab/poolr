@@ -468,7 +468,7 @@ function CreatePoolContent() {
                             <span className="status-icon">✓</span>
                             <div>
                               <strong>Stripe connected</strong>
-                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>You&apos;ll receive payments directly to your bank account.</div>
+                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Platform holds funds securely until pool ends, then pays winners.</div>
                             </div>
                           </div>
                         )}
@@ -501,7 +501,7 @@ function CreatePoolContent() {
                       </div>
                       <div className="stripe-panel">
                         <div className="stripe-panel-title">🔒 <span className="stripe-logo">stripe</span> Secure payments</div>
-                        <div className="stripe-panel-desc">Players pay via Stripe Checkout. Funds go directly to your connected account, minus the 5% platform fee.</div>
+                        <div className="stripe-panel-desc">Players pay via Stripe Checkout. Funds are held securely by PickPoolr until the tournament ends, then distributed to winners (5% platform fee).</div>
                       </div>
                     </>
                   )}
@@ -687,7 +687,7 @@ function PaymentSidebar({ poolType, buyinAmount, feeType, stripeStatus }) {
           <div className="sc-body">
             <p className="info-text">
               {stripeStatus === 'ready' 
-                ? 'Payments will go directly to your bank account. 5% platform fee is automatically deducted.'
+                ? 'Funds held securely by PickPoolr. Winners paid out when tournament ends (5% platform fee).'
                 : 'Connect your Stripe account to receive payments from players.'}
             </p>
           </div>
