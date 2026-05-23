@@ -665,29 +665,21 @@ export default function SpecialPicksPage() {
         }}
       />
       
-      {/* TOPBAR */}
-      <div className="topbar">
-        <div className="topbar-links">
-          <Link href="/dashboard" className="tb-link">Dashboard</Link>
-          <span className="tb-link active">{pool?.name || 'Pool'}</span>
-        </div>
-        <div className="topbar-right">
-          <Link href="/profile" className="user-pill">
-            <div className="user-avatar">{getUserInitials()}</div>
-            {getUserName()}
-          </Link>
-          <button className="signout-btn" onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }}>Sign Out</button>
-        </div>
-      </div>
-
+      {/* SINGLE NAV */}
       <nav>
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
+          <Link href="/dashboard" className="nav-item">My Pools</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
-          <Link href="/results" className="nav-item">Scores</Link>
+          <Link href="/scores" className="nav-item">Scores</Link>
         </div>
-        <Link href="/create" className="nav-cta">+ Create Pool</Link>
+        <div className="nav-right">
+          <Link href="/create" className="nav-cta">+ Create Pool</Link>
+          <Link href="/profile" className="nav-profile">
+            <div className="nav-avatar">{getUserInitials()}</div>
+          </Link>
+        </div>
       </nav>
 
       <div className="page-header">
@@ -923,26 +915,18 @@ export default function SpecialPicksPage() {
       )}
 
       <style jsx>{`
-        /* TOPBAR */
-        .topbar { background: var(--bg, #0a0c10); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 36px; }
-        .topbar-links { display: flex; gap: 1.5rem; }
-        .tb-link { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #4a4845; text-decoration: none; }
-        .tb-link:hover, .tb-link.active { color: #8a8780; }
-        .topbar-right { display: flex; align-items: center; gap: 0.75rem; }
-        .user-pill { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: #8a8780; text-decoration: none; cursor: pointer; transition: color 0.15s; }
-        .user-pill:hover { color: #c9a84c; }
-        .user-avatar { width: 22px; height: 22px; background: #c9a84c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 800; color: #000; }
-        .signout-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid #4a4845; color: #8a8780; padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; }
-        .signout-btn:hover { border-color: #c9a84c; color: #c9a84c; }
-
-        /* NAV */
+        /* NAV - Single consolidated navigation */
         nav { background: #0a0c10; border-bottom: 3px solid #c9a84c; display: flex; align-items: center; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 200; }
         .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; color: #f0ede8; text-transform: uppercase; margin-right: 2rem; padding-right: 2rem; border-right: 1px solid #4a4845; text-decoration: none; }
         .nav-logo span { color: #c9a84c; }
-        .nav-items { display: flex; height: 100%; }
+        .nav-items { display: flex; height: 100%; flex: 1; }
         .nav-item { display: flex; align-items: center; padding: 0 1.25rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8780; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -3px; }
         .nav-item:hover { color: #f0ede8; }
-        .nav-cta { margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: #c9a84c; color: #000; padding: 0.5rem 1.25rem; border-radius: 2px; text-decoration: none; }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .nav-cta { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: #c9a84c; color: #000; padding: 0.5rem 1.25rem; border-radius: 2px; text-decoration: none; }
+        .nav-profile { display: flex; align-items: center; text-decoration: none; }
+        .nav-avatar { width: 32px; height: 32px; background: #c9a84c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 800; color: #000; transition: transform 0.15s; }
+        .nav-avatar:hover { transform: scale(1.08); }
 
         /* PAGE HEADER */
         .page-header { background: #111318; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1.25rem 2rem; }
