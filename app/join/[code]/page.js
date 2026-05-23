@@ -200,7 +200,6 @@ export default function JoinPoolPage() {
           <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         </nav>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 56px)', color: 'var(--f3)', textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>😕</div>
           <div style={{ fontSize: '1.2rem', color: 'var(--f1)', marginBottom: '0.5rem' }}>Pool Not Found</div>
           <div style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>{error}</div>
           <Link href="/" style={{ color: 'var(--gold)' }}>← Back to home</Link>
@@ -246,7 +245,6 @@ export default function JoinPoolPage() {
               <div className="confirm-modal" style={{maxWidth: showPaymentStep ? '420px' : '340px'}}>
                 {showPaymentStep ? (
                   <>
-                    <div className="confirm-icon">💳</div>
                     <div className="confirm-title">Payment Required</div>
                     <div className="confirm-text">
                       Para unirte a <strong style={{color:'var(--gold)'}}>{pool?.name}</strong>, primero debes pagar.
@@ -256,33 +254,23 @@ export default function JoinPoolPage() {
                     <div className="payment-options">
                       <div className="payment-option" onClick={() => setPaymentMethod('zelle')}>
                         <div className={`po-radio ${paymentMethod === 'zelle' ? 'selected' : ''}`}></div>
-                        <div className="po-icon">💜</div>
                         <div className="po-info">
                           <div className="po-name">Zelle</div>
-                          <div className="po-detail">christiancarden3@gmail.com</div>
+                          <div className="po-detail">Christian Carden 561-525-6915</div>
                         </div>
                       </div>
                       <div className="payment-option" onClick={() => setPaymentMethod('paypal')}>
                         <div className={`po-radio ${paymentMethod === 'paypal' ? 'selected' : ''}`}></div>
-                        <div className="po-icon">🅿️</div>
                         <div className="po-info">
                           <div className="po-name">PayPal</div>
-                          <div className="po-detail">@ChristianCarden</div>
-                        </div>
-                      </div>
-                      <div className="payment-option" onClick={() => setPaymentMethod('venmo')}>
-                        <div className={`po-radio ${paymentMethod === 'venmo' ? 'selected' : ''}`}></div>
-                        <div className="po-icon">💙</div>
-                        <div className="po-info">
-                          <div className="po-name">Venmo</div>
-                          <div className="po-detail">@Christian-Carden-1</div>
+                          <div className="po-detail">christiancarden3@gmail.com</div>
                         </div>
                       </div>
                     </div>
                     
                     {/* Instructions */}
                     <div className="payment-instructions">
-                      <div className="pi-title">📝 Instrucciones:</div>
+                      <div className="pi-title">Instrucciones:</div>
                       <div className="pi-text">Pongan su nombre completo y &quot;Quiniela&quot; cuando paguen, y por donde pagaron para confirmar y aceptarlos a la liga.</div>
                     </div>
                     
@@ -299,7 +287,6 @@ export default function JoinPoolPage() {
                   </>
                 ) : (
                   <>
-                    <div className="confirm-icon">🏆</div>
                     <div className="confirm-title">Último Paso</div>
                     <div className="confirm-text">
                       Elige tu nombre de equipo para <strong>{pool?.name}</strong>
@@ -360,7 +347,6 @@ export default function JoinPoolPage() {
                   
                   {isPaidPool && (
                     <div className="payment-notice">
-                      <span className="payment-icon">💳</span>
                       <span>Payment of <strong>${pool.buy_in}</strong> required to join</span>
                     </div>
                   )}
