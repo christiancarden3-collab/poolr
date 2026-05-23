@@ -5,14 +5,45 @@ import Link from 'next/link'
 import Script from 'next/script'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
+import { WC2026_GOALKEEPERS, WC2026_FORWARDS } from '@/lib/wc2026-squads'
+import { WC2026_TEAMS } from '@/lib/wc2026-data'
 
-const TEAMS = [
-  {c:'ar',n:'Argentina'},{c:'fr',n:'France'},{c:'es',n:'Spain'},{c:'gb-eng',n:'England'},{c:'br',n:'Brazil'},{c:'pt',n:'Portugal'},{c:'de',n:'Germany'},{c:'nl',n:'Netherlands'},{c:'no',n:'Norway'},{c:'be',n:'Belgium'},{c:'uy',n:'Uruguay'},{c:'co',n:'Colombia'},{c:'mx',n:'Mexico'},{c:'us',n:'USA'},{c:'ca',n:'Canada'},{c:'hr',n:'Croatia'},{c:'sn',n:'Senegal'},{c:'ma',n:'Morocco'},{c:'jp',n:'Japan'},{c:'au',n:'Australia'},{c:'kr',n:'S. Korea'},{c:'ch',n:'Switzerland'},{c:'se',n:'Sweden'},{c:'at',n:'Austria'},{c:'dz',n:'Algeria'},{c:'ec',n:'Ecuador'},{c:'tr',n:'Türkiye'},{c:'gh',n:'Ghana'},{c:'eg',n:'Egypt'},{c:'ci',n:'Ivory Coast'},{c:'ir',n:'Iran'},{c:'gb-sct',n:'Scotland'},{c:'tn',n:'Tunisia'},{c:'py',n:'Paraguay'},{c:'sa',n:'Saudi Arabia'},{c:'qa',n:'Qatar'},{c:'ba',n:'Bosnia'},{c:'jo',n:'Jordan'},{c:'cd',n:'DR Congo'},{c:'uz',n:'Uzbekistan'},{c:'cv',n:'Cape Verde'},{c:'cw',n:'Curaçao'},{c:'nz',n:'New Zealand'},{c:'ht',n:'Haiti'},{c:'iq',n:'Iraq'},{c:'za',n:'S. Africa'},{c:'pa',n:'Panama'}
-]
+// Map country codes to flag codes for flagcdn
+const COUNTRY_TO_FLAG = {
+  'USA': 'us', 'COL': 'co', 'SEN': 'sn', 'NZL': 'nz', 'MEX': 'mx', 'ENG': 'gb-eng',
+  'IRN': 'ir', 'NGA': 'ng', 'CAN': 'ca', 'GER': 'de', 'JPN': 'jp', 'CMR': 'cm',
+  'ARG': 'ar', 'NED': 'nl', 'AUS': 'au', 'EGY': 'eg', 'FRA': 'fr', 'URU': 'uy',
+  'KOR': 'kr', 'MAR': 'ma', 'BRA': 'br', 'ESP': 'es', 'SRB': 'rs', 'CRC': 'cr',
+  'POR': 'pt', 'BEL': 'be', 'CHI': 'cl', 'GHA': 'gh', 'ITA': 'it', 'SUI': 'ch',
+  'ECU': 'ec', 'TUN': 'tn', 'CRO': 'hr', 'DEN': 'dk', 'PRY': 'py', 'SAU': 'sa',
+  'POL': 'pl', 'AUT': 'at', 'VEN': 've', 'CIV': 'ci', 'UKR': 'ua', 'SWE': 'se',
+  'PER': 'pe', 'QAT': 'qa', 'TUR': 'tr', 'WAL': 'gb-wls', 'ALG': 'dz', 'HON': 'hn'
+}
 
-const PLAYERS = [
-  {n:'Kylian Mbappé',t:'fr',tn:'France',p:'FWD'},{n:'Erling Haaland',t:'no',tn:'Norway',p:'FWD'},{n:'Lionel Messi',t:'ar',tn:'Argentina',p:'FWD'},{n:'Cristiano Ronaldo',t:'pt',tn:'Portugal',p:'FWD'},{n:'Lautaro Martínez',t:'ar',tn:'Argentina',p:'FWD'},{n:'Julián Álvarez',t:'ar',tn:'Argentina',p:'FWD'},{n:'Harry Kane',t:'gb-eng',tn:'England',p:'FWD'},{n:'Vinícius Jr.',t:'br',tn:'Brazil',p:'FWD'},{n:'Bukayo Saka',t:'gb-eng',tn:'England',p:'FWD'},{n:'Alexander Isak',t:'se',tn:'Sweden',p:'FWD'},{n:'Viktor Gyökeres',t:'se',tn:'Sweden',p:'FWD'},{n:'Darwin Núñez',t:'uy',tn:'Uruguay',p:'FWD'},{n:'Santiago Giménez',t:'mx',tn:'Mexico',p:'FWD'},{n:'Luis Díaz',t:'co',tn:'Colombia',p:'FWD'},{n:'Cody Gakpo',t:'nl',tn:'Netherlands',p:'FWD'},{n:'Mohamed Salah',t:'eg',tn:'Egypt',p:'FWD'},{n:'Emiliano Martínez',t:'ar',tn:'Argentina',p:'GK'},{n:'Thibaut Courtois',t:'be',tn:'Belgium',p:'GK'},{n:'Mike Maignan',t:'fr',tn:'France',p:'GK'},{n:'Alisson Becker',t:'br',tn:'Brazil',p:'GK'},{n:'Jordan Pickford',t:'gb-eng',tn:'England',p:'GK'},{n:'Manuel Neuer',t:'de',tn:'Germany',p:'GK'},{n:'Diogo Costa',t:'pt',tn:'Portugal',p:'GK'},{n:'Yann Sommer',t:'ch',tn:'Switzerland',p:'GK'},{n:'Bart Verbruggen',t:'nl',tn:'Netherlands',p:'GK'},{n:'Unai Simón',t:'es',tn:'Spain',p:'GK'},{n:'Ørjan Nyland',t:'no',tn:'Norway',p:'GK'}
-]
+// Transform WC2026_TEAMS to TEAMS format
+const TEAMS = WC2026_TEAMS.map(t => ({
+  c: t.flag,
+  n: t.name
+}))
+
+// Transform forwards/scorers for UI
+const SCORER_PLAYERS = WC2026_FORWARDS.map(p => ({
+  n: p.name,
+  t: COUNTRY_TO_FLAG[p.country] || p.country.toLowerCase(),
+  tn: WC2026_TEAMS.find(t => t.code === p.country)?.name || p.country,
+  p: p.position
+}))
+
+// Transform goalkeepers for UI
+const KEEPER_PLAYERS = WC2026_GOALKEEPERS.map(p => ({
+  n: p.name,
+  t: COUNTRY_TO_FLAG[p.country] || p.country.toLowerCase(),
+  tn: WC2026_TEAMS.find(t => t.code === p.country)?.name || p.country,
+  p: 'GK'
+}))
+
+// Combined for lookups
+const ALL_PLAYERS = [...SCORER_PLAYERS, ...KEEPER_PLAYERS]
 
 // Roland Garros 2026 Entry List - Use official list
 import { RG_ENTRY_LIST, getPlayerFlag } from '@/lib/rg2026-entrylist'
@@ -103,11 +134,11 @@ export default function SpecialPicksPage() {
                 if (team) setRunnerUp({ c: team.c, n: team.n })
               }
               if (pick.pick_type === 'top_scorer' && pick.player_name) {
-                const player = PLAYERS.find(p => p.n === pick.player_name)
+                const player = ALL_PLAYERS.find(p => p.n === pick.player_name)
                 if (player) setTopScorer({ name: player.n, team: player.t, teamName: player.tn, pos: player.p })
               }
               if (pick.pick_type === 'best_keeper' && pick.player_name) {
-                const player = PLAYERS.find(p => p.n === pick.player_name)
+                const player = ALL_PLAYERS.find(p => p.n === pick.player_name)
                 if (player) setBestKeeper({ name: player.n, team: player.t, teamName: player.tn, pos: player.p })
               }
             })
@@ -256,13 +287,13 @@ export default function SpecialPicksPage() {
     p.c.toLowerCase().includes(searchTerm.toLowerCase())
   ).slice(0, 50) // Limit to 50 results for performance
 
-  const filteredPlayers = PLAYERS.filter(p => {
-    const isGk = modalType === 'gk'
-    const matchesPos = isGk ? p.p === 'GK' : p.p !== 'GK'
+  // Use appropriate player list based on modal type
+  const playerList = modalType === 'gk' ? KEEPER_PLAYERS : SCORER_PLAYERS
+  const filteredPlayers = playerList.filter(p => {
     const matchesSearch = p.n.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           p.tn.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesPos && matchesSearch
-  })
+    return matchesSearch
+  }).slice(0, 100) // Limit to 100 for performance
 
   // Format user name
   const getUserName = () => {
