@@ -6,6 +6,16 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 import AppShell from '@/app/components/AppShell'
 
+// Tournament display name helper
+const getTournamentName = (code) => {
+  const names = {
+    'wc2026': 'FIFA World Cup 2026',
+    'rg2026': 'Roland Garros 2026',
+    'nba2026': 'NBA Western Conference Finals 2026'
+  }
+  return names[code] || code || 'FIFA World Cup 2026'
+}
+
 export default function PoolDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -248,7 +258,7 @@ export default function PoolDetailPage() {
             <div className="ph-eyebrow">My Pools › {pool?.name}</div>
             <div className="ph-title">{pool?.name}</div>
             <div className="ph-meta">
-              {pool?.tournament || 'FIFA World Cup 2026'} · {pool?.player_count} player{pool?.player_count !== 1 ? 's' : ''} · {visibilityDisplay} · Commissioner: {pool?.commissioner_name}
+              {getTournamentName(pool?.tournament)} · {pool?.player_count} player{pool?.player_count !== 1 ? 's' : ''} · {visibilityDisplay} · Commissioner: {pool?.commissioner_name}
               {pool?.isCommissioner && <span className="commish-badge">You</span>}
             </div>
           </div>
@@ -423,7 +433,7 @@ export default function PoolDetailPage() {
             <div className="card">
               <div className="card-head"><div className="card-title">Pool Info</div></div>
               <div className="card-body">
-                <div className="sc-row"><div className="sc-label">Tournament</div><div className="sc-val">{pool?.tournament || 'FIFA World Cup 2026'}</div></div>
+                <div className="sc-row"><div className="sc-label">Tournament</div><div className="sc-val">{getTournamentName(pool?.tournament)}</div></div>
                 <div className="sc-row"><div className="sc-label">Players</div><div className="sc-val">{pool?.player_count}</div></div>
                 <div className="sc-row"><div className="sc-label">Buy-in</div><div className="sc-val">{buyinDisplay}</div></div>
                 <div className="sc-row"><div className="sc-label">Prize pot</div><div className="sc-val gold">{potDisplay}</div></div>

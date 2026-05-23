@@ -687,7 +687,7 @@ export default function SpecialPicksPage() {
           <div className="ph-left">
             <div className="ph-eyebrow">My Pools › {pool?.name}</div>
             <div className="ph-title">Special Picks</div>
-            <div className="ph-meta">FIFA World Cup 2026 · 30 pts available</div>
+            <div className="ph-meta">{pool?.tournament === 'rg2026' ? 'Roland Garros 2026' : pool?.tournament === 'nba2026' ? 'NBA Western Conference Finals 2026' : 'FIFA World Cup 2026'} · 30 pts available</div>
           </div>
         </div>
       </div>
