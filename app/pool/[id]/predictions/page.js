@@ -738,15 +738,48 @@ export default function PredictionsPage() {
               <div className="card-body">
                 {pool?.tournament === 'rg2026' ? (
                   <>
-                    <div className="sc-row"><div className="sc-label">Correct set score</div><div className="sc-val gold">10 pts</div></div>
-                    <div className="sc-row"><div className="sc-label">Correct winner only</div><div className="sc-val gold">5 pts</div></div>
-                    <div className="sc-row"><div className="sc-label">QF / SF / Final</div><div className="sc-val gold">1.5x / 2x / 3x</div></div>
+                    {/* Tennis Scoring - Roland Garros */}
+                    <div className="sc-group">
+                      <div className="sc-group-label">Match Picks</div>
+                      <div className="sc-row"><div className="sc-label">Correct winner</div><div className="sc-val gold">1 pt</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Round Bonus</div>
+                      <div className="sc-row"><div className="sc-label">R1 – R4</div><div className="sc-val dim">×1</div></div>
+                      <div className="sc-row"><div className="sc-label">Quarterfinals</div><div className="sc-val dim">×1.5</div></div>
+                      <div className="sc-row"><div className="sc-label">Semifinals</div><div className="sc-val dim">×2</div></div>
+                      <div className="sc-row"><div className="sc-label">Final</div><div className="sc-val dim">×3</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Special Picks</div>
+                      <div className="sc-row"><div className="sc-label">Champion</div><div className="sc-val gold">10 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">7 pts</div></div>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
-                    <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
-                    <div className="sc-row"><div className="sc-label">Knockout multiplier</div><div className="sc-val gold">1.5x – 3x</div></div>
+                    {/* Soccer Scoring - World Cup */}
+                    <div className="sc-group">
+                      <div className="sc-group-label">Match Picks</div>
+                      <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Winner + 1 score</div><div className="sc-val gold">2 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Correct winner/tie</div><div className="sc-val gold">1 pt</div></div>
+                      <div className="sc-row"><div className="sc-label">Correct qualifier</div><div className="sc-val gold">2 pts</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Knockout Bonus</div>
+                      <div className="sc-row"><div className="sc-label">Round of 32</div><div className="sc-val dim">2 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Round of 16</div><div className="sc-val dim">3 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Quarterfinals</div><div className="sc-val dim">4 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Semifinals</div><div className="sc-val dim">5 pts</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Special Picks</div>
+                      <div className="sc-row"><div className="sc-label">Champion</div><div className="sc-val gold">10 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">7 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Top scorer</div><div className="sc-val gold">5 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Best goalkeeper</div><div className="sc-val gold">5 pts</div></div>
+                    </div>
                   </>
                 )}
               </div>
@@ -861,6 +894,10 @@ export default function PredictionsPage() {
         .sc-val { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--f1); }
         .sc-val.gold { color: var(--gold); }
         .sc-val.green { color: var(--green); }
+        .sc-val.dim { color: var(--f2); }
+        .sc-group { margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+        .sc-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .sc-group-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--f4); margin-bottom: 0.35rem; }
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
