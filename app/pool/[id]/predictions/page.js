@@ -166,6 +166,25 @@ export default function MatchPicksPage() {
     }))
   }
 
+  const handlePickWinner = (matchId, winner) => {
+    setPicks(prev => ({
+      ...prev,
+      [matchId]: { ...prev[matchId], winner, saved: false }
+    }))
+  }
+
+  const handleSetScore = (matchId, setScore) => {
+    // setScore is like "3-0", "3-1", "3-2"
+    const [home, away] = setScore.split('-').map(Number)
+    setPicks(prev => ({
+      ...prev,
+      [matchId]: { ...prev[matchId], homeScore: home, awayScore: away, saved: false }
+    }))
+  }
+
+  // Valid Grand Slam set scores (best of 5)
+  const validRGScores = ['3-0', '3-1', '3-2', '2-3', '1-3', '0-3']
+
   const handleSave = async (matchId) => {
     const pick = picks[matchId]
     if (pick?.homeScore === null || pick?.awayScore === null) return
@@ -291,12 +310,23 @@ export default function MatchPicksPage() {
         .s-live { color:var(--red); }
         .s-locked { color:var(--f4); }
 
-        .mpc-body { display:grid;grid-template-columns:1fr 160px 1fr;align-items:center;padding:0.8rem 1rem; }
-        .team-side { display:flex;flex-direction:column;align-items:center;gap:0.25rem; }
-        .team-flag img { width:40px;height:28px;border-radius:3px;object-fit:cover;border:1px solid rgba(255,255,255,0.1); }
-        .team-nm { font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--f1);text-align:center; }
-        .player-rank { font-size:0.7rem;font-weight:700;color:var(--f3);margin-left:4px; }
+        .mpc-body { display:grid;grid-template-columns:1fr 120px 1fr;align-items:center;padding:0.8rem 0.5rem;gap:0.5rem; }
+        
+        /* Team Box - Clickable */
+        .team-box { display:flex;flex-direction:column;align-items:center;gap:0.3rem;padding:0.75rem 0.5rem;border:2px solid var(--line);border-radius:6px;cursor:pointer;transition:all 0.15s;position:relative;background:var(--bg3); }
+        .team-box:hover:not(.locked) { border-color:var(--gold);background:rgba(201,168,76,0.05); }
+        .team-box.selected { border-color:var(--gold);background:rgba(201,168,76,0.1);box-shadow:0 0 12px rgba(201,168,76,0.2); }
+        .team-box.locked { cursor:default;opacity:0.7; }
+        .winner-check { position:absolute;top:4px;right:6px;font-size:0.9rem;color:var(--gold);font-weight:900; }
+        
+        .team-flag img { width:44px;height:30px;border-radius:3px;object-fit:cover;border:1px solid rgba(255,255,255,0.1); }
+        .team-nm { font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--f1);text-align:center;line-height:1.2; }
+        .player-rank { font-size:0.65rem;font-weight:700;color:var(--f3);margin-left:3px; }
         .player-rank.gold { color:var(--gold); }
+        
+        /* Score Select for RG */
+        .score-select { width:100%;padding:0.6rem;background:var(--bg3);border:1px solid var(--f4);border-radius:4px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-align:center;cursor:pointer;appearance:none;-webkit-appearance:none; }
+        .score-select:focus { outline:none;border-color:var(--gold); }
 
         .score-center { display:flex;flex-direction:column;align-items:center;gap:3px; }
         .score-status { font-family:'Barlow Condensed',sans-serif;font-size:0.55rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--green); }
@@ -430,23 +460,44 @@ export default function MatchPicksPage() {
                           </div>
                         </div>
                         <div className="mpc-body">
-                          <div className="team-side">
+                          {/* HOME TEAM - Clickable */}
+                          <div 
+                            className={`team-box ${pick.winner === 'home' ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
+                            onClick={() => !isLocked && handlePickWinner(match.id, 'home')}
+                          >
                             <div className="team-flag"><img src={`https://flagcdn.com/w80/${match.homeTeam.flag}.png`} alt="" /></div>
                             <div className="team-nm">
                               {match.homeTeam.name}
                               {match.homeTeam.rank && <span className={`player-rank ${match.homeTeam.rank === 1 ? 'gold' : ''}`}>({match.homeTeam.rank})</span>}
                             </div>
+                            {pick.winner === 'home' && <div className="winner-check">✓</div>}
                           </div>
+                          
+                          {/* SCORE CENTER */}
                           <div className="score-center">
                             {!isLocked ? (
-                              <>
-                                <div className="score-status">Pick your score</div>
-                                <div className="score-inputs">
-                                  <input className={`si ${pick.homeScore != null ? 'filled' : ''}`} type="number" min="0" max="20" placeholder="0" value={pick.homeScore ?? ''} onChange={e => handleScoreChange(match.id, 'home', e.target.value)} />
-                                  <span className="sc-dash">-</span>
-                                  <input className={`si ${pick.awayScore != null ? 'filled' : ''}`} type="number" min="0" max="20" placeholder="0" value={pick.awayScore ?? ''} onChange={e => handleScoreChange(match.id, 'away', e.target.value)} />
-                                </div>
-                              </>
+                              isRG ? (
+                                <>
+                                  <div className="score-status">Set Score</div>
+                                  <select 
+                                    className="score-select"
+                                    value={pick.homeScore != null ? `${pick.homeScore}-${pick.awayScore}` : ''}
+                                    onChange={e => handleSetScore(match.id, e.target.value)}
+                                  >
+                                    <option value="">Select</option>
+                                    {validRGScores.map(s => <option key={s} value={s}>{s}</option>)}
+                                  </select>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="score-status">Score</div>
+                                  <div className="score-inputs">
+                                    <input className={`si ${pick.homeScore != null ? 'filled' : ''}`} type="number" min="0" max="20" placeholder="0" value={pick.homeScore ?? ''} onChange={e => handleScoreChange(match.id, 'home', e.target.value)} />
+                                    <span className="sc-dash">-</span>
+                                    <input className={`si ${pick.awayScore != null ? 'filled' : ''}`} type="number" min="0" max="20" placeholder="0" value={pick.awayScore ?? ''} onChange={e => handleScoreChange(match.id, 'away', e.target.value)} />
+                                  </div>
+                                </>
+                              )
                             ) : pick.homeScore != null ? (
                               <>
                                 <div className="score-display">
@@ -460,12 +511,18 @@ export default function MatchPicksPage() {
                               <div className="pick-label" style={{color:'var(--red)'}}>No pick</div>
                             )}
                           </div>
-                          <div className="team-side">
+                          
+                          {/* AWAY TEAM - Clickable */}
+                          <div 
+                            className={`team-box ${pick.winner === 'away' ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
+                            onClick={() => !isLocked && handlePickWinner(match.id, 'away')}
+                          >
                             <div className="team-flag"><img src={`https://flagcdn.com/w80/${match.awayTeam.flag}.png`} alt="" /></div>
                             <div className="team-nm">
                               {match.awayTeam.name}
                               {match.awayTeam.rank && <span className={`player-rank ${match.awayTeam.rank === 1 ? 'gold' : ''}`}>({match.awayTeam.rank})</span>}
                             </div>
+                            {pick.winner === 'away' && <div className="winner-check">✓</div>}
                           </div>
                         </div>
                         {status === 'open' && !isLocked && (
