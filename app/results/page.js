@@ -6,10 +6,49 @@ import { TEAMS, MATCHES, getTeam, flagUrl } from '../../lib/wc2026-database'
 import { getCurrentUser } from '@/lib/supabase'
 import AppShell from '@/app/components/AppShell'
 
+// Roland Garros matches data
+const RG_MATCHES = {
+  1: [ // Saturday May 23 - R2 Day 1
+    { id: 'rg-r2-1', stage: 'R2', home: 'Novak Djokovic', away: 'G. Mpetshi Perricard', homeFlag: 'rs', awayFlag: 'fr', date: 'May 23', time: '5:00 AM ET' },
+    { id: 'rg-r2-2', stage: 'R2', home: 'Alexander Zverev', away: 'Benjamin Bonzi', homeFlag: 'de', awayFlag: 'fr', date: 'May 23', time: '6:30 AM ET' },
+    { id: 'rg-r2-3', stage: 'R2', home: 'Taylor Fritz', away: 'N. Basavareddy', homeFlag: 'us', awayFlag: 'us', date: 'May 23', time: '8:00 AM ET' },
+    { id: 'rg-r2-4', stage: 'R2', home: 'Tomas Machac', away: 'Zizou Bergs', homeFlag: 'cz', awayFlag: 'be', date: 'May 23', time: '9:30 AM ET' },
+    { id: 'rg-r2-5', stage: 'R2', home: 'Joao Fonseca', away: 'Luka Pavlovic', homeFlag: 'br', awayFlag: 'it', date: 'May 23', time: '11:00 AM ET' },
+    { id: 'rg-r2-6', stage: 'R2', home: 'Lorenzo Sonego', away: 'P.H. Herbert', homeFlag: 'it', awayFlag: 'fr', date: 'May 23', time: '12:30 PM ET' },
+  ],
+  2: [ // Sunday May 24 - R2 Day 2
+    { id: 'rg-r2-7', stage: 'R2', home: 'Karen Khachanov', away: 'Arthur Gea', homeFlag: 'ru', awayFlag: 'fr', date: 'May 24', time: '5:00 AM ET' },
+    { id: 'rg-r2-8', stage: 'R2', home: 'T. Etcheverry', away: 'Nuno Borges', homeFlag: 'ar', awayFlag: 'pt', date: 'May 24', time: '6:30 AM ET' },
+    { id: 'rg-r2-9', stage: 'R2', home: 'Jakub Mensik', away: 'Titouan Droguet', homeFlag: 'cz', awayFlag: 'fr', date: 'May 24', time: '8:00 AM ET' },
+    { id: 'rg-r2-10', stage: 'R2', home: 'Reilly Opelka', away: 'Federico Cina', homeFlag: 'us', awayFlag: 'it', date: 'May 24', time: '9:30 AM ET' },
+  ],
+  3: [ // Monday May 25 - R3
+    { id: 'rg-r3-1', stage: 'R3', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 25', time: '5:00 AM ET' },
+    { id: 'rg-r3-2', stage: 'R3', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 25', time: '8:00 AM ET' },
+  ],
+  4: [ // R16
+    { id: 'rg-r16-1', stage: 'R16', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 28', time: '6:00 AM ET' },
+    { id: 'rg-r16-2', stage: 'R16', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 28', time: '9:00 AM ET' },
+  ],
+  5: [ // QF
+    { id: 'rg-qf-1', stage: 'QF', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 30', time: '6:00 AM ET' },
+    { id: 'rg-qf-2', stage: 'QF', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 30', time: '9:00 AM ET' },
+  ],
+  6: [ // SF
+    { id: 'rg-sf-1', stage: 'SF', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 31', time: '6:00 AM ET' },
+    { id: 'rg-sf-2', stage: 'SF', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'May 31', time: '9:00 AM ET' },
+  ],
+  7: [ // Final
+    { id: 'rg-final', stage: 'F', home: 'TBD', away: 'TBD', homeFlag: 'xx', awayFlag: 'xx', date: 'Jun 1', time: '9:00 AM ET' },
+  ],
+}
+
 export default function ResultsPage() {
   const [user, setUser] = useState(null)
+  const [tournament, setTournament] = useState('wc2026')
   const [selectedMatchday, setSelectedMatchday] = useState(1)
   const [selectedStage, setSelectedStage] = useState('group')
+  const [rgDay, setRgDay] = useState(1)
 
   useEffect(() => {
     async function loadUser() {
@@ -48,37 +87,73 @@ export default function ResultsPage() {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
 
+  // RG matches for current day
+  const rgMatches = RG_MATCHES[rgDay] || []
+
   return (
     <AppShell 
       user={user} 
       pageTitle="Match Results" 
-      pageEyebrow="World Cup 2026"
+      pageEyebrow={tournament === 'rg2026' ? 'Roland Garros 2026' : 'World Cup 2026'}
       pageMeta="All scores and standings from the tournament"
       showCreate={!!user}
     >
-      {/* STAGE TABS */}
-      <div className="tab-nav">
-        <div className="tab-nav-inner">
-          <button 
-            className={`tab ${selectedStage === 'group' ? 'active' : ''}`}
-            onClick={() => setSelectedStage('group')}
-          >
-            Group Stage
-          </button>
-          {knockoutStages.map(stage => (
-            <button 
-              key={stage.key}
-              className={`tab ${selectedStage === stage.key ? 'active' : ''}`}
-              onClick={() => setSelectedStage(stage.key)}
-            >
-              {stage.label}
-            </button>
-          ))}
-        </div>
+      {/* TOURNAMENT SELECTOR */}
+      <div className="tournament-selector">
+        <select 
+          value={tournament} 
+          onChange={(e) => setTournament(e.target.value)}
+          className="tournament-dropdown"
+        >
+          <option value="wc2026">🏆 FIFA World Cup 2026</option>
+          <option value="rg2026">🎾 Roland Garros 2026</option>
+        </select>
       </div>
 
-      {/* MATCHDAY SELECTOR (for group stage) */}
-      {selectedStage === 'group' && (
+      {tournament === 'wc2026' ? (
+        <>
+          {/* WC STAGE TABS */}
+          <div className="tab-nav">
+            <div className="tab-nav-inner">
+              <button 
+                className={`tab ${selectedStage === 'group' ? 'active' : ''}`}
+                onClick={() => setSelectedStage('group')}
+              >
+                Group Stage
+              </button>
+              {knockoutStages.map(stage => (
+                <button 
+                  key={stage.key}
+                  className={`tab ${selectedStage === stage.key ? 'active' : ''}`}
+                  onClick={() => setSelectedStage(stage.key)}
+                >
+                  {stage.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* RG DAY TABS */}
+          <div className="tab-nav">
+            <div className="tab-nav-inner">
+              {[1, 2, 3, 4, 5, 6, 7].map(day => (
+                <button 
+                  key={day}
+                  className={`tab ${rgDay === day ? 'active' : ''}`}
+                  onClick={() => setRgDay(day)}
+                >
+                  {day <= 3 ? `R${day + 1}` : day === 4 ? 'R16' : day === 5 ? 'QF' : day === 6 ? 'SF' : 'Final'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* MATCHDAY SELECTOR (for WC group stage) */}
+      {tournament === 'wc2026' && selectedStage === 'group' && (
         <div className="matchday-bar">
           <div className="matchday-inner">
             {matchdays.map(md => (
@@ -96,7 +171,42 @@ export default function ResultsPage() {
 
       {/* MATCHES */}
       <div className="wrap">
-        {Object.entries(matchesByDate).map(([date, matches]) => (
+        {/* ROLAND GARROS MATCHES */}
+        {tournament === 'rg2026' && (
+          <div className="rg-matches">
+            {rgMatches.length === 0 ? (
+              <div className="no-matches">No matches scheduled for this round yet</div>
+            ) : (
+              rgMatches.map(match => (
+                <div key={match.id} className="match-card tennis">
+                  <div className="match-info">
+                    <span className="match-group">{match.stage}</span>
+                    <span className="match-time">{match.date} · {match.time}</span>
+                  </div>
+                  <div className="match-teams">
+                    <div className="team home">
+                      <span className="team-name">{match.home}</span>
+                      {match.homeFlag !== 'xx' && (
+                        <img src={`https://flagcdn.com/w40/${match.homeFlag}.png`} alt="" className="team-flag" />
+                      )}
+                      <span className="team-score pending">-</span>
+                    </div>
+                    <div className="team away">
+                      <span className="team-score pending">-</span>
+                      {match.awayFlag !== 'xx' && (
+                        <img src={`https://flagcdn.com/w40/${match.awayFlag}.png`} alt="" className="team-flag" />
+                      )}
+                      <span className="team-name">{match.away}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* WORLD CUP MATCHES */}
+        {tournament === 'wc2026' && Object.entries(matchesByDate).map(([date, matches]) => (
           <div key={date} className="date-group">
             <div className="date-header">{formatDate(date)}</div>
             <div className="matches-list">
@@ -155,6 +265,52 @@ export default function ResultsPage() {
       </div>
 
       <style jsx global>{`
+        .tournament-selector {
+          background: var(--bg);
+          padding: 1rem 2rem;
+          border-bottom: 1px solid var(--line);
+          display: flex;
+          justify-content: center;
+        }
+        .tournament-dropdown {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1rem;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          padding: 0.6rem 1.5rem;
+          background: var(--bg2);
+          border: 2px solid var(--gold);
+          border-radius: 4px;
+          color: var(--gold);
+          cursor: pointer;
+          min-width: 280px;
+          text-align: center;
+        }
+        .tournament-dropdown:focus {
+          outline: none;
+          border-color: var(--gold2);
+        }
+        .tournament-dropdown option {
+          background: var(--bg2);
+          color: var(--f1);
+        }
+        .rg-matches {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+        .match-card.tennis {
+          background: var(--bg2);
+          border: 1px solid var(--line);
+          border-radius: 6px;
+          padding: 1rem;
+        }
+        .no-matches {
+          text-align: center;
+          padding: 3rem;
+          color: var(--f3);
+          font-size: 0.9rem;
+        }
         .tab-nav {
           background: var(--bg2);
           border-bottom: 1px solid var(--line);
