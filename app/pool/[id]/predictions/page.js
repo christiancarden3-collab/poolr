@@ -2,6 +2,36 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+// Roland Garros 2026 fixtures by matchday (TEST)
+function getRGMatches(matchday) {
+  const rgMatchesByDay = {
+    1: [ // Sunday May 24 - R16
+      { id: 'rg-r16-1', matchday: 1, stage: 'R16', homeTeam: { name: 'Carlos Alcaraz', flag: 'es' }, awayTeam: { name: 'Holger Rune', flag: 'dk' }, date: 'May 24', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r16-2', matchday: 1, stage: 'R16', homeTeam: { name: 'Jannik Sinner', flag: 'it' }, awayTeam: { name: 'Ben Shelton', flag: 'us' }, date: 'May 24', time: '1:00 PM ET', status: 'scheduled' },
+      { id: 'rg-r16-3', matchday: 1, stage: 'R16', homeTeam: { name: 'Novak Djokovic', flag: 'rs' }, awayTeam: { name: 'Alex de Minaur', flag: 'au' }, date: 'May 24', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'rg-r16-4', matchday: 1, stage: 'R16', homeTeam: { name: 'Daniil Medvedev', flag: 'ru' }, awayTeam: { name: 'Taylor Fritz', flag: 'us' }, date: 'May 24', time: '5:00 PM ET', status: 'scheduled' },
+    ],
+    2: [ // Monday May 25 - R16
+      { id: 'rg-r16-5', matchday: 2, stage: 'R16', homeTeam: { name: 'Alexander Zverev', flag: 'de' }, awayTeam: { name: 'Casper Ruud', flag: 'no' }, date: 'May 25', time: '11:00 AM ET', status: 'scheduled' },
+      { id: 'rg-r16-6', matchday: 2, stage: 'R16', homeTeam: { name: 'Stefanos Tsitsipas', flag: 'gr' }, awayTeam: { name: 'Hubert Hurkacz', flag: 'pl' }, date: 'May 25', time: '1:00 PM ET', status: 'scheduled' },
+      { id: 'rg-r16-7', matchday: 2, stage: 'R16', homeTeam: { name: 'Andrey Rublev', flag: 'ru' }, awayTeam: { name: 'Frances Tiafoe', flag: 'us' }, date: 'May 25', time: '3:00 PM ET', status: 'scheduled' },
+      { id: 'rg-r16-8', matchday: 2, stage: 'R16', homeTeam: { name: 'Tommy Paul', flag: 'us' }, awayTeam: { name: 'Lorenzo Musetti', flag: 'it' }, date: 'May 25', time: '5:00 PM ET', status: 'scheduled' },
+    ],
+    3: [ // Tuesday May 26 - QF
+      { id: 'rg-qf-1', matchday: 3, stage: 'QF', homeTeam: { name: 'Alcaraz/Sinner', flag: 'xx' }, awayTeam: { name: 'Djokovic/Medvedev', flag: 'xx' }, date: 'May 26', time: '12:00 PM ET', status: 'scheduled' },
+      { id: 'rg-qf-2', matchday: 3, stage: 'QF', homeTeam: { name: 'Zverev/Tsitsipas', flag: 'xx' }, awayTeam: { name: 'Rublev/Paul', flag: 'xx' }, date: 'May 26', time: '3:00 PM ET', status: 'scheduled' },
+    ],
+    4: [ // Thursday May 28 - SF
+      { id: 'rg-sf-1', matchday: 4, stage: 'SF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 28', time: '12:00 PM ET', status: 'scheduled' },
+      { id: 'rg-sf-2', matchday: 4, stage: 'SF', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 28', time: '3:00 PM ET', status: 'scheduled' },
+    ],
+    5: [ // Sunday May 31 - Final
+      { id: 'rg-final', matchday: 5, stage: 'F', homeTeam: { name: 'TBD', flag: 'xx' }, awayTeam: { name: 'TBD', flag: 'xx' }, date: 'May 31', time: '9:00 AM ET', status: 'scheduled' },
+    ],
+  }
+  return rgMatchesByDay[matchday] || []
+}
+
 // Real World Cup 2026 fixtures by matchday
 function getDemoMatches(matchday) {
   const realMatchesByDay = {
@@ -186,10 +216,17 @@ export default function PredictionsPage() {
       
       if (memberData) setPoolMember(memberData)
 
-      // Use the correct World Cup 2026 match fixtures
-      // These are the official fixtures that match the scoring display
-      let matchList = getDemoMatches(matchday)
-      setDeadline(new Date('2026-06-11T12:00:00-04:00'))
+      // Load matches based on tournament type
+      let matchList
+      if (poolData?.tournament === 'rg2026') {
+        // Roland Garros 2026 (TEST)
+        matchList = getRGMatches(matchday)
+        setDeadline(new Date('2026-05-24T10:00:00-04:00'))
+      } else {
+        // Default: World Cup 2026
+        matchList = getDemoMatches(matchday)
+        setDeadline(new Date('2026-06-11T12:00:00-04:00'))
+      }
       
       // Get lock status based on pool's deadline setting
       const poolDeadlineType = poolData?.prediction_deadline || '1h_before_matchday'

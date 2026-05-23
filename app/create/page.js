@@ -101,6 +101,7 @@ function CreatePoolContent() {
   // Only World Cup 2026 for now - more tournaments added as needed
   const getTournamentName = () => {
     if (tournament === 'nba2026') return 'NBA Western Conference Finals 2026'
+    if (tournament === 'rg2026') return 'Roland Garros 2026'
     return 'World Cup 2026'
   }
 
@@ -303,6 +304,7 @@ function CreatePoolContent() {
                       onChange={(e) => setTournament(e.target.value)}
                     >
                       <option value="wc2026">🏆 FIFA World Cup 2026 · USA, Canada & Mexico</option>
+                      <option value="rg2026">🎾 Roland Garros 2026 · Paris (TEST)</option>
                       <option value="nba2026">🏀 NBA Western Conference Finals 2026</option>
                     </select>
                   </div>
