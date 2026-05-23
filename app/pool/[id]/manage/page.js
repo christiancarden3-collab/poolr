@@ -37,6 +37,10 @@ export default function ManagePoolPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deletingPool, setDeletingPool] = useState(false)
+  
+  // Pending approvals
+  const [approvingMember, setApprovingMember] = useState(null)
+  const [rejectingMember, setRejectingMember] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -83,6 +87,61 @@ export default function ManagePoolPage() {
     setMembers(membersData || [])
     setLoading(false)
   }
+
+  // Approve pending member
+  const approveMember = async (memberId) => {
+    setApprovingMember(memberId)
+    try {
+      const { error } = await supabase
+        .from('pool_members')
+        .update({ payment_status: 'paid' })
+        .eq('id', memberId)
+      
+      if (error) throw error
+      
+      // Update local state
+      setMembers(prev => prev.map(m => 
+        m.id === memberId ? { ...m, payment_status: 'paid' } : m
+      ))
+      setMessage('Member approved!')
+      setTimeout(() => setMessage(''), 3000)
+    } catch (err) {
+      setMessage('Error: ' + err.message)
+    } finally {
+      setApprovingMember(null)
+    }
+  }
+
+  // Reject pending member
+  const rejectMember = async (memberId) => {
+    setRejectingMember(memberId)
+    try {
+      // Delete their picks first
+      await supabase.from('match_picks').delete().eq('pool_member_id', memberId)
+      await supabase.from('special_picks').delete().eq('pool_member_id', memberId)
+      
+      // Delete the member
+      const { error } = await supabase
+        .from('pool_members')
+        .delete()
+        .eq('id', memberId)
+      
+      if (error) throw error
+      
+      // Update local state
+      setMembers(prev => prev.filter(m => m.id !== memberId))
+      setMessage('Member rejected and removed.')
+      setTimeout(() => setMessage(''), 3000)
+    } catch (err) {
+      setMessage('Error: ' + err.message)
+    } finally {
+      setRejectingMember(null)
+    }
+  }
+
+  // Get pending members
+  const pendingMembers = members.filter(m => m.payment_status === 'pending')
+  const approvedMembers = members.filter(m => m.payment_status !== 'pending')
 
   const handleSaveTimezone = async () => {
     setSavingTimezone(true)
@@ -229,6 +288,52 @@ export default function ManagePoolPage() {
         {message && (
           <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
             {message}
+          </div>
+        )}
+
+        {/* 0. PENDING APPROVALS */}
+        {pendingMembers.length > 0 && (
+          <div className="settings-section pending-section">
+            <div className="section-head">
+              <div className="section-title">🔔 Pending Approvals</div>
+              <span className="section-badge pending">{pendingMembers.length} waiting</span>
+            </div>
+            <div className="section-body" style={{ padding: 0 }}>
+              <p className="section-desc" style={{ padding: '1rem 1.25rem 0' }}>
+                These players claim they paid. Verify payment and approve or reject.
+              </p>
+              <div className="members-list">
+                {pendingMembers.map(member => {
+                  const displayName = member.team_name || member.profiles?.name || member.profiles?.display_name || 'Unknown'
+                  const paymentMethod = member.payment_method?.charAt(0).toUpperCase() + member.payment_method?.slice(1)
+                  return (
+                    <div key={member.id} className="member-row pending-row">
+                      <div className="member-info">
+                        <span className="member-name">{displayName}</span>
+                        <span className="member-email">{member.profiles?.email}</span>
+                        <span className="payment-badge">{paymentMethod || 'Unknown'}</span>
+                      </div>
+                      <div className="approval-btns">
+                        <button
+                          onClick={() => approveMember(member.id)}
+                          disabled={approvingMember === member.id}
+                          className="btn-approve"
+                        >
+                          {approvingMember === member.id ? '...' : '✓ Approve'}
+                        </button>
+                        <button
+                          onClick={() => rejectMember(member.id)}
+                          disabled={rejectingMember === member.id}
+                          className="btn-reject"
+                        >
+                          {rejectingMember === member.id ? '...' : '✗ Reject'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -399,6 +504,20 @@ export default function ManagePoolPage() {
         .btn-remove { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--red); color: var(--red); padding: 0.35rem 0.75rem; border-radius: 2px; cursor: pointer; }
         .btn-remove:hover:not(:disabled) { background: var(--red); color: #fff; }
         .btn-remove:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* PENDING APPROVALS */
+        .pending-section { border-color: var(--gold); }
+        .pending-section .section-head { background: rgba(201,168,76,0.1); }
+        .section-badge.pending { background: var(--gold); color: #000; }
+        .pending-row { background: rgba(201,168,76,0.03); }
+        .payment-badge { display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(201,168,76,0.15); color: var(--gold); padding: 0.15rem 0.5rem; border-radius: 2px; margin-top: 0.25rem; }
+        .approval-btns { display: flex; gap: 0.5rem; }
+        .btn-approve { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: var(--green); border: none; color: #fff; padding: 0.4rem 0.75rem; border-radius: 2px; cursor: pointer; }
+        .btn-approve:hover:not(:disabled) { opacity: 0.9; }
+        .btn-approve:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-reject { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: transparent; border: 1px solid var(--red); color: var(--red); padding: 0.4rem 0.75rem; border-radius: 2px; cursor: pointer; }
+        .btn-reject:hover:not(:disabled) { background: var(--red); color: #fff; }
+        .btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* DANGER ZONE */
         .danger-zone { background: var(--bg2); border: 1px solid var(--red); border-radius: 4px; overflow: hidden; margin-top: 2rem; }
