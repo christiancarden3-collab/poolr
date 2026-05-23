@@ -454,9 +454,51 @@ export default function PoolDetailPage() {
             <div className="card">
               <div className="card-head"><div className="card-title">Scoring</div></div>
               <div className="card-body">
-                <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
-                <div className="sc-row"><div className="sc-label">Correct winner + 1 score</div><div className="sc-val gold">2 pts</div></div>
-                <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
+                {pool?.tournament === 'rg2026' ? (
+                  <>
+                    {/* Tennis Scoring - Roland Garros */}
+                    <div className="sc-group">
+                      <div className="sc-group-label">Match Picks</div>
+                      <div className="sc-row"><div className="sc-label">Correct winner</div><div className="sc-val gold">1 pt</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Round Bonus</div>
+                      <div className="sc-row"><div className="sc-label">R1 / R2 / R3 / R4</div><div className="sc-val dim">×1</div></div>
+                      <div className="sc-row"><div className="sc-label">Quarterfinals</div><div className="sc-val dim">×1.5</div></div>
+                      <div className="sc-row"><div className="sc-label">Semifinals</div><div className="sc-val dim">×2</div></div>
+                      <div className="sc-row"><div className="sc-label">Final</div><div className="sc-val dim">×3</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Special Picks</div>
+                      <div className="sc-row"><div className="sc-label">Champion</div><div className="sc-val gold">10 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">10 pts</div></div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Soccer Scoring - World Cup */}
+                    <div className="sc-group">
+                      <div className="sc-group-label">Group Stage & Knockouts</div>
+                      <div className="sc-row"><div className="sc-label">Exact scoreline</div><div className="sc-val gold">3 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Correct winner + 1 score</div><div className="sc-val gold">2 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Correct result only</div><div className="sc-val gold">1 pt</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Knockout Bonus</div>
+                      <div className="sc-row"><div className="sc-label">Round of 32 / 16</div><div className="sc-val dim">×1.5</div></div>
+                      <div className="sc-row"><div className="sc-label">Quarterfinals</div><div className="sc-val dim">×2</div></div>
+                      <div className="sc-row"><div className="sc-label">Semifinals</div><div className="sc-val dim">×2.5</div></div>
+                      <div className="sc-row"><div className="sc-label">Final</div><div className="sc-val dim">×3</div></div>
+                    </div>
+                    <div className="sc-group">
+                      <div className="sc-group-label">Special Picks</div>
+                      <div className="sc-row"><div className="sc-label">Champion</div><div className="sc-val gold">10 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Runner-up</div><div className="sc-val gold">7 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Top scorer (Pichichi)</div><div className="sc-val gold">5 pts</div></div>
+                      <div className="sc-row"><div className="sc-label">Best goalkeeper</div><div className="sc-val gold">5 pts</div></div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -951,6 +993,10 @@ export default function PoolDetailPage() {
         }
         .sc-val.gold { color: var(--gold); }
         .sc-val.green { color: var(--green); }
+        .sc-val.dim { color: var(--f2); }
+        .sc-group { margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+        .sc-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .sc-group-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--f4); margin-bottom: 0.35rem; }
 
         /* MEMBER SETTINGS */
         .member-setting {
