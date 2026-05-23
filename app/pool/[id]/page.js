@@ -221,8 +221,8 @@ export default function PoolDashboard() {
         .a-card.sil:hover { border-color:#b8cce0;background:rgba(184,204,224,0.06); }
         .a-card-icon { width:42px;height:42px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2); }
         .a-card.sil .a-card-icon { background:rgba(184,204,224,0.08);border-color:rgba(184,204,224,0.2); }
-        .a-card-title { font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#fff;margin-bottom:2px; }
-        .a-card-sub { font-size:0.7rem;color:var(--f3);line-height:1.4; }
+        .a-card-title { font-family:'Barlow Condensed',sans-serif;font-size:1.25rem;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:4px; }
+        .a-card-sub { font-size:0.78rem;color:var(--f2);line-height:1.4; }
         .a-prog { display:flex;align-items:center;gap:6px;margin-top:5px; }
         .a-prog-bar { flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px; }
         .a-prog-fill { height:100%;border-radius:1px;background:var(--gold); }
