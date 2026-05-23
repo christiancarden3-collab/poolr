@@ -7,6 +7,15 @@ export const dynamic = 'force-dynamic'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+/**
+ * Stripe Connect for winners to receive payouts
+ * 
+ * Flow:
+ * 1. Winner wants to receive payout
+ * 2. Create Express connected account (or get existing)
+ * 3. Redirect to Stripe onboarding
+ * 4. Once verified, they can receive transfers
+ */
 export async function POST(request) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -25,24 +34,29 @@ export async function POST(request) {
     // Check if user already has a connected account
     const { data: profile } = await supabase
       .from('profiles')
-      .select('stripe_account_id, email, username')
+      .select('stripe_account_id, email, username, first_name, last_name')
       .eq('id', user_id)
       .single()
 
     let accountId = profile?.stripe_account_id
 
     if (!accountId) {
-      // Create a new Express connected account
+      // Create a new Express connected account for payout recipient
       const account = await stripe.accounts.create({
         type: 'express',
         email: profile?.email,
         metadata: {
           user_id,
-          platform: 'pickpoolr'
+          platform: 'pickpoolr',
+          type: 'winner_payout',
         },
         capabilities: {
-          card_payments: { requested: true },
           transfers: { requested: true },
+        },
+        business_type: 'individual',
+        business_profile: {
+          mcc: '7941', // Sports clubs/fields
+          product_description: 'PickPoolr fantasy sports pool winnings',
         },
       })
 
@@ -59,8 +73,8 @@ export async function POST(request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pickpoolr.com'
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${appUrl}/create?stripe_refresh=true`,
-      return_url: return_url || `${appUrl}/create?stripe_connected=true`,
+      refresh_url: `${appUrl}/profile?stripe_refresh=true`,
+      return_url: return_url || `${appUrl}/profile?stripe_connected=true`,
       type: 'account_onboarding',
     })
 
@@ -102,6 +116,7 @@ export async function GET(request) {
       return NextResponse.json({
         connected: false,
         onboarding_complete: false,
+        can_receive_payouts: false,
         message: 'No Stripe account linked'
       })
     }
@@ -109,16 +124,16 @@ export async function GET(request) {
     // Check account status
     const account = await stripe.accounts.retrieve(profile.stripe_account_id)
 
-    const isComplete = account.details_submitted && 
-                       account.charges_enabled && 
-                       account.payouts_enabled
+    // For receiving payouts, we need transfers capability
+    const canReceivePayouts = account.capabilities?.transfers === 'active'
+    const isComplete = account.details_submitted && canReceivePayouts
 
     return NextResponse.json({
       connected: true,
       onboarding_complete: isComplete,
-      charges_enabled: account.charges_enabled,
-      payouts_enabled: account.payouts_enabled,
+      can_receive_payouts: canReceivePayouts,
       details_submitted: account.details_submitted,
+      transfers_enabled: account.capabilities?.transfers,
       account_id: account.id,
     })
   } catch (error) {

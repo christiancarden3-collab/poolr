@@ -13,8 +13,9 @@ function CreatePoolContent() {
   const [success, setSuccess] = useState(false)
   const [createdPoolId, setCreatedPoolId] = useState(null)
   
-  // Stripe Connect state
-  const [stripeStatus, setStripeStatus] = useState(null) // null, 'checking', 'not_connected', 'pending', 'ready'
+  // Stripe Connect state - Platform holds funds now, so commissioners don't need Connect
+  // Only winners need Connect to receive payouts
+  const [stripeStatus, setStripeStatus] = useState('ready') // Always ready - platform handles payments
   const [stripeLoading, setStripeLoading] = useState(false)
   const [userId, setUserId] = useState(null)
   
@@ -32,38 +33,14 @@ function CreatePoolContent() {
   const [prizes, setPrizes] = useState([{ place: 1, percent: 100 }])
   const [predictionDeadline, setPredictionDeadline] = useState('1h_before_matchday')
   
-  // Check Stripe Connect status on mount and after redirect
+  // Get user ID on mount (Stripe Connect no longer required for commissioners)
   useEffect(() => {
-    const checkStripeStatus = async () => {
+    const loadUser = async () => {
       const user = await getCurrentUser()
-      if (!user) return
-      setUserId(user.id)
-      
-      setStripeStatus('checking')
-      try {
-        const res = await fetch(`/api/stripe/connect?user_id=${user.id}`)
-        const data = await res.json()
-        
-        if (data.onboarding_complete) {
-          setStripeStatus('ready')
-        } else if (data.connected) {
-          setStripeStatus('pending')
-        } else {
-          setStripeStatus('not_connected')
-        }
-      } catch (err) {
-        console.error('Stripe status check failed:', err)
-        setStripeStatus('not_connected')
-      }
+      if (user) setUserId(user.id)
     }
-    
-    checkStripeStatus()
-    
-    // Handle return from Stripe onboarding
-    if (searchParams.get('stripe_connected') === 'true') {
-      checkStripeStatus()
-    }
-  }, [searchParams])
+    loadUser()
+  }, [])
   
   // Start Stripe Connect onboarding
   const handleConnectStripe = async () => {

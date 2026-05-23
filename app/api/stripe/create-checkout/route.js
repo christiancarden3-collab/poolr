@@ -22,13 +22,10 @@ export async function POST(request) {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get pool details with commissioner info
+    // Get pool details
     const { data: pool, error: poolError } = await supabase
       .from('pools')
-      .select(`
-        *,
-        commissioner:profiles!commissioner_id(stripe_account_id, username)
-      `)
+      .select('*')
       .eq('id', pool_id)
       .single()
 
@@ -38,24 +35,6 @@ export async function POST(request) {
 
     if (pool.payment_method !== 'stripe') {
       return NextResponse.json({ error: 'Pool does not use Stripe payments' }, { status: 400 })
-    }
-
-    // Verify commissioner has connected Stripe account
-    const commissionerStripeId = pool.commissioner?.stripe_account_id
-    if (!commissionerStripeId) {
-      return NextResponse.json({ 
-        error: 'Commissioner has not set up Stripe payments yet',
-        code: 'COMMISSIONER_NOT_CONNECTED'
-      }, { status: 400 })
-    }
-
-    // Verify commissioner's account is fully onboarded
-    const commissionerAccount = await stripe.accounts.retrieve(commissionerStripeId)
-    if (!commissionerAccount.charges_enabled) {
-      return NextResponse.json({ 
-        error: 'Commissioner Stripe account is not fully set up',
-        code: 'COMMISSIONER_NOT_VERIFIED'
-      }, { status: 400 })
     }
 
     // Get pool member
@@ -86,13 +65,11 @@ export async function POST(request) {
       ? buyIn + platformFee 
       : buyIn
 
-    // For "absorbed" fee handling, the application_fee is still 5% of total
-    // For "on_top", the application_fee is the extra amount
-    const applicationFee = platformFee
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pickpoolr.com'
 
-    // Create Stripe Checkout Session with Connected Account
+    // Create Stripe Checkout Session
+    // PLATFORM HOLDS FUNDS - No transfer_data, platform collects everything
+    // Each pool is tracked via metadata and transfer_group
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -101,7 +78,7 @@ export async function POST(request) {
             currency: 'usd',
             product_data: {
               name: `${pool.name} - Pool Entry`,
-              description: `Buy-in for World Cup 2026 Prediction Pool`,
+              description: `Buy-in for ${pool.tournament || 'World Cup 2026'} Prediction Pool`,
             },
             unit_amount: totalAmount,
           },
@@ -113,17 +90,24 @@ export async function POST(request) {
       cancel_url: `${return_url || appUrl}/pool/${pool_id}?payment=cancelled`,
       metadata: {
         pool_id,
+        pool_name: pool.name,
         user_id,
         member_id: member.id,
-        platform_fee: applicationFee,
-        buy_in: buyIn,
+        buy_in_cents: buyIn,
+        platform_fee_cents: platformFee,
         fee_handling: pool.fee_handling,
+        type: 'pool_entry',
       },
-      // STRIPE CONNECT: Route payment to commissioner, take platform fee
+      // Use transfer_group to group all payments for this pool
+      // Makes it easy to track and payout later
       payment_intent_data: {
-        application_fee_amount: applicationFee,
-        transfer_data: {
-          destination: commissionerStripeId,
+        transfer_group: `pool_${pool_id}`,
+        metadata: {
+          pool_id,
+          pool_name: pool.name,
+          user_id,
+          member_id: member.id,
+          type: 'pool_entry',
         },
       },
     })
@@ -141,7 +125,8 @@ export async function POST(request) {
       url: session.url,
       session_id: session.id,
       amount: totalAmount,
-      fee: applicationFee,
+      fee: platformFee,
+      pool_id,
     })
   } catch (error) {
     console.error('Stripe checkout error:', error)
