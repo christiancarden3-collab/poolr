@@ -14,25 +14,11 @@ const PLAYERS = [
   {n:'Kylian Mbappé',t:'fr',tn:'France',p:'FWD'},{n:'Erling Haaland',t:'no',tn:'Norway',p:'FWD'},{n:'Lionel Messi',t:'ar',tn:'Argentina',p:'FWD'},{n:'Cristiano Ronaldo',t:'pt',tn:'Portugal',p:'FWD'},{n:'Lautaro Martínez',t:'ar',tn:'Argentina',p:'FWD'},{n:'Julián Álvarez',t:'ar',tn:'Argentina',p:'FWD'},{n:'Harry Kane',t:'gb-eng',tn:'England',p:'FWD'},{n:'Vinícius Jr.',t:'br',tn:'Brazil',p:'FWD'},{n:'Bukayo Saka',t:'gb-eng',tn:'England',p:'FWD'},{n:'Alexander Isak',t:'se',tn:'Sweden',p:'FWD'},{n:'Viktor Gyökeres',t:'se',tn:'Sweden',p:'FWD'},{n:'Darwin Núñez',t:'uy',tn:'Uruguay',p:'FWD'},{n:'Santiago Giménez',t:'mx',tn:'Mexico',p:'FWD'},{n:'Luis Díaz',t:'co',tn:'Colombia',p:'FWD'},{n:'Cody Gakpo',t:'nl',tn:'Netherlands',p:'FWD'},{n:'Mohamed Salah',t:'eg',tn:'Egypt',p:'FWD'},{n:'Emiliano Martínez',t:'ar',tn:'Argentina',p:'GK'},{n:'Thibaut Courtois',t:'be',tn:'Belgium',p:'GK'},{n:'Mike Maignan',t:'fr',tn:'France',p:'GK'},{n:'Alisson Becker',t:'br',tn:'Brazil',p:'GK'},{n:'Jordan Pickford',t:'gb-eng',tn:'England',p:'GK'},{n:'Manuel Neuer',t:'de',tn:'Germany',p:'GK'},{n:'Diogo Costa',t:'pt',tn:'Portugal',p:'GK'},{n:'Yann Sommer',t:'ch',tn:'Switzerland',p:'GK'},{n:'Bart Verbruggen',t:'nl',tn:'Netherlands',p:'GK'},{n:'Unai Simón',t:'es',tn:'Spain',p:'GK'},{n:'Ørjan Nyland',t:'no',tn:'Norway',p:'GK'}
 ]
 
-// Roland Garros 2026 Entry List - Men's Singles
-const RG_PLAYERS = [
-  {n:'Jannik Sinner',c:'it',r:1},{n:'Alexander Zverev',c:'de',r:2},{n:'Carlos Alcaraz',c:'es',r:3},
-  {n:'Taylor Fritz',c:'us',r:4},{n:'Daniil Medvedev',c:'ru',r:5},{n:'Casper Ruud',c:'no',r:6},
-  {n:'Novak Djokovic',c:'rs',r:7},{n:'Alex de Minaur',c:'au',r:8},{n:'Andrey Rublev',c:'ru',r:9},
-  {n:'Grigor Dimitrov',c:'bg',r:10},{n:'Stefanos Tsitsipas',c:'gr',r:11},{n:'Tommy Paul',c:'us',r:12},
-  {n:'Holger Rune',c:'dk',r:13},{n:'Jack Draper',c:'gb',r:14},{n:'Hubert Hurkacz',c:'pl',r:15},
-  {n:'Lorenzo Musetti',c:'it',r:16},{n:'Frances Tiafoe',c:'us',r:17},{n:'Ugo Humbert',c:'fr',r:18},
-  {n:'Ben Shelton',c:'us',r:19},{n:'Arthur Fils',c:'fr',r:20},{n:'Sebastian Korda',c:'us',r:21},
-  {n:'Karen Khachanov',c:'ru',r:22},{n:'Felix Auger-Aliassime',c:'ca',r:23},{n:'Alejandro Tabilo',c:'cl',r:24},
-  {n:'Francisco Cerundolo',c:'ar',r:25},{n:'Tomas Machac',c:'cz',r:26},{n:'Matteo Berrettini',c:'it',r:27},
-  {n:'Giovanni Mpetshi Perricard',c:'fr',r:28},{n:'Jakub Mensik',c:'cz',r:29},{n:'Joao Fonseca',c:'br',r:30},
-  {n:'Lorenzo Sonego',c:'it',r:31},{n:'Tomas Etcheverry',c:'ar',r:32},{n:'Flavio Cobolli',c:'it',r:33},
-  {n:'Sebastian Baez',c:'ar',r:34},{n:'Tallon Griekspoor',c:'nl',r:35},{n:'Marin Cilic',c:'hr',r:36},
-  {n:'Stan Wawrinka',c:'ch',r:37},{n:'Gael Monfils',c:'fr',r:38},{n:'Pablo Carreno Busta',c:'es',r:39},
-  {n:'Cameron Norrie',c:'gb',r:40},{n:'Nuno Borges',c:'pt',r:41},{n:'Denis Shapovalov',c:'ca',r:42},
-  {n:'Mariano Navone',c:'ar',r:43},{n:'Reilly Opelka',c:'us',r:44},{n:'Alexander Bublik',c:'kz',r:45},
-  {n:'Thanasi Kokkinakis',c:'au',r:46},{n:'Alexei Popyrin',c:'au',r:47},{n:'Roberto Bautista Agut',c:'es',r:48},
-]
+// Roland Garros 2026 Entry List - Use official list
+import { RG_ENTRY_LIST, getPlayerFlag } from '@/lib/rg2026-entrylist'
+
+// Sort by ranking for display
+const RG_PLAYERS = [...RG_ENTRY_LIST].sort((a, b) => a.r - b.r)
 
 const fl = (c, sm) => `https://flagcdn.com/w${sm ? 40 : 80}/${c}.png`
 
@@ -57,7 +43,20 @@ export default function SpecialPicksPage() {
   const [saving, setSaving] = useState({})
   const [threeLoaded, setThreeLoaded] = useState(false)
 
-  const tournamentStart = new Date('2026-06-11T17:00:00-04:00')
+  // Tournament start - special picks lock when first match starts
+  // RG: May 24 5:00 AM ET (first Day 1 match)
+  // WC: June 11 5:00 PM ET (opening match)
+  const getTournamentStart = () => {
+    if (pool?.tournament === 'rg2026') {
+      return new Date('2026-05-24T05:00:00-04:00') // First RG match
+    }
+    return new Date('2026-06-11T17:00:00-04:00') // WC opener
+  }
+  // Apply pool's deadline offset (default 1 hour before)
+  const deadlineOffset = pool?.prediction_deadline === '30m_before_matchday' ? 30 * 60 * 1000
+    : pool?.prediction_deadline === '2h_before_matchday' ? 2 * 60 * 60 * 1000
+    : 60 * 60 * 1000 // default 1 hour
+  const tournamentStart = new Date(getTournamentStart().getTime() - deadlineOffset)
   const isLocked = new Date() >= tournamentStart
 
   // Load data
@@ -251,10 +250,11 @@ export default function SpecialPicksPage() {
     t.n.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // For RG - filter tennis players
+  // For RG - filter tennis players from official entry list
   const filteredTennisPlayers = RG_PLAYERS.filter(p =>
-    p.n.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+    p.n.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.c.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice(0, 50) // Limit to 50 results for performance
 
   const filteredPlayers = PLAYERS.filter(p => {
     const isGk = modalType === 'gk'
@@ -740,10 +740,13 @@ export default function SpecialPicksPage() {
                     <canvas id="flag-champion" width="118" height="78"></canvas>
                     <div className="chk-badge ck-g">✓</div>
                   </div>
-                  <div className="tn tn-g">{champion.n}</div>
+                  <div className="tn tn-g">
+                    {champion.n}
+                    {champion.r && <span style={{ fontWeight: 700, marginLeft: '4px', color: champion.r === 1 ? '#c9a84c' : '#8a8780' }}>({champion.r})</span>}
+                  </div>
                 </div>
               ) : (
-                <div className="cta"><div className="plus-c">+</div>Select team</div>
+                <div className="cta"><div className="plus-c">+</div>{pool?.tournament === 'rg2026' ? 'Select player' : 'Select team'}</div>
               )}
             </div>
           </div>
@@ -763,10 +766,13 @@ export default function SpecialPicksPage() {
                     <canvas id="flag-runner" width="118" height="78"></canvas>
                     <div className="chk-badge ck-s">✓</div>
                   </div>
-                  <div className="tn tn-s">{runnerUp.n}</div>
+                  <div className="tn tn-s">
+                    {runnerUp.n}
+                    {runnerUp.r && <span style={{ fontWeight: 700, marginLeft: '4px', color: runnerUp.r === 1 ? '#c9a84c' : '#8a8780' }}>({runnerUp.r})</span>}
+                  </div>
                 </div>
               ) : (
-                <div className="cta"><div className="plus-c">+</div>Select team</div>
+                <div className="cta"><div className="plus-c">+</div>{pool?.tournament === 'rg2026' ? 'Select player' : 'Select team'}</div>
               )}
             </div>
           </div>
@@ -870,10 +876,10 @@ export default function SpecialPicksPage() {
 
       {/* Deadline Banner */}
       <div className="deadline-banner">
-        <span>🏆</span>
+        <span>{pool?.tournament === 'rg2026' ? '🎾' : '🏆'}</span>
         <div>
-          <strong>DEADLINE: JUNE 11, 2026 · 5:00 PM ET</strong>
-          <p>All special picks lock when the first match kicks off</p>
+          <strong>DEADLINE: {tournamentStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase()} · {tournamentStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET</strong>
+          <p>All special picks lock {pool?.prediction_deadline === '30m_before_matchday' ? '30 min' : pool?.prediction_deadline === '2h_before_matchday' ? '2 hours' : '1 hour'} before first match</p>
         </div>
       </div>
 
@@ -924,30 +930,42 @@ export default function SpecialPicksPage() {
               
               {/* RG - Tennis Players for Champion/Runner-up */}
               {(modalType === 'champion' || modalType === 'runner') && pool?.tournament === 'rg2026' && (
-                <div className="plist">
-                  {filteredTennisPlayers.map(p => {
-                    const isS = modalType === 'runner'
-                    const cur = modalType === 'champion' ? champion : runnerUp
-                    const sel = cur && cur.n === p.n
-                    return (
-                      <div 
-                        key={p.n} 
-                        className={`pitem ${sel ? 'selected' : ''}`}
-                        style={sel ? { borderColor: isS ? '#b8cce0' : '#c9a84c', background: isS ? 'rgba(184,204,224,0.12)' : 'rgba(201,168,76,0.12)' } : {}}
-                        onClick={() => pickTeam({ c: p.c, n: p.n })}
-                      >
-                        <img src={fl(p.c, true)} alt={p.c} />
-                        <div>
-                          <div className="pi-n" style={sel ? { color: isS ? '#b8cce0' : '#c9a84c' } : {}}>{p.n}</div>
-                          <div className="pi-t">ATP #{p.r}</div>
+                <>
+                  <input 
+                    className="srch" 
+                    type="text" 
+                    placeholder="Search players..." 
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                  <div className="plist">
+                    {filteredTennisPlayers.map(p => {
+                      const isS = modalType === 'runner'
+                      const cur = modalType === 'champion' ? champion : runnerUp
+                      const sel = cur && cur.n === p.n
+                      const isNumber1 = p.r === 1
+                      return (
+                        <div 
+                          key={p.n + p.r} 
+                          className={`pitem ${sel ? 'selected' : ''}`}
+                          style={sel ? { borderColor: isS ? '#b8cce0' : '#c9a84c', background: isS ? 'rgba(184,204,224,0.12)' : 'rgba(201,168,76,0.12)' } : {}}
+                          onClick={() => pickTeam({ c: p.c, n: p.n, r: p.r })}
+                        >
+                          <img src={fl(p.c, true)} alt={p.c} />
+                          <div style={{ flex: 1 }}>
+                            <div className="pi-n" style={sel ? { color: isS ? '#b8cce0' : '#c9a84c' } : {}}>
+                              {p.n} <span style={{ fontWeight: 700, fontSize: '0.75rem', marginLeft: '4px', color: isNumber1 ? '#c9a84c' : '#8a8780' }}>({p.r})</span>
+                            </div>
+                            <div className="pi-t">ATP Rank #{p.r}</div>
+                          </div>
+                          <span className="pi-p" style={{ background: isNumber1 ? 'rgba(201,168,76,0.25)' : 'rgba(201,168,76,0.12)', color: isNumber1 ? '#c9a84c' : '#8a8780', fontWeight: isNumber1 ? 800 : 600 }}>
+                            #{p.r}
+                          </span>
                         </div>
-                        <span className="pi-p" style={{ background: 'rgba(201,168,76,0.12)', color: '#c9a84c' }}>
-                          #{p.r}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
+                      )
+                    })}
+                  </div>
+                </>
               )}
 
               {(modalType === 'scorer' || modalType === 'gk') && (

@@ -6,7 +6,7 @@ import { TEAMS, MATCHES, getTeam, flagUrl } from '../../lib/wc2026-database'
 import { getCurrentUser } from '@/lib/supabase'
 import AppShell from '@/app/components/AppShell'
 
-import { RG_SCHEDULE, getFlag } from '../../lib/rg-matches'
+import { RG_SCHEDULE, getFlag, getRanking } from '../../lib/rg-matches'
 
 export default function ResultsPage() {
   const [user, setUser] = useState(null)
@@ -199,7 +199,10 @@ export default function ResultsPage() {
               <div className="empty-state"><p>No matches scheduled for this round yet.</p></div>
             ) : (
               <div className="matches-list">
-                {rgDayMatches.map(match => (
+                {rgDayMatches.map(match => {
+                  const r1 = getRanking(match.p1)
+                  const r2 = getRanking(match.p2)
+                  return (
                   <div key={match.id} className="match-card tennis">
                     <div className="match-info">
                       <span className="match-group">R1</span>
@@ -207,18 +210,24 @@ export default function ResultsPage() {
                     </div>
                     <div className="match-teams">
                       <div className="team home">
-                        <span className="team-name">{match.p1}</span>
+                        <span className="team-name">
+                          {match.p1}
+                          {r1 && <span className={`player-rank ${r1 === 1 ? 'gold' : ''}`}>({r1})</span>}
+                        </span>
                         <img src={`https://flagcdn.com/w40/${getFlag(match.c1)}.png`} alt="" className="team-flag" />
                         <span className="team-score pending">-</span>
                       </div>
                       <div className="team away">
                         <span className="team-score pending">-</span>
                         <img src={`https://flagcdn.com/w40/${getFlag(match.c2)}.png`} alt="" className="team-flag" />
-                        <span className="team-name">{match.p2}</span>
+                        <span className="team-name">
+                          {match.p2}
+                          {r2 && <span className={`player-rank ${r2 === 1 ? 'gold' : ''}`}>({r2})</span>}
+                        </span>
                       </div>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </div>
@@ -230,6 +239,8 @@ export default function ResultsPage() {
         .tourn-dropdown { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; padding: 0.6rem 1.5rem; background: var(--bg2); border: 2px solid var(--gold); border-radius: 4px; color: var(--gold); cursor: pointer; min-width: 260px; }
         .tourn-dropdown option { background: var(--bg2); color: var(--f1); }
         .match-card.tennis { background: var(--bg2); border: 1px solid var(--line); border-radius: 6px; padding: 1rem; margin-bottom: 0.5rem; }
+        .player-rank { font-size: 0.7rem; font-weight: 700; color: var(--f3); margin-left: 4px; }
+        .player-rank.gold { color: var(--gold); }
         .tab-nav {
           background: var(--bg2);
           border-bottom: 1px solid var(--line);
