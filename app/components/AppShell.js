@@ -32,30 +32,43 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
     if (path === '/dashboard') return pathname === '/dashboard' || pathname.startsWith('/pool/')
     if (path === '/browse') return pathname === '/browse'
     if (path === '/profile') return pathname === '/profile'
-    if (path === '/scores') return pathname === '/scores' || pathname === '/results'
+    if (path === '/results') return pathname === '/results'
     if (path === '/') return pathname === '/'
     return false
   }
 
   return (
     <>
-      {/* SINGLE CONSOLIDATED NAV */}
+      {/* TOPBAR - Only show if logged in */}
+      {user && (
+        <div className="topbar">
+          <div className="topbar-links">
+            <Link href="/dashboard" className={`tb-link ${isActive('/dashboard') ? 'active' : ''}`}>Dashboard</Link>
+            <Link href="/browse" className={`tb-link ${isActive('/browse') ? 'active' : ''}`}>Browse Pools</Link>
+            <Link href="/results" className={`tb-link ${isActive('/results') ? 'active' : ''}`}>Scores</Link>
+          </div>
+          <div className="topbar-right">
+            <Link href="/profile" className="user-pill">
+              <div className="user-avatar">{getUserInitials()}</div>
+              {getUserName()}
+            </Link>
+            <button className="signout-btn" onClick={handleSignOut}>Sign Out</button>
+          </div>
+        </div>
+      )}
+
+      {/* NAV */}
       <nav className="main-nav">
         <Link href="/" className="nav-logo">Pick<span>Poolr</span></Link>
         <div className="nav-items">
           <Link href="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link href="/dashboard" className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>My Pools</Link>
           <Link href="/browse" className={`nav-item ${isActive('/browse') ? 'active' : ''}`}>Browse</Link>
-          <Link href="/scores" className={`nav-item ${isActive('/scores') ? 'active' : ''}`}>Scores</Link>
+          <Link href="/results" className={`nav-item ${isActive('/results') ? 'active' : ''}`}>Scores</Link>
         </div>
         <div className="nav-right-section">
           {user ? (
-            <>
-              {showCreate && <Link href="/create" className="nav-cta">+ Create Pool</Link>}
-              <Link href="/profile" className="nav-profile">
-                <div className="nav-avatar">{getUserInitials()}</div>
-              </Link>
-            </>
+            showCreate && <Link href="/create" className="nav-cta">+ Create Pool</Link>
           ) : (
             <>
               <Link href="/login" className="nav-link">Sign In</Link>
@@ -99,7 +112,66 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
       {children}
 
       <style jsx>{`
-        /* NAV - Single consolidated navigation */
+        /* TOPBAR */
+        .topbar {
+          background: var(--bg2);
+          border-bottom: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2rem;
+          height: 42px;
+        }
+        .topbar-links {
+          display: flex;
+          height: 100%;
+        }
+        .topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        .user-pill {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.78rem;
+          color: var(--f2);
+          text-decoration: none;
+          cursor: pointer;
+          transition: color 0.15s;
+        }
+        .user-pill:hover { color: var(--gold); }
+        .user-avatar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: var(--gold);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 900;
+          color: #000;
+        }
+        .signout-btn {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f4);
+          background: transparent;
+          border: 1px solid var(--f4);
+          padding: 0.25rem 0.6rem;
+          border-radius: 2px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .signout-btn:hover { color: var(--f2); border-color: var(--f2); }
+
+        /* NAV */
         .main-nav {
           background: var(--bg);
           border-bottom: 3px solid var(--gold);
@@ -161,9 +233,6 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
           transition: background 0.15s;
         }
         .nav-cta:hover { background: var(--gold2); }
-        .nav-profile { display: flex; align-items: center; text-decoration: none; }
-        .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 800; color: #000; transition: transform 0.15s; }
-        .nav-avatar:hover { transform: scale(1.08); }
 
         /* TICKER */
         .ticker {
@@ -255,12 +324,10 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
         .btn-primary:hover { background: var(--gold2); }
 
         @media (max-width: 768px) {
+          .topbar { display: none; }
           .main-nav { padding: 0 1rem; }
           .nav-logo { font-size: 1.6rem; margin-right: 0; padding-right: 0; border-right: none; }
           .nav-items { display: none; }
-          .nav-right-section { gap: 0.5rem; }
-          .nav-cta { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
-          .nav-avatar { width: 28px; height: 28px; font-size: 0.65rem; }
           .ticker { padding: 0 1rem; gap: 1rem; }
           .ticker-items { gap: 1rem; }
           .page-header { padding: 1rem; }
@@ -269,6 +336,26 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
       `}</style>
 
       <style jsx global>{`
+        .tb-link {
+          display: flex;
+          align-items: center;
+          padding: 0 1rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.78rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
+          text-decoration: none;
+          border-right: 1px solid var(--line);
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .tb-link:first-child { border-left: 1px solid var(--line); }
+        .tb-link:hover, .tb-link.active {
+          color: var(--f1);
+          background: rgba(255,255,255,0.03);
+        }
         .nav-item {
           display: flex;
           align-items: center;
