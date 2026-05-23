@@ -77,7 +77,7 @@ export default function DashboardPage() {
                     <div className="pc-banner">
                       <div>
                         <div className="pc-name">{pool.name}</div>
-                        <div className="pc-tournament">{pool.tournament_name || 'FIFA World Cup 2026'}</div>
+                        <div className="pc-tournament">{pool.tournament === 'rg2026' ? 'Roland Garros 2026' : pool.tournament === 'nba2026' ? 'NBA 2026' : pool.tournament_name || 'FIFA World Cup 2026'}</div>
                       </div>
                       <span className={`pc-role ${pool.role === 'player' ? 'player' : ''}`}>
                         {pool.role || 'Commissioner'}
