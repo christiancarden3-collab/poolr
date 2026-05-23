@@ -6,35 +6,7 @@ import { TEAMS, MATCHES, getTeam, flagUrl } from '../../lib/wc2026-database'
 import { getCurrentUser } from '@/lib/supabase'
 import AppShell from '@/app/components/AppShell'
 
-// Roland Garros 2026 matches - sorted by date/time (earliest first)
-const RG_MATCHES = [
-  // Day 1 - May 23 (R2)
-  { id: 'rg-1', round: 'R2', p1: 'Novak Djokovic', p2: 'G. Mpetshi Perricard', f1: 'rs', f2: 'fr', date: 'May 23', time: '5:00 AM', day: 1 },
-  { id: 'rg-2', round: 'R2', p1: 'Alexander Zverev', p2: 'Benjamin Bonzi', f1: 'de', f2: 'fr', date: 'May 23', time: '6:30 AM', day: 1 },
-  { id: 'rg-3', round: 'R2', p1: 'Taylor Fritz', p2: 'N. Basavareddy', f1: 'us', f2: 'us', date: 'May 23', time: '8:00 AM', day: 1 },
-  { id: 'rg-4', round: 'R2', p1: 'Tomas Machac', p2: 'Zizou Bergs', f1: 'cz', f2: 'be', date: 'May 23', time: '9:30 AM', day: 1 },
-  { id: 'rg-5', round: 'R2', p1: 'Joao Fonseca', p2: 'Luka Pavlovic', f1: 'br', f2: 'it', date: 'May 23', time: '11:00 AM', day: 1 },
-  { id: 'rg-6', round: 'R2', p1: 'Lorenzo Sonego', p2: 'P.H. Herbert', f1: 'it', f2: 'fr', date: 'May 23', time: '12:30 PM', day: 1 },
-  // Day 2 - May 24 (R2)
-  { id: 'rg-7', round: 'R2', p1: 'Karen Khachanov', p2: 'Arthur Gea', f1: 'ru', f2: 'fr', date: 'May 24', time: '5:00 AM', day: 2 },
-  { id: 'rg-8', round: 'R2', p1: 'T. Etcheverry', p2: 'Nuno Borges', f1: 'ar', f2: 'pt', date: 'May 24', time: '6:30 AM', day: 2 },
-  { id: 'rg-9', round: 'R2', p1: 'Jakub Mensik', p2: 'Titouan Droguet', f1: 'cz', f2: 'fr', date: 'May 24', time: '8:00 AM', day: 2 },
-  { id: 'rg-10', round: 'R2', p1: 'Reilly Opelka', p2: 'Federico Cina', f1: 'us', f2: 'it', date: 'May 24', time: '9:30 AM', day: 2 },
-  // Day 3 - May 25 (R3)
-  { id: 'rg-11', round: 'R3', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 25', time: '5:00 AM', day: 3 },
-  { id: 'rg-12', round: 'R3', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 25', time: '8:00 AM', day: 3 },
-  // R16 - May 28
-  { id: 'rg-13', round: 'R16', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 28', time: '6:00 AM', day: 4 },
-  { id: 'rg-14', round: 'R16', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 28', time: '9:00 AM', day: 4 },
-  // QF - May 30
-  { id: 'rg-15', round: 'QF', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 30', time: '6:00 AM', day: 5 },
-  { id: 'rg-16', round: 'QF', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 30', time: '9:00 AM', day: 5 },
-  // SF - May 31
-  { id: 'rg-17', round: 'SF', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 31', time: '6:00 AM', day: 6 },
-  { id: 'rg-18', round: 'SF', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'May 31', time: '9:00 AM', day: 6 },
-  // Final - Jun 1
-  { id: 'rg-19', round: 'F', p1: 'TBD', p2: 'TBD', f1: 'xx', f2: 'xx', date: 'Jun 1', time: '9:00 AM', day: 7 },
-]
+import { RG_SCHEDULE, getFlag } from '../../lib/rg-matches'
 
 export default function ResultsPage() {
   const [user, setUser] = useState(null)
@@ -81,15 +53,15 @@ export default function ResultsPage() {
   }
 
   // RG matches for selected day
-  const rgDayMatches = RG_MATCHES.filter(m => m.day === rgDay)
+  const rgDayMatches = RG_SCHEDULE[rgDay] || []
   const rgRounds = [
-    { day: 1, label: 'R2 Day 1' },
-    { day: 2, label: 'R2 Day 2' },
-    { day: 3, label: 'R3' },
-    { day: 4, label: 'R16' },
-    { day: 5, label: 'QF' },
-    { day: 6, label: 'SF' },
-    { day: 7, label: 'Final' },
+    { day: 1, label: 'Day 1 (May 24)', count: RG_SCHEDULE[1]?.length || 0 },
+    { day: 2, label: 'Day 2 (May 25)', count: RG_SCHEDULE[2]?.length || 0 },
+    { day: 3, label: 'R3', count: 0 },
+    { day: 4, label: 'R16', count: 0 },
+    { day: 5, label: 'QF', count: 0 },
+    { day: 6, label: 'SF', count: 0 },
+    { day: 7, label: 'Final', count: 0 },
   ]
 
   return (
@@ -230,18 +202,18 @@ export default function ResultsPage() {
                 {rgDayMatches.map(match => (
                   <div key={match.id} className="match-card tennis">
                     <div className="match-info">
-                      <span className="match-group">{match.round}</span>
+                      <span className="match-group">R1</span>
                       <span className="match-time">{match.date} · {match.time} ET</span>
                     </div>
                     <div className="match-teams">
                       <div className="team home">
                         <span className="team-name">{match.p1}</span>
-                        {match.f1 !== 'xx' && <img src={`https://flagcdn.com/w40/${match.f1}.png`} alt="" className="team-flag" />}
+                        <img src={`https://flagcdn.com/w40/${getFlag(match.c1)}.png`} alt="" className="team-flag" />
                         <span className="team-score pending">-</span>
                       </div>
                       <div className="team away">
                         <span className="team-score pending">-</span>
-                        {match.f2 !== 'xx' && <img src={`https://flagcdn.com/w40/${match.f2}.png`} alt="" className="team-flag" />}
+                        <img src={`https://flagcdn.com/w40/${getFlag(match.c2)}.png`} alt="" className="team-flag" />
                         <span className="team-name">{match.p2}</span>
                       </div>
                     </div>
