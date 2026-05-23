@@ -24,7 +24,7 @@ function CreatePoolContent() {
   const [tournament, setTournament] = useState('wc2026')
   const [description, setDescription] = useState('')
   const [privacy, setPrivacy] = useState('private')
-  const [inviteCode, setInviteCode] = useState('pool26')
+  const [inviteCode, setInviteCode] = useState(() => `pool${Math.random().toString(36).substring(2, 6)}`)
   const [maxPlayers, setMaxPlayers] = useState('')
   const [poolType, setPoolType] = useState('free')
   const [buyinAmount, setBuyinAmount] = useState('')
@@ -75,14 +75,19 @@ function CreatePoolContent() {
   }
 
   const generateCode = () => {
-    const codes = ['pool26', 'wc2026', 'group26', 'amigos26', 'champs26', 'final26', 'mypool', 'picks26']
-    setInviteCode(codes[Math.floor(Math.random() * codes.length)])
+    // Generate unique code with random suffix
+    const rand = Math.random().toString(36).substring(2, 6)
+    const prefixes = ['pool', 'wc', 'cup', 'picks', 'game']
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)]
+    setInviteCode(`${prefix}${rand}`)
   }
 
   const nextStep = () => {
     if (step === 1 && poolName) {
-      const code = poolName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) || 'pool26'
-      setInviteCode(code)
+      // Generate code from pool name + random suffix for uniqueness
+      const base = poolName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6) || 'pool'
+      const rand = Math.random().toString(36).substring(2, 5)
+      setInviteCode(`${base}${rand}`)
     }
     setStep(step + 1)
   }
