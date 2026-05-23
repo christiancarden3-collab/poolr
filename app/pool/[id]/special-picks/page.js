@@ -672,7 +672,7 @@ export default function SpecialPicksPage() {
           <Link href="/dashboard" className="nav-item">Home</Link>
           <Link href="/dashboard" className="nav-item">My Pools</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
-          <Link href="/scores" className="nav-item">Scores</Link>
+          <Link href="/results" className="nav-item">Scores</Link>
         </div>
         <div className="nav-right">
           <Link href="/create" className="nav-cta">+ Create Pool</Link>
