@@ -121,7 +121,7 @@ export default function DashboardPage() {
         <div className="card">
           <div className="card-head">
             <div className="card-title">Upcoming Matches · Matchday 1</div>
-            <Link href="/results" className="card-link">Full schedule →</Link>
+            <Link href="/scores" className="card-link">Full schedule →</Link>
           </div>
           <div className="card-body" style={{ padding: 0 }}>
             <div className="match-list">

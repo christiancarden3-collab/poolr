@@ -211,7 +211,7 @@ export default function ManagePoolPage() {
         <div className="nav-items">
           <Link href="/dashboard" className="nav-item">Home</Link>
           <Link href="/browse" className="nav-item">Browse</Link>
-          <Link href="/results" className="nav-item">Scores</Link>
+          <Link href="/scores" className="nav-item">Scores</Link>
         </div>
         <Link href={`/pool/${pool.id}`} className="nav-cta">← Back to Pool</Link>
       </nav>

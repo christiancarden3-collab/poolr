@@ -32,7 +32,7 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
     if (path === '/dashboard') return pathname === '/dashboard' || pathname.startsWith('/pool/')
     if (path === '/browse') return pathname === '/browse'
     if (path === '/profile') return pathname === '/profile'
-    if (path === '/results') return pathname === '/results'
+    if (path === '/scores') return pathname === '/scores'
     if (path === '/') return pathname === '/'
     return false
   }
@@ -45,7 +45,7 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
           <div className="topbar-links">
             <Link href="/dashboard" className={`tb-link ${isActive('/dashboard') ? 'active' : ''}`}>Dashboard</Link>
             <Link href="/browse" className={`tb-link ${isActive('/browse') ? 'active' : ''}`}>Browse Pools</Link>
-            <Link href="/results" className={`tb-link ${isActive('/results') ? 'active' : ''}`}>Scores</Link>
+            <Link href="/scores" className={`tb-link ${isActive('/scores') ? 'active' : ''}`}>Scores</Link>
           </div>
           <div className="topbar-right">
             <Link href="/profile" className="user-pill">
@@ -64,7 +64,7 @@ export default function AppShell({ user, children, pageTitle, pageEyebrow, pageM
           <Link href="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link href="/dashboard" className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>My Pools</Link>
           <Link href="/browse" className={`nav-item ${isActive('/browse') ? 'active' : ''}`}>Browse</Link>
-          <Link href="/results" className={`nav-item ${isActive('/results') ? 'active' : ''}`}>Scores</Link>
+          <Link href="/scores" className={`nav-item ${isActive('/scores') ? 'active' : ''}`}>Scores</Link>
         </div>
         <div className="nav-right-section">
           {user ? (
