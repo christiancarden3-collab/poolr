@@ -226,11 +226,54 @@ export default function RegisterPage() {
                   </label>
                 </div>
                 {error && <div className="error-msg">{error}</div>}
-                <button type="submit" className="btn-full" disabled={loading}>
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    display: 'block',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                    background: '#c9a84c',
+                    color: '#000',
+                    padding: '0.9rem 1rem',
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    marginTop: '1.25rem',
+                    opacity: loading ? 0.6 : 1
+                  }}
+                >
                   {loading ? 'Creating...' : 'Create Account →'}
                 </button>
                 <div className="or-divider"><div className="or-line"></div><div className="or-text">or</div><div className="or-line"></div></div>
-                <button type="button" className="btn-outline-full" onClick={handleMagicLink} disabled={loading}>
+                <button 
+                  type="button" 
+                  onClick={handleMagicLink} 
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    display: 'block',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                    background: 'transparent',
+                    color: '#c8c5be',
+                    padding: '0.85rem 1rem',
+                    borderRadius: '4px',
+                    border: '1px solid #4a4845',
+                    cursor: 'pointer',
+                    marginTop: '0.75rem',
+                    opacity: loading ? 0.6 : 1
+                  }}
+                >
                   ✉ Sign up with magic link
                 </button>
               </form>
@@ -241,7 +284,26 @@ export default function RegisterPage() {
                 <div className="magic-sub">
                   We sent a confirmation link to <span className="magic-email">{email}</span>. Click it to activate your account.
                 </div>
-                <button className="btn-outline-full" style={{ marginTop: '1rem' }} onClick={() => setShowMagic(false)}>
+                <button 
+                  onClick={() => setShowMagic(false)}
+                  style={{
+                    width: '100%',
+                    display: 'block',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                    background: 'transparent',
+                    color: '#c8c5be',
+                    padding: '0.85rem 1rem',
+                    borderRadius: '4px',
+                    border: '1px solid #4a4845',
+                    cursor: 'pointer',
+                    marginTop: '1rem'
+                  }}
+                >
                   ← Use password instead
                 </button>
               </div>
