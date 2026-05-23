@@ -378,7 +378,7 @@ export default function MatchPicksPage() {
         .score-pts.dim { color:var(--f2); }
 
         /* BACK LINK */
-        .back-link { display:inline-flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);text-decoration:none;margin-bottom:1rem; }
+        .back-link { display:inline-flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);text-decoration:none;margin-bottom:1rem; }
         .back-link:hover { color:var(--gold2); }
 
         @media (max-width:900px) {

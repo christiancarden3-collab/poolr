@@ -391,7 +391,7 @@ export default function RegisterPage() {
           padding: 2rem;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Barlow Condensed', sans-serif;
         }
         .auth-pitch {
           position: absolute;
@@ -488,9 +488,9 @@ export default function RegisterPage() {
           line-height: 1;
         }
         .auth-sub {
-          font-family: 'Inter', sans-serif;
-          font-size: 0.8rem;
-          font-weight: 400;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 500;
           color: var(--f3);
           margin-top: 0.4rem;
           line-height: 1.5;
@@ -557,9 +557,9 @@ export default function RegisterPage() {
           cursor: pointer;
         }
         .field-hint {
-          font-family: 'Inter', sans-serif;
-          font-size: 0.72rem;
-          font-weight: 400;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.75rem;
+          font-weight: 500;
           color: var(--f4);
           margin-top: 0.3rem;
         }
