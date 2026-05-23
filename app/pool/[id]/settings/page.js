@@ -15,6 +15,7 @@ export default function PoolSettingsPage({ params }) {
   
   const [buyIn, setBuyIn] = useState('')
   const [paymentInstructions, setPaymentInstructions] = useState('')
+  const [tournament, setTournament] = useState('wc2026')
 
   useEffect(() => {
     loadData()
@@ -42,6 +43,7 @@ export default function PoolSettingsPage({ params }) {
     setPool(poolData)
     setBuyIn(poolData.buy_in || '')
     setPaymentInstructions(poolData.payment_instructions || '')
+    setTournament(poolData.tournament || 'wc2026')
     setLoading(false)
   }
 
@@ -53,6 +55,7 @@ export default function PoolSettingsPage({ params }) {
       const { error } = await supabase
         .from('pools')
         .update({
+          tournament: tournament,
           buy_in: parseFloat(buyIn) || 0,
           payment_instructions: paymentInstructions || null
         })
@@ -113,6 +116,18 @@ export default function PoolSettingsPage({ params }) {
         </div>
 
         <div className="settings-card">
+          <div className="form-group">
+            <label>Tournament</label>
+            <select
+              value={tournament}
+              onChange={(e) => setTournament(e.target.value)}
+              className="form-select"
+            >
+              <option value="rg2026">Roland Garros 2026</option>
+              <option value="wc2026">FIFA World Cup 2026</option>
+            </select>
+          </div>
+
           <div className="form-group">
             <label>Buy-in Amount ($)</label>
             <input
@@ -223,7 +238,8 @@ Include your name in the payment note so we can confirm your entry.`}
         }
 
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
           width: 100%;
           background: var(--ink3);
           border: 1px solid var(--border);
