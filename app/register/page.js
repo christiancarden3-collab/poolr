@@ -255,6 +255,8 @@ export default function RegisterPage() {
       </div>
 
       <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+        
         /* NAV */
         nav {
           background: var(--bg);
