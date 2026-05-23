@@ -157,9 +157,43 @@ export default function PoolDashboard() {
   }
 
   const copyInviteLink = () => {
-    const link = `pickpoolr.com/join/${pool?.invite_code || params.id}`
+    const link = `https://pickpoolr.com/join/${pool?.invite_code || params.id}`
     navigator.clipboard.writeText(link)
     alert('Link copied!')
+  }
+
+  const shareWhatsApp = () => {
+    const tournamentName = pool?.tournament === 'rg2026' ? 'Roland Garros' : 'World Cup'
+    const text = `Join my ${tournamentName} pool "${pool?.name}" on PickPoolr! 🏆 https://pickpoolr.com/join/${pool?.invite_code || params.id}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const shareTwitter = () => {
+    const tournamentName = pool?.tournament === 'rg2026' ? 'Roland Garros' : 'World Cup'
+    const text = `Join my ${tournamentName} pool "${pool?.name}" on PickPoolr! 🏆`
+    const url = `https://pickpoolr.com/join/${pool?.invite_code || params.id}`
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
+  }
+
+  const shareFacebook = () => {
+    const url = `https://pickpoolr.com/join/${pool?.invite_code || params.id}`
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+  }
+
+  const shareMore = async () => {
+    const tournamentName = pool?.tournament === 'rg2026' ? 'Roland Garros' : 'World Cup'
+    const text = `Join my ${tournamentName} pool "${pool?.name}" on PickPoolr!`
+    const url = `https://pickpoolr.com/join/${pool?.invite_code || params.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: pool?.name, text, url })
+      } catch (err) {
+        console.log('Share cancelled')
+      }
+    } else {
+      navigator.clipboard.writeText(url)
+      alert('Link copied!')
+    }
   }
 
   if (loading) return <div className="loading">Loading...</div>
@@ -443,10 +477,10 @@ export default function PoolDashboard() {
                 <button className="a-copy" onClick={copyInviteLink}>Copy</button>
               </div>
               <div className="share-row">
-                <button className="s-btn s-wa">WhatsApp</button>
-                <button className="s-btn s-x">𝕏</button>
-                <button className="s-btn s-fb">Facebook</button>
-                <button className="s-btn s-more">••• More</button>
+                <button className="s-btn s-wa" onClick={shareWhatsApp}>WhatsApp</button>
+                <button className="s-btn s-x" onClick={shareTwitter}>𝕏</button>
+                <button className="s-btn s-fb" onClick={shareFacebook}>Facebook</button>
+                <button className="s-btn s-more" onClick={shareMore}>••• More</button>
               </div>
             </div>
           </div>
