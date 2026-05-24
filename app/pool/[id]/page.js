@@ -108,13 +108,14 @@ export default function PoolDashboard() {
           .eq('user_id', currentUser.id)
         setUserPicksCount(picksData?.length || 0)
         
-        // Fetch user's special picks count
-        const { data: specialData } = await supabase
-          .from('special_picks')
-          .select('id')
-          .eq('pool_id', params.id)
-          .eq('user_id', currentUser.id)
-        setUserSpecialCount(specialData?.length || 0)
+        // Fetch user's special picks count (uses pool_member_id)
+        if (currentUserMember) {
+          const { data: specialData } = await supabase
+            .from('special_picks')
+            .select('id')
+            .eq('pool_member_id', currentUserMember.id)
+          setUserSpecialCount(specialData?.length || 0)
+        }
       } catch (err) {
         setError(err.message)
       } finally {
