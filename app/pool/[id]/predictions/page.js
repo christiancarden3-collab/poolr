@@ -206,7 +206,9 @@ export default function MatchPicksPage() {
   const handleSetScore = (matchId, setScore) => {
     // setScore is like "3-0", "3-1", "3-2" (winner always gets 3)
     // Assign based on who the user picked as winner
+    if (!setScore || !setScore.includes('-')) return
     const [winnerSets, loserSets] = setScore.split('-').map(Number)
+    if (isNaN(winnerSets) || isNaN(loserSets)) return
     const currentPick = picks[matchId]
     const winner = currentPick?.winner
     
@@ -569,7 +571,7 @@ export default function MatchPicksPage() {
             </div>
 
             {/* Save All Button */}
-            {unsavedCount > 0 && !isLocked && (
+            {unsavedCount > 0 && (
               <div className="save-all-bar">
                 <div className="save-all-info">{unsavedCount} unsaved pick{unsavedCount > 1 ? 's' : ''}</div>
                 <button className="btn-save-all" onClick={handleSaveAll} disabled={savingAll}>
