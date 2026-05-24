@@ -304,6 +304,31 @@ export default function MatchPicksPage() {
     setPicks(prev => ({ ...prev, [matchId]: { homeScore: null, awayScore: null, saved: false } }))
   }
 
+  // Save all unsaved picks at once
+  const [savingAll, setSavingAll] = useState(false)
+  const handleSaveAll = async () => {
+    const unsavedPicks = matches.filter(m => {
+      const pick = picks[m.id]
+      return pick && pick.homeScore != null && pick.awayScore != null && !pick.saved
+    })
+    
+    if (unsavedPicks.length === 0) return
+    
+    setSavingAll(true)
+    
+    for (const match of unsavedPicks) {
+      await handleSave(match.id)
+    }
+    
+    setSavingAll(false)
+  }
+  
+  // Count unsaved picks
+  const unsavedCount = matches.filter(m => {
+    const pick = picks[m.id]
+    return pick && pick.homeScore != null && pick.awayScore != null && !pick.saved
+  }).length
+
   const getMatchStatus = (match) => {
     const pick = picks[match.id]
     if (match.status === 'completed') return 'ft'
@@ -449,6 +474,13 @@ export default function MatchPicksPage() {
         .btn-edit { font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--f3);border:1px solid var(--f4);padding:0.35rem 0.7rem;border-radius:2px;cursor:pointer; }
         .btn-edit:hover { color:var(--f1);border-color:var(--f2); }
 
+        /* SAVE ALL BAR */
+        .save-all-bar { display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));border:1px solid var(--gold);border-radius:4px;padding:0.75rem 1rem;margin-bottom:1rem; }
+        .save-all-info { font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:600;color:var(--gold); }
+        .btn-save-all { font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.5rem 1.5rem;border-radius:3px;border:none;cursor:pointer;transition:all 0.2s; }
+        .btn-save-all:hover { background:var(--gold2);transform:scale(1.02); }
+        .btn-save-all:disabled { opacity:0.6;cursor:not-allowed;transform:none; }
+
         /* SIDEBAR WIDGETS */
         .sw { margin-bottom:1rem; }
         .sw-head { font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--f4);border-bottom:1px solid var(--line);padding-bottom:0.4rem;margin-bottom:0.55rem; }
@@ -535,6 +567,16 @@ export default function MatchPicksPage() {
               </div>
               <div className="a-banner-right">{formatCountdown()}</div>
             </div>
+
+            {/* Save All Button */}
+            {unsavedCount > 0 && !isLocked && (
+              <div className="save-all-bar">
+                <div className="save-all-info">{unsavedCount} unsaved pick{unsavedCount > 1 ? 's' : ''}</div>
+                <button className="btn-save-all" onClick={handleSaveAll} disabled={savingAll}>
+                  {savingAll ? 'Saving All...' : `Save All Picks (${unsavedCount})`}
+                </button>
+              </div>
+            )}
 
             {/* Match cards by date */}
             {Object.entries(matchesByDate).map(([date, dayMatches]) => {
