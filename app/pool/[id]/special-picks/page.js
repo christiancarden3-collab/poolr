@@ -1084,9 +1084,9 @@ export default function SpecialPicksPage() {
         .flag-canvas-wrap canvas { width: 118px; height: 78px; border-radius: 4px; display: block; }
         .flag-border-gold { outline: 3px solid #c9a84c; outline-offset: 2px; border-radius: 4px; }
         .flag-border-silver { outline: 3px solid #b8cce0; outline-offset: 2px; border-radius: 4px; }
-        .chk-badge { position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #000; z-index: 5; }
-        .ck-g { background: #c9a84c; }
-        .ck-s { background: #b8cce0; }
+        .chk-badge { position: absolute; top: -10px; right: -10px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #000; z-index: 5; box-shadow: 0 2px 8px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.3); }
+        .ck-g { background: linear-gradient(135deg, #e6c76a, #c9a84c); }
+        .ck-s { background: linear-gradient(135deg, #d4e4f4, #b8cce0); }
 
         .tn { font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
         .tn-g { color: #c9a84c; }
