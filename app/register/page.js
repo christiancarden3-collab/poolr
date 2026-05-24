@@ -53,7 +53,7 @@ export default function RegisterPage() {
     setError('')
 
     try {
-      const { data: authData, error } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -67,19 +67,31 @@ export default function RegisterPage() {
         }
       })
       
-      // Update profile with username, email, and team name
+      // Check auth error FIRST
+      if (authError) throw authError
+      
+      // Then update profile with username, email, and team name
       if (authData?.user) {
-        await supabase.from('profiles').upsert({
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: authData.user.id,
           name: `${firstName} ${lastName}`.trim(),
           username: username.toLowerCase(),
           email: email.toLowerCase(),
-          team_name: teamName || null
+          team_name: teamName || null,
+          created_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
         })
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+          // Don't throw - auth succeeded, profile can be fixed later
+        }
       }
-      if (error) throw error
+      
       router.push('/dashboard')
     } catch (err) {
+      console.error('Registration error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
