@@ -204,16 +204,33 @@ export default function MatchPicksPage() {
   }
 
   const handleSetScore = (matchId, setScore) => {
-    // setScore is like "3-0", "3-1", "3-2"
-    const [home, away] = setScore.split('-').map(Number)
+    // setScore is like "3-0", "3-1", "3-2" (winner always gets 3)
+    // Assign based on who the user picked as winner
+    const [winnerSets, loserSets] = setScore.split('-').map(Number)
+    const currentPick = picks[matchId]
+    const winner = currentPick?.winner
+    
+    // If winner is home team (or no winner yet, default to home)
+    // homeScore = 3, awayScore = loser's sets
+    // If winner is away team
+    // homeScore = loser's sets, awayScore = 3
+    let homeScore, awayScore
+    if (winner === 'away') {
+      homeScore = loserSets
+      awayScore = winnerSets // 3
+    } else {
+      homeScore = winnerSets // 3
+      awayScore = loserSets
+    }
+    
     setPicks(prev => ({
       ...prev,
-      [matchId]: { ...prev[matchId], homeScore: home, awayScore: away, saved: false }
+      [matchId]: { ...prev[matchId], homeScore, awayScore, saved: false }
     }))
   }
 
-  // Valid Grand Slam set scores (best of 5)
-  const validRGScores = ['3-0', '3-1', '3-2', '2-3', '1-3', '0-3']
+  // Valid Grand Slam set scores (best of 5) - winner always shows as 3
+  const validRGScores = ['3-0', '3-1', '3-2']
 
   const handleSave = async (matchId) => {
     const pick = picks[matchId]
@@ -565,10 +582,12 @@ export default function MatchPicksPage() {
                                   <div className="score-status">Set Score</div>
                                   <select 
                                     className="score-select"
-                                    value={pick.homeScore != null ? `${pick.homeScore}-${pick.awayScore}` : ''}
+                                    value={pick.homeScore != null ? (pick.winner === 'away' ? `${pick.awayScore}-${pick.homeScore}` : `${pick.homeScore}-${pick.awayScore}`) : ''}
                                     onChange={e => handleSetScore(match.id, e.target.value)}
+                                    disabled={!pick.winner}
+                                    title={!pick.winner ? 'Pick a winner first' : ''}
                                   >
-                                    <option value="">Select</option>
+                                    <option value="">{pick.winner ? 'Select' : 'Pick winner first'}</option>
                                     {validRGScores.map(s => <option key={s} value={s}>{s}</option>)}
                                   </select>
                                 </>
