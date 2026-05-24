@@ -570,8 +570,8 @@ export default function MatchPicksPage() {
               <div className="a-banner-right">{formatCountdown()}</div>
             </div>
 
-            {/* Save All Button */}
-            {unsavedCount > 0 && (
+            {/* Save All Button - RG only (WC has per-day buttons) */}
+            {unsavedCount > 0 && isRG && (
               <div className="save-all-bar">
                 <div className="save-all-info">{unsavedCount} unsaved pick{unsavedCount > 1 ? 's' : ''}</div>
                 <button className="btn-save-all" onClick={handleSaveAll} disabled={savingAll}>
@@ -672,13 +672,13 @@ export default function MatchPicksPage() {
                             {pick.winner === 'away' && <div className="winner-check">✓</div>}
                           </div>
                         </div>
-                        {status === 'open' && !isLocked && (
+                        {status === 'open' && !isLocked && isRG && (
                           <div className="mpc-foot">
                             <button className="btn-edit" onClick={() => handleClear(match.id)}>Clear</button>
                             <button className="btn-save" onClick={() => handleSave(match.id)} disabled={saving[match.id]}>{saving[match.id] ? 'Saving...' : 'Save Pick'}</button>
                           </div>
                         )}
-                        {status === 'saved' && !isLocked && (
+                        {status === 'saved' && !isLocked && isRG && (
                           <div className="mpc-foot">
                             <div style={{fontSize:'0.65rem',color:'var(--f3)'}}>Saved {pick.savedAt}</div>
                             <button className="btn-edit" onClick={() => setPicks(prev => ({...prev, [match.id]: {...prev[match.id], saved: false}}))}>Edit</button>
@@ -687,12 +687,33 @@ export default function MatchPicksPage() {
                       </div>
                     )
                   })}
+                  
+                  {/* World Cup: Save button per day */}
+                  {!isRG && !isDateLocked && (() => {
+                    const dayUnsaved = dayMatches.filter(m => {
+                      const p = picks[m.id]
+                      return p && p.homeScore != null && p.awayScore != null && !p.saved
+                    })
+                    if (dayUnsaved.length === 0) return null
+                    return (
+                      <div className="save-all-bar" style={{marginTop: '0.5rem', marginBottom: '0.5rem'}}>
+                        <div className="save-all-info">{dayUnsaved.length} unsaved pick{dayUnsaved.length > 1 ? 's' : ''} for {date}</div>
+                        <button className="btn-save-all" onClick={async () => {
+                          setSavingAll(true)
+                          for (const m of dayUnsaved) await handleSave(m.id)
+                          setSavingAll(false)
+                        }} disabled={savingAll}>
+                          {savingAll ? 'Saving...' : `Save ${date} Picks`}
+                        </button>
+                      </div>
+                    )
+                  })()}
                 </div>
               )
             })}
 
-            {/* Save All Button - Bottom */}
-            {unsavedCount > 0 && (
+            {/* Save All Button - Bottom (RG only) */}
+            {unsavedCount > 0 && isRG && (
               <div className="save-all-bar" style={{marginTop: '1rem'}}>
                 <div className="save-all-info">{unsavedCount} unsaved pick{unsavedCount > 1 ? 's' : ''}</div>
                 <button className="btn-save-all" onClick={handleSaveAll} disabled={savingAll}>
