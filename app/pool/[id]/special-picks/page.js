@@ -126,12 +126,22 @@ export default function SpecialPicksPage() {
           if (picks) {
             picks.forEach(pick => {
               if (pick.pick_type === 'champion' && pick.team_code) {
-                const team = TEAMS.find(t => t.c === pick.team_code)
-                if (team) setChampion({ c: team.c, n: team.n })
+                // For RG, team_name contains player name - use it directly
+                // For WC, look up team name from TEAMS list
+                if (poolData?.tournament === 'rg2026') {
+                  setChampion({ c: pick.team_code, n: pick.team_name })
+                } else {
+                  const team = TEAMS.find(t => t.c === pick.team_code)
+                  if (team) setChampion({ c: team.c, n: team.n })
+                }
               }
               if (pick.pick_type === 'runner_up' && pick.team_code) {
-                const team = TEAMS.find(t => t.c === pick.team_code)
-                if (team) setRunnerUp({ c: team.c, n: team.n })
+                if (poolData?.tournament === 'rg2026') {
+                  setRunnerUp({ c: pick.team_code, n: pick.team_name })
+                } else {
+                  const team = TEAMS.find(t => t.c === pick.team_code)
+                  if (team) setRunnerUp({ c: team.c, n: team.n })
+                }
               }
               if (pick.pick_type === 'top_scorer' && pick.player_name) {
                 const player = ALL_PLAYERS.find(p => p.n === pick.player_name)

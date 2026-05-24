@@ -39,6 +39,8 @@ export default function PoolDashboard() {
   const [teamNameInput, setTeamNameInput] = useState('')
   const [savingTeamName, setSavingTeamName] = useState(false)
   const [countdown, setCountdown] = useState('--:--:--')
+  const [userPicksCount, setUserPicksCount] = useState(0)
+  const [userSpecialCount, setUserSpecialCount] = useState(0)
 
   useEffect(() => {
     async function loadData() {
@@ -97,6 +99,22 @@ export default function PoolDashboard() {
         setMembers(formattedMembers)
         setCurrentMember(currentUserMember)
         if (currentUserMember?.teamName) setTeamNameInput(currentUserMember.teamName)
+        
+        // Fetch user's picks count
+        const { data: picksData } = await supabase
+          .from('picks')
+          .select('id')
+          .eq('pool_id', params.id)
+          .eq('user_id', currentUser.id)
+        setUserPicksCount(picksData?.length || 0)
+        
+        // Fetch user's special picks count
+        const { data: specialData } = await supabase
+          .from('special_picks')
+          .select('id')
+          .eq('pool_id', params.id)
+          .eq('user_id', currentUser.id)
+        setUserSpecialCount(specialData?.length || 0)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -384,8 +402,8 @@ export default function PoolDashboard() {
           <div className="a-stats">
             <div className="a-stat"><div className="a-stat-n w">{pool?.user_rank ? `${pool.user_rank}${rankSuffix}` : '-'}</div><div className="a-stat-l">Rank</div></div>
             <div className="a-stat"><div className="a-stat-n">{pool?.user_points || 0}</div><div className="a-stat-l">Points</div></div>
-            <div className="a-stat"><div className="a-stat-n">0/{totalMatches}</div><div className="a-stat-l">Picks in</div></div>
-            <div className="a-stat"><div className="a-stat-n">0/{totalSpecial}</div><div className="a-stat-l">Special</div></div>
+            <div className="a-stat"><div className="a-stat-n">{userPicksCount}/{totalMatches}</div><div className="a-stat-l">Picks in</div></div>
+            <div className="a-stat"><div className="a-stat-n">{userSpecialCount}/{totalSpecial}</div><div className="a-stat-l">Special</div></div>
           </div>
         </div>
 
@@ -408,8 +426,8 @@ export default function PoolDashboard() {
                   <div className="a-card-title">Match Picks</div>
                   <div className="a-card-sub">{isRG ? 'Predict match winners' : 'Predict scorelines for each matchday'}</div>
                   <div className="a-prog">
-                    <div className="a-prog-bar"><div className="a-prog-fill" style={{width:'0%'}}></div></div>
-                    <div className="a-prog-txt">0 / {totalMatches}</div>
+                    <div className="a-prog-bar"><div className="a-prog-fill" style={{width:`${Math.round((userPicksCount/totalMatches)*100)}%`}}></div></div>
+                    <div className="a-prog-txt">{userPicksCount} / {totalMatches}</div>
                   </div>
                 </div>
                 <div className="a-arrow">→</div>
@@ -429,8 +447,8 @@ export default function PoolDashboard() {
                   <div className="a-card-title">Special Picks</div>
                   <div className="a-card-sub">{isRG ? 'Champion, runner-up' : 'Champion, top scorer, goalkeeper'}</div>
                   <div className="a-prog">
-                    <div className="a-prog-bar"><div className="a-prog-fill" style={{width:'0%',background:'#b8cce0'}}></div></div>
-                    <div className="a-prog-txt">0 / {totalSpecial}</div>
+                    <div className="a-prog-bar"><div className="a-prog-fill" style={{width:`${Math.round((userSpecialCount/totalSpecial)*100)}%`,background:'#b8cce0'}}></div></div>
+                    <div className="a-prog-txt">{userSpecialCount} / {totalSpecial}</div>
                   </div>
                 </div>
                 <div className="a-arrow" style={{color:'#b8cce0'}}>→</div>
@@ -502,8 +520,8 @@ export default function PoolDashboard() {
               <div className="sw-head">Your Stats</div>
               <div className="sw-row"><div className="sw-label">Total points</div><div className="sw-val vg">{pool?.user_points || 0}</div></div>
               <div className="sw-row"><div className="sw-label">Current rank</div><div className="sw-val vg">{pool?.user_rank ? `${pool.user_rank}${rankSuffix}` : '-'}</div></div>
-              <div className="sw-row"><div className="sw-label">Picks submitted</div><div className="sw-val vw">0 / {totalMatches}</div></div>
-              <div className="sw-row"><div className="sw-label">Special picks</div><div className="sw-val vw">0 / {totalSpecial}</div></div>
+              <div className="sw-row"><div className="sw-label">Picks submitted</div><div className="sw-val vw">{userPicksCount} / {totalMatches}</div></div>
+              <div className="sw-row"><div className="sw-label">Special picks</div><div className="sw-val vw">{userSpecialCount} / {totalSpecial}</div></div>
             </div>
 
             {/* Scoring */}
