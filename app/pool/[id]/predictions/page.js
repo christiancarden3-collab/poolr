@@ -690,6 +690,16 @@ export default function MatchPicksPage() {
                 </div>
               )
             })}
+
+            {/* Save All Button - Bottom */}
+            {unsavedCount > 0 && (
+              <div className="save-all-bar" style={{marginTop: '1rem'}}>
+                <div className="save-all-info">{unsavedCount} unsaved pick{unsavedCount > 1 ? 's' : ''}</div>
+                <button className="btn-save-all" onClick={handleSaveAll} disabled={savingAll}>
+                  {savingAll ? 'Saving All...' : `Save All Picks (${unsavedCount})`}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* SIDEBAR */}
