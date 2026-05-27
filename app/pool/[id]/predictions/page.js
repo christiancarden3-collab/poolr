@@ -100,8 +100,9 @@ export default function MatchPicksPage() {
         if (poolData.deadline_type === '30m_before_match') {
           setDeadline(null)
         } else {
+          // RG: Use first match of each day as deadline, WC: tournament start
           const deadlineDate = poolData.tournament === 'rg2026' 
-            ? new Date('2026-05-24T04:00:00-04:00')
+            ? new Date('2026-05-27T04:00:00-04:00') // Day 3 start
             : new Date('2026-06-11T17:00:00-04:00')
           setDeadline(deadlineDate)
         }
