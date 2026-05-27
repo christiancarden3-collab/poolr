@@ -353,7 +353,7 @@ export default function MatchPicksPage() {
   const submittedCount = matches.filter(m => picks[m.id]?.saved).length
   const totalMatches = matches.length
   const isRG = pool?.tournament === 'rg2026'
-  const mdLabels = isRG ? ['Day 1','Day 2','R3','R4','QF','SF','Final'] : ['MD 1','MD 2','MD 3','R32','R16','QF','SF','F']
+  const mdLabels = isRG ? ['Day 1','Day 2','R3 Day 1','R3 Day 2','QF','SF','Final'] : ['MD 1','MD 2','MD 3','R32','R16','QF','SF','F']
 
   if (loading) return <div className="loading">Loading...</div>
 
