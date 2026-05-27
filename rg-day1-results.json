@@ -1,0 +1,32 @@
+{
+  "tournament": "rg2026",
+  "day": 1,
+  "date": "2026-05-24",
+  "results": [
+    {"id": "rg1-1", "p1": "A. Davidovich Fokina", "p2": "D. Džumhur", "winner": "p1", "score": "3-2", "sets": "6-3, 6-2, 6-7, 3-6, 6-3"},
+    {"id": "rg1-2", "p1": "J. Duckworth", "p2": "G. Diallo", "winner": "p2", "score": "RET", "sets": "6-4, 3-1 ret"},
+    {"id": "rg1-3", "p1": "K. Khachanov", "p2": "A. Gea", "winner": "p1", "score": "3-0", "sets": "6-3, 7-6, 6-3"},
+    {"id": "rg1-4", "p1": "M. Kecmanović", "p2": "F. Marozsán", "winner": "p1", "score": "3-0", "sets": "7-6, 6-4, 6-0"},
+    {"id": "rg1-5", "p1": "P. Llamas Ruiz", "p2": "T. Tirante", "winner": "p2", "score": "3-1", "sets": "3-6, 6-7, 7-6, 6-5"},
+    {"id": "rg1-6", "p1": "K. Jacquet", "p2": "M. Trungelliti", "winner": "p2", "score": "3-0", "sets": "4-6, 2-6, 2-6"},
+    {"id": "rg1-7", "p1": "T. Machač", "p2": "Z. Bergs", "winner": "p1", "score": "3-0", "sets": "6-4, 6-4, 6-3"},
+    {"id": "rg1-8", "p1": "B. Bonzi", "p2": "A. Zverev", "winner": "p2", "score": "3-0", "sets": "3-6, 4-6, 2-6"},
+    {"id": "rg1-9", "p1": "F. Cinà", "p2": "R. Opelka", "winner": "p2", "score": "3-2", "sets": "3-6, 6-6, 6-4, 2-7, 8-4"},
+    {"id": "rg1-10", "p1": "T. Droguet", "p2": "J. Menšik", "winner": "p2", "score": "3-0", "sets": "3-6, 2-6, 4-6"},
+    {"id": "rg1-11", "p1": "T. Etcheverry", "p2": "N. Borges", "winner": "p2", "score": "3-0", "sets": "3-6, 4-6, 2-6"},
+    {"id": "rg1-12", "p1": "M. Zheng", "p2": "D. Prižmić", "winner": "p2", "score": "3-0", "sets": "1-6, 1-6, 3-6"},
+    {"id": "rg1-13", "p1": "Q. Halys", "p2": "M. Bellucci", "winner": "p1", "score": "3-0", "sets": "6-3, 7-6, 6-4"},
+    {"id": "rg1-14", "p1": "J. Fonseca", "p2": "L. Pavlović", "winner": "p1", "score": "3-0", "sets": "7-6, 6-4, 6-2"},
+    {"id": "rg1-15", "p1": "H. Medjedović", "p2": "Y. Hanfmann", "winner": "p1", "score": "3-2", "sets": "6-3, 6-4, 1-6, 7-7, 6-4"},
+    {"id": "rg1-16", "p1": "A. Blockx", "p2": "C. Wong", "winner": "p1", "score": "3-0", "sets": "6-3, 6-4, 6-2"},
+    {"id": "rg1-17", "p1": "T. Fritz", "p2": "N. Basavareddy", "winner": "p1", "score": "3-2", "sets": "6-5, 6-5, 7-11, 7-7, 7-6"},
+    {"id": "rg1-18", "p1": "L. Sonego", "p2": "P. Herbert", "winner": "p1", "score": "3-2", "sets": "7-6, 5-6, 1-6, 6-7, 6-4"},
+    {"id": "rg1-19", "p1": "H. Dellien", "p2": "V. Royer", "winner": "p2", "score": "3-0", "sets": "4-6, 2-6, 2-6"},
+    {"id": "rg1-20", "p1": "G. Mpetshi Perricard", "p2": "N. Djokovic", "winner": "p2", "score": "3-1", "sets": "7-5, 1-6, 4-6, 5-7"}
+  ],
+  "summary": {
+    "matches_played": 20,
+    "total_upsets": 6,
+    "retirements": 1
+  }
+}
