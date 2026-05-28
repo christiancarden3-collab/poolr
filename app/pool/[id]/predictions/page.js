@@ -340,6 +340,35 @@ export default function MatchPicksPage() {
     return 'open'
   }
 
+  // Calculate points for a completed match
+  const calculateResult = (match, pick) => {
+    if (!match.resultHome && match.resultHome !== 0) return null
+    if (!pick || pick.winner == null) return { points: 0, winnerCorrect: false, scoreCorrect: false, oneScoreCorrect: false, description: 'No pick' }
+    
+    const resultWinner = match.resultHome > match.resultAway ? 'home' : (match.resultAway > match.resultHome ? 'away' : 'tie')
+    const winnerCorrect = pick.winner === resultWinner
+    const homeScoreCorrect = pick.homeScore === match.resultHome
+    const awayScoreCorrect = pick.awayScore === match.resultAway
+    const scoreCorrect = homeScoreCorrect && awayScoreCorrect
+    const oneScoreCorrect = homeScoreCorrect || awayScoreCorrect
+    
+    let points = 0
+    let description = 'No correct picks'
+    
+    if (scoreCorrect && winnerCorrect) {
+      points = 3
+      description = 'Exact score + winner'
+    } else if (winnerCorrect && oneScoreCorrect) {
+      points = 2
+      description = 'Winner + 1 score'
+    } else if (winnerCorrect) {
+      points = 1
+      description = 'Correct winner only'
+    }
+    
+    return { points, winnerCorrect, scoreCorrect, oneScoreCorrect, homeScoreCorrect, awayScoreCorrect, description }
+  }
+
   const formatCountdown = () => {
     if (!deadline) return '--:--:--'
     const diff = deadline - new Date()
@@ -469,6 +498,31 @@ export default function MatchPicksPage() {
         .sd-val { font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;color:var(--gold);min-width:28px;text-align:center; }
         .sd-val.muted { color:var(--f2); }
         .pick-label { font-size:0.6rem;color:var(--f4);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px; }
+
+        /* RESULTS DISPLAY */
+        .result-center { display:flex;flex-direction:column;align-items:center;gap:5px; }
+        .result-label { font-size:0.6rem;color:var(--f4);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.1em;text-transform:uppercase; }
+        .result-score { display:flex;align-items:center;gap:6px; }
+        .rs-val { font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:900;color:var(--f1);min-width:26px;text-align:center;line-height:1; }
+        .rs-dash { font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:var(--f4); }
+        .pick-block { display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px; }
+        .pick-row { display:flex;align-items:center;gap:5px; }
+        .ck { width:17px;height:17px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 8px rgba(201,168,76,0.35); }
+        .xx { width:17px;height:17px;border-radius:50%;background:rgba(224,59,59,0.12);border:1.5px solid rgba(224,59,59,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .pick-score-box { display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--line);border-radius:3px;padding:0.28rem 0.65rem; }
+        .pick-score-box.correct { border-color:rgba(201,168,76,0.25); }
+        .psv { font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;min-width:14px;text-align:center;color:var(--f3); }
+        .psv.correct { color:var(--gold); }
+        .pss { font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;color:var(--f4); }
+        .pill-row { display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:3px; }
+        .pill { display:inline-flex;align-items:center;gap:3px;font-size:0.65rem;font-weight:700;padding:0.14rem 0.5rem;border-radius:4px;white-space:nowrap; }
+        .pill-ok { background:rgba(201,168,76,0.1);color:var(--gold2);border:1px solid rgba(201,168,76,0.22); }
+        .pill-bad { background:rgba(224,59,59,0.08);color:rgba(220,80,80,0.8);border:1px solid rgba(224,59,59,0.18); }
+        .result-footer { border-top:1px solid var(--line);padding:0.45rem 1rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.18); }
+        .rf-desc { font-size:0.78rem;font-weight:600; }
+        .pts-badge { display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:700;padding:0.2rem 0.65rem;border-radius:4px; }
+        .pts-gold { background:rgba(201,168,76,0.12);color:var(--gold2);border:1px solid rgba(201,168,76,0.28); }
+        .pts-zero { background:rgba(224,59,59,0.1);color:rgba(220,80,80,0.85);border:1px solid rgba(224,59,59,0.2); }
 
         .mpc-foot { border-top:1px solid var(--line);padding:0.45rem 1rem;display:flex;align-items:center;justify-content:flex-end;gap:0.6rem;background:rgba(0,0,0,0.15); }
         .btn-save { font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:#000;padding:0.4rem 1rem;border-radius:2px;border:none;cursor:pointer; }
@@ -620,8 +674,63 @@ export default function MatchPicksPage() {
                           </div>
                           
                           {/* SCORE CENTER */}
-                          <div className="score-center">
-                            {!isLocked ? (
+                          <div className={match.resultHome != null ? "result-center" : "score-center"}>
+                            {match.resultHome != null ? (
+                              // COMPLETED MATCH - Show result
+                              (() => {
+                                const result = calculateResult(match, pick)
+                                return (
+                                  <>
+                                    <div className="result-label">Result</div>
+                                    <div className="result-score">
+                                      <span className="rs-val">{match.resultHome}</span>
+                                      <span className="rs-dash">–</span>
+                                      <span className="rs-val">{match.resultAway}</span>
+                                    </div>
+                                    {pick?.homeScore != null ? (
+                                      <div className="pick-block">
+                                        <div className="pick-label">Your pick</div>
+                                        <div className="pick-row">
+                                          {result?.homeScoreCorrect ? (
+                                            <div className="ck"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+                                          ) : (
+                                            <div className="xx"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="#e03b3b" strokeWidth="1.8" strokeLinecap="round"/></svg></div>
+                                          )}
+                                          <div className={`pick-score-box ${result?.scoreCorrect ? 'correct' : ''}`}>
+                                            <span className={`psv ${result?.homeScoreCorrect ? 'correct' : ''}`}>{pick.homeScore}</span>
+                                            <span className="pss">–</span>
+                                            <span className={`psv ${result?.awayScoreCorrect ? 'correct' : ''}`}>{pick.awayScore}</span>
+                                          </div>
+                                          {result?.awayScoreCorrect ? (
+                                            <div className="ck"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+                                          ) : (
+                                            <div className="xx"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="#e03b3b" strokeWidth="1.8" strokeLinecap="round"/></svg></div>
+                                          )}
+                                        </div>
+                                        <div className="pill-row">
+                                          {result?.scoreCorrect ? (
+                                            <span className="pill pill-ok">✓ Exact score</span>
+                                          ) : result?.oneScoreCorrect ? (
+                                            <span className="pill pill-ok">✓ 1 score</span>
+                                          ) : (
+                                            <span className="pill pill-bad">✗ Score</span>
+                                          )}
+                                          {result?.winnerCorrect ? (
+                                            <span className="pill pill-ok">✓ Winner</span>
+                                          ) : (
+                                            <span className="pill pill-bad">✗ Winner</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="pick-block">
+                                        <div className="pick-label" style={{color:'var(--red)'}}>No pick</div>
+                                      </div>
+                                    )}
+                                  </>
+                                )
+                              })()
+                            ) : !isLocked ? (
                               isRG ? (
                                 <>
                                   <div className="score-status">Set Score</div>
@@ -685,6 +794,17 @@ export default function MatchPicksPage() {
                             <button className="btn-edit" onClick={() => setPicks(prev => ({...prev, [match.id]: {...prev[match.id], saved: false}}))}>Edit</button>
                           </div>
                         )}
+                        {match.resultHome != null && (() => {
+                          const result = calculateResult(match, pick)
+                          return (
+                            <div className="result-footer">
+                              <div className="rf-desc" style={{color: result?.points > 0 ? 'var(--gold2)' : 'rgba(220,80,80,0.85)'}}>{result?.description}</div>
+                              <span className={`pts-badge ${result?.points > 0 ? 'pts-gold' : 'pts-zero'}`}>
+                                {result?.points > 0 ? `+${result.points} pts` : '0 pts'}
+                              </span>
+                            </div>
+                          )
+                        })()}
                       </div>
                     )
                   })}
