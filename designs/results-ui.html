@@ -1,3 +1,240 @@
-<!-- Results UI Design - Match card with scoring display -->
-<!-- See /Users/tian/.clawdbot/media/inbound/5d5e9abe-ed4e-4586-ba9b-e15117bc1c1c.jpg for reference -->
-<!-- Scoring: Exact=3pts, Winner+1=2pts, Winner=1pt, Wrong=0pts -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;
+  --gold:#c9a84c;--gold2:#e6c76a;--red:#e03b3b;--green:#2cb67d;
+  --f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;
+  --line:rgba(255,255,255,0.07);--gold-line:rgba(201,168,76,0.3);
+}
+body{background:#07090e;font-family:'Outfit',sans-serif;color:var(--f1);padding:16px;display:flex;flex-direction:column;gap:12px}
+
+/* Day header */
+.day-header{background:var(--bg3);border:1px solid var(--line);border-radius:4px 4px 0 0;padding:0.5rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.day-header-title{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)}
+.day-header-sub{font-family:'Outfit',sans-serif;font-size:0.62rem;font-weight:400;color:var(--f3);margin-top:1px}
+.locked-badge{font-family:'Outfit',sans-serif;font-size:0.62rem;font-weight:500;color:var(--f4);display:flex;align-items:center;gap:3px}
+
+/* Match card */
+.match-card{background:var(--bg2);border:1px solid var(--line);border-top:none;border-radius:0 0 4px 4px;overflow:hidden;margin-bottom:4px}
+.match-header{background:var(--bg3);padding:0.32rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.match-time{font-family:'Outfit',sans-serif;font-size:0.62rem;font-weight:500;color:var(--f4)}
+.match-locked{font-family:'Outfit',sans-serif;font-size:0.6rem;font-weight:500;color:var(--f4);display:flex;align-items:center;gap:3px}
+
+/* Body */
+.match-body{display:grid;grid-template-columns:1fr 210px 1fr;align-items:center;padding:0.9rem 1rem}
+.team-side{display:flex;flex-direction:column;align-items:center;gap:4px}
+.team-flag img{width:44px;height:30px;border-radius:3px;object-fit:cover;border:1px solid rgba(255,255,255,0.1)}
+.team-name{font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--f2);text-align:center}
+.team-seed{font-family:'Outfit',sans-serif;font-size:0.58rem;color:var(--f4)}
+.team-side.winner .team-name{color:var(--gold2)}
+.team-side.winner .team-flag img{border-color:rgba(201,168,76,0.45)}
+
+/* Center */
+.score-center{display:flex;flex-direction:column;align-items:center;gap:5px}
+.result-lbl{font-family:'Outfit',sans-serif;font-size:0.6rem;font-weight:500;color:var(--f4)}
+.actual-score{display:flex;align-items:center;gap:6px}
+.asv{font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:900;color:var(--f1);min-width:26px;text-align:center;line-height:1}
+.ass{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:var(--f4)}
+
+/* Pick block */
+.pick-block{display:flex;flex-direction:column;align-items:center;gap:3px}
+.pick-lbl{font-family:'Outfit',sans-serif;font-size:0.58rem;font-weight:500;color:var(--f4)}
+.pick-row{display:flex;align-items:center;gap:5px}
+
+/* Check/X */
+.ck{width:17px;height:17px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 8px rgba(201,168,76,0.35)}
+.ck svg{display:block}
+.xx{width:17px;height:17px;border-radius:50%;background:rgba(224,59,59,0.12);border:1.5px solid rgba(224,59,59,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.xx svg{display:block}
+
+/* Pick score box */
+.pick-score-box{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--line);border-radius:3px;padding:0.28rem 0.65rem}
+.psv{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;min-width:14px;text-align:center}
+.pss{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;color:var(--f4)}
+
+/* Pills */
+.pill-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:3px;font-family:'Outfit',sans-serif;font-size:0.65rem;font-weight:700;padding:0.14rem 0.5rem;border-radius:4px;white-space:nowrap}
+.pill-ok{background:rgba(201,168,76,0.1);color:var(--gold2);border:1px solid rgba(201,168,76,0.22)}
+.pill-bad{background:rgba(224,59,59,0.08);color:rgba(220,80,80,0.8);border:1px solid rgba(224,59,59,0.18)}
+
+/* Footer */
+.match-footer{border-top:1px solid var(--line);padding:0.45rem 1rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.18)}
+.mf-desc{font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:600}
+.pts-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;padding:0.2rem 0.65rem;border-radius:4px}
+.pts-gold{background:rgba(201,168,76,0.12);color:var(--gold2);border:1px solid rgba(201,168,76,0.28)}
+.pts-zero{background:rgba(224,59,59,0.1);color:rgba(220,80,80,0.85);border:1px solid rgba(224,59,59,0.2)}
+</style>
+
+<!-- SCENARIO 1 — EXACT SCORE → 3 pts -->
+<div class="day-header">
+  <div><div class="day-header-title">Day 3 · Locks May 27, 4:00 AM ET</div><div class="day-header-sub">Submit picks before matches start</div></div>
+  <div class="locked-badge">🔒 Locked</div>
+</div>
+<div class="match-card">
+  <div class="match-header"><div class="match-time">04:00 ET</div><div class="match-locked">🔒 Locked</div></div>
+  <div class="match-body">
+    <div class="team-side winner">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/es.png" alt="ESP"></div>
+      <div class="team-name">A. Davidovich Fokina</div>
+      <div class="team-seed">(23)</div>
+    </div>
+    <div class="score-center">
+      <div class="result-lbl">Result</div>
+      <div class="actual-score"><span class="asv">3</span><span class="ass">–</span><span class="asv">1</span></div>
+      <div class="pick-block">
+        <div class="pick-lbl">Your pick</div>
+        <div class="pick-row">
+          <div class="ck"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="pick-score-box" style="border-color:rgba(201,168,76,0.25)">
+            <span class="psv" style="color:var(--gold)">3</span><span class="pss">–</span><span class="psv" style="color:var(--gold)">1</span>
+          </div>
+          <div class="ck"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill pill-ok">✓ Exact score</span>
+          <span class="pill pill-ok">✓ Winner</span>
+        </div>
+      </div>
+    </div>
+    <div class="team-side">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/ar.png" alt="ARG"></div>
+      <div class="team-name">T. Tirante</div>
+      <div class="team-seed">(58)</div>
+    </div>
+  </div>
+  <div class="match-footer">
+    <div class="mf-desc" style="color:var(--gold2)">Exact score + winner</div>
+    <span class="pts-badge pts-gold">+3 pts</span>
+  </div>
+</div>
+
+<!-- SCENARIO 2 — WINNER ONLY → 1 pt -->
+<div class="day-header">
+  <div><div class="day-header-title">Day 3 · Locks May 27, 4:00 AM ET</div><div class="day-header-sub">Submit picks before matches start</div></div>
+  <div class="locked-badge">🔒 Locked</div>
+</div>
+<div class="match-card">
+  <div class="match-header"><div class="match-time">04:00 ET</div><div class="match-locked">🔒 Locked</div></div>
+  <div class="match-body">
+    <div class="team-side winner">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/au.png" alt="AUS"></div>
+      <div class="team-name">A. De Minaur</div>
+      <div class="team-seed">(9)</div>
+    </div>
+    <div class="score-center">
+      <div class="result-lbl">Result</div>
+      <div class="actual-score"><span class="asv">3</span><span class="ass">–</span><span class="asv">1</span></div>
+      <div class="pick-block">
+        <div class="pick-lbl">Your pick</div>
+        <div class="pick-row">
+          <div class="xx"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="#e03b3b" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="pick-score-box">
+            <span class="psv" style="color:var(--f3)">3</span><span class="pss">–</span><span class="psv" style="color:var(--f3)">0</span>
+          </div>
+          <div class="ck"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill pill-bad">✗ Score</span>
+          <span class="pill pill-ok">✓ Winner</span>
+        </div>
+      </div>
+    </div>
+    <div class="team-side">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/be.png" alt="BEL"></div>
+      <div class="team-name">A. Blockx</div>
+      <div class="team-seed">(38)</div>
+    </div>
+  </div>
+  <div class="match-footer">
+    <div class="mf-desc" style="color:var(--gold2)">Correct winner only</div>
+    <span class="pts-badge pts-gold">+1 pt</span>
+  </div>
+</div>
+
+<!-- SCENARIO 3 — WINNER + 1 SCORE → 2 pts -->
+<div class="day-header">
+  <div><div class="day-header-title">Day 3 · Locks May 27, 4:00 AM ET</div><div class="day-header-sub">Submit picks before matches start</div></div>
+  <div class="locked-badge">🔒 Locked</div>
+</div>
+<div class="match-card">
+  <div class="match-header"><div class="match-time">04:30 ET</div><div class="match-locked">🔒 Locked</div></div>
+  <div class="match-body">
+    <div class="team-side">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/it.png" alt="ITA"></div>
+      <div class="team-name">F. Cinà</div>
+      <div class="team-seed">(350)</div>
+    </div>
+    <div class="score-center">
+      <div class="result-lbl">Result</div>
+      <div class="actual-score"><span class="asv">1</span><span class="ass">–</span><span class="asv">3</span></div>
+      <div class="pick-block">
+        <div class="pick-lbl">Your pick</div>
+        <div class="pick-row">
+          <div class="xx"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="#e03b3b" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="pick-score-box">
+            <span class="psv" style="color:var(--f3)">0</span><span class="pss">–</span><span class="psv" style="color:var(--gold)">3</span>
+          </div>
+          <div class="ck"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill pill-bad">✗ Exact score</span>
+          <span class="pill pill-ok">✓ Winner + 1 score</span>
+        </div>
+      </div>
+    </div>
+    <div class="team-side winner">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/nl.png" alt="NED"></div>
+      <div class="team-name">J. De Jong</div>
+      <div class="team-seed"></div>
+    </div>
+  </div>
+  <div class="match-footer">
+    <div class="mf-desc" style="color:var(--gold2)">Winner + 1 correct score</div>
+    <span class="pts-badge pts-gold">+2 pts</span>
+  </div>
+</div>
+
+<!-- SCENARIO 4 — BOTH WRONG → 0 pts -->
+<div class="day-header">
+  <div><div class="day-header-title">Day 3 · Locks May 27, 4:00 AM ET</div><div class="day-header-sub">Submit picks before matches start</div></div>
+  <div class="locked-badge">🔒 Locked</div>
+</div>
+<div class="match-card">
+  <div class="match-header"><div class="match-time">05:10 ET</div><div class="match-locked">🔒 Locked</div></div>
+  <div class="match-body">
+    <div class="team-side">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/ar.png" alt="ARG"></div>
+      <div class="team-name">C. Ugo Carabelli</div>
+      <div class="team-seed">(68)</div>
+    </div>
+    <div class="score-center">
+      <div class="result-lbl">Result</div>
+      <div class="actual-score"><span class="asv">1</span><span class="ass">–</span><span class="asv">3</span></div>
+      <div class="pick-block">
+        <div class="pick-lbl">Your pick</div>
+        <div class="pick-row">
+          <div class="xx"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="#e03b3b" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="pick-score-box" style="border-color:rgba(224,59,59,0.2)">
+            <span class="psv" style="color:var(--f4)">3</span><span class="pss">–</span><span class="psv" style="color:var(--f4)">0</span>
+          </div>
+          <div class="xx"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="#e03b3b" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill pill-bad">✗ Score</span>
+          <span class="pill pill-bad">✗ Winner</span>
+        </div>
+      </div>
+    </div>
+    <div class="team-side winner">
+      <div class="team-flag"><img src="https://flagcdn.com/w80/ru.png" alt="RUS"></div>
+      <div class="team-name">A. Rublev</div>
+      <div class="team-seed">(13)</div>
+    </div>
+  </div>
+  <div class="match-footer">
+    <div class="mf-desc" style="color:rgba(220,80,80,0.85)">No correct picks</div>
+    <span class="pts-badge pts-zero">0 pts</span>
+  </div>
+</div>
