@@ -328,13 +328,13 @@ export default function RegisterPage() {
         .field-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.08)}
         .field-input::placeholder{color:var(--f4)}
         select.field-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8780' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.75rem center}
-        .field-hint{font-size:0.68rem;color:var(--f4);margin-top:0.3rem;display:flex;align-items:center;gap:3px}
+        .field-hint{font-size:0.68rem;color:#4a4845;margin-top:0.3rem;display:flex;align-items:center;gap:3px;font-family:'Inter',sans-serif}
         .pw-rules{display:flex;gap:0.75rem;margin-top:0.35rem;flex-wrap:wrap}
-        .pw-rule{display:flex;align-items:center;gap:3px;font-size:0.66rem;color:var(--f4)}
-        .pw-rule.met{color:var(--green)}
+        .pw-rule{display:flex;align-items:center;gap:3px;font-size:0.66rem;color:#4a4845;font-family:'Inter',sans-serif}
+        .pw-rule.met{color:#2cb67d}
         .check-row{display:flex;align-items:flex-start;gap:0.55rem;margin-bottom:1rem;margin-top:0.15rem}
-        .check-row input{margin-top:2px;width:14px;height:14px;flex-shrink:0;accent-color:var(--gold);cursor:pointer}
-        .terms-text{font-size:0.72rem;color:var(--f3);line-height:1.5;cursor:pointer}
+        .check-row input{margin-top:2px;width:14px;height:14px;flex-shrink:0;accent-color:#c9a84c;cursor:pointer}
+        .terms-text{font-size:0.72rem;color:#8a8780;line-height:1.5;cursor:pointer;font-family:'Inter',sans-serif}
         .terms-text a{color:var(--gold);text-decoration:none}
         .terms-text a:hover{text-decoration:underline}
 
