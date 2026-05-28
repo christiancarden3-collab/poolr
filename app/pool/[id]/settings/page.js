@@ -171,6 +171,17 @@ Include your name in the payment note so we can confirm your entry.`}
       </main>
 
       <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+        :root {
+          --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;
+          --gold:#c9a84c;--gold2:#e6c76a;--green:#2cb67d;
+          --f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;
+          --line:rgba(255,255,255,0.07);
+          --ink:var(--bg);--ink2:var(--bg2);--ink3:var(--bg3);
+          --border:var(--line);--border2:var(--line);
+          --silk:#fff;--body:var(--f3);--muted:var(--f4);
+        }
+        body { background:var(--bg);font-family:'Inter',sans-serif;color:var(--f1); }
         .settings-nav {
           display: flex;
           align-items: center;
@@ -181,10 +192,18 @@ Include your name in the payment note so we can confirm your entry.`}
         }
 
         .back-link {
-          color: var(--body);
-          font-size: 0.85rem;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--f3);
           text-decoration: none;
           width: 150px;
+          transition: color 0.15s;
+        }
+        .back-link:hover {
+          color: var(--gold);
         }
 
         .settings-container {
@@ -198,11 +217,21 @@ Include your name in the payment note so we can confirm your entry.`}
         }
 
         .settings-header h1 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.5rem;
-          font-weight: 600;
-          color: var(--silk);
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 2rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          color: #fff;
         }
+        .logo {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.6rem;
+          font-weight: 900;
+          color: #fff;
+          letter-spacing: 0.04em;
+        }
+        .logo span { color: var(--gold); }
 
         .settings-header p {
           color: var(--body);
