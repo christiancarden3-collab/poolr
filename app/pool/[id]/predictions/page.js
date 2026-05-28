@@ -633,7 +633,7 @@ export default function MatchPicksPage() {
         <div className="a-body">
           {/* MAIN */}
           <div className="a-main">
-            <Link href={`/pool/${params.id}`} className="back-link">← Back to Pool</Link>
+            <Link href={`/pool/${params.id}`} className="back-link" style={{display:'inline-flex',alignItems:'center',gap:'6px',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.85rem',fontWeight:800,letterSpacing:'0.06em',textTransform:'uppercase',color:'var(--gold)',textDecoration:'none',marginBottom:'1rem'}}>← BACK TO POOL</Link>
 
             {/* Matchday strip */}
             <div className="md-strip">
