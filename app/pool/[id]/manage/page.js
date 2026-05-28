@@ -173,6 +173,15 @@ export default function ManagePoolPage() {
     try {
       const memberToRemove = members.find(m => m.id === memberId)
       
+      // Delete their picks from picks table (by user_id and pool_id)
+      if (memberToRemove) {
+        await supabase
+          .from('picks')
+          .delete()
+          .eq('pool_id', pool.id)
+          .eq('user_id', memberToRemove.user_id)
+      }
+      
       // Delete their match picks
       await supabase
         .from('match_picks')
@@ -214,6 +223,10 @@ export default function ManagePoolPage() {
     
     try {
       console.log('Starting pool deletion...')
+      
+      // Delete all picks for the pool first
+      const { error: poolPicksErr } = await supabase.from('picks').delete().eq('pool_id', pool.id)
+      if (poolPicksErr) console.log('Picks delete error (ok if table empty):', poolPicksErr)
       
       // Delete all match picks for all members
       for (const member of members) {
