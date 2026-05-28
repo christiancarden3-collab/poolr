@@ -213,7 +213,7 @@ export default function ManagePoolPage() {
   }
 
   const deletePool = async () => {
-    if (deleteConfirmText !== pool.name) {
+    if (deleteConfirmText.trim() !== pool.name.trim()) {
       setMessage('Pool name does not match')
       return
     }

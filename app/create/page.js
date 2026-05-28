@@ -88,7 +88,7 @@ function CreatePoolContent() {
       const { data: pool, error: poolError } = await supabase
         .from('pools')
         .insert({
-          name: poolName,
+          name: poolName.trim(),
           description,
           commissioner_id: user.id,
           invite_code: inviteCode,
