@@ -1,2 +1,518 @@
-<!-- Dashboard V2 Design - Hero header, tabs, action cards -->
-<!-- See /Users/tian/.clawdbot/media/inbound/ac519d19-3e2b-41a9-81fb-3496c905fbe4 for reference -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;--bg4:#1e2330;
+  --gold:#c9a84c;--gold2:#e6c76a;--red:#e03b3b;--green:#2cb67d;
+  --f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;
+  --line:rgba(255,255,255,0.07);--gold-line:rgba(201,168,76,0.3);
+}
+body{background:#07090e;font-family:'Inter',sans-serif;color:var(--f1);padding:0;margin:0}
+
+/* ─── POOL HERO HEADER ─────────────────────── */
+.hero{
+  background:linear-gradient(180deg,#0f1420 0%,#07090e 100%);
+  border-bottom:1px solid rgba(201,168,76,0.15);
+  padding:1.1rem 1.5rem 0;
+}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;padding-bottom:1rem}
+.hero-left{}
+.hero-eyebrow{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.65rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:0.35rem;
+  display:flex;align-items:center;gap:6px;
+}
+.hero-eyebrow::before{content:'';width:18px;height:2px;background:var(--gold)}
+.hero-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2.2rem;font-weight:900;text-transform:uppercase;
+  letter-spacing:0.02em;color:#fff;line-height:1;margin-bottom:0.4rem;
+}
+.hero-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.18rem 0.55rem;border-radius:2px;
+}
+.tag-outline{border:1px solid var(--f4);color:var(--f3)}
+.tag-gold{border:1px solid var(--gold-line);color:var(--gold);background:rgba(201,168,76,0.08)}
+.tag-green{border:1px solid rgba(44,182,125,0.25);color:var(--green);background:rgba(44,182,125,0.08)}
+.tag-soon{border:1px solid var(--gold-line);color:var(--gold);background:rgba(201,168,76,0.1)}
+
+/* ─── STATS ROW ── 5 stats now ─────────────── */
+.stats-row{
+  display:flex;gap:0;
+  border:1px solid rgba(201,168,76,0.18);
+  border-radius:4px;overflow:hidden;
+  align-self:flex-start;flex-shrink:0;
+}
+.stat{
+  padding:0.65rem 1.1rem;
+  border-right:1px solid rgba(201,168,76,0.12);
+  text-align:center;
+  background:rgba(201,168,76,0.03);
+  min-width:72px;
+}
+.stat:last-child{border-right:none}
+.stat-n{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1;
+}
+.stat-n.white{color:#fff}
+.stat-n.green{color:var(--green)}
+.stat-l{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--f4);margin-top:3px;white-space:nowrap;
+}
+
+/* ─── TAB NAV ───────────────────────────────── */
+.tabs{
+  display:flex;border-top:1px solid rgba(255,255,255,0.05);
+  margin:0 -1.5rem;padding:0 1.5rem;
+}
+.tab{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--f3);padding:0.7rem 1rem;
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
+}
+.tab.active{color:#fff;border-bottom-color:var(--gold)}
+
+/* ─── BODY GRID ─────────────────────────────── */
+.body{display:grid;grid-template-columns:1fr 268px;gap:0}
+.main{padding:1.25rem 1.5rem;border-right:1px solid var(--line)}
+.side{padding:1.25rem;background:#07090d}
+
+/* ─── ACTION CARDS ──────────────────────────── */
+.action-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.1rem}
+.ac{
+  border:1px solid rgba(201,168,76,0.18);border-radius:4px;
+  padding:0.9rem 1rem;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:0.85rem;
+  background:rgba(201,168,76,0.03);position:relative;overflow:hidden;
+}
+.ac:hover{border-color:var(--gold);background:rgba(201,168,76,0.06)}
+.ac.sil{border-color:rgba(184,204,224,0.18);background:rgba(184,204,224,0.03)}
+.ac.sil:hover{border-color:#b8cce0;background:rgba(184,204,224,0.06)}
+.ac-icon{
+  width:42px;height:42px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);
+}
+.ac.sil .ac-icon{background:rgba(184,204,224,0.08);border-color:rgba(184,204,224,0.2)}
+.ac-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.95rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:0.05em;color:#fff;margin-bottom:2px;
+}
+.ac-sub{font-family:'Inter',sans-serif;font-size:0.7rem;color:var(--f3);line-height:1.4}
+.ac-prog{display:flex;align-items:center;gap:6px;margin-top:5px}
+.ac-prog-bar{flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px}
+.ac-prog-fill{height:100%;border-radius:1px;background:var(--gold)}
+.ac.sil .ac-prog-fill{background:#b8cce0}
+.ac-prog-txt{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:700;color:var(--f4)}
+.ac-arrow{margin-left:auto;flex-shrink:0;color:var(--gold);font-size:1rem;font-family:'Barlow Condensed',sans-serif;font-weight:900}
+.ac.sil .ac-arrow{color:#b8cce0}
+
+/* ─── BANNER ────────────────────────────────── */
+.banner{
+  background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);
+  border-radius:4px;padding:0.7rem 1rem;margin-bottom:1rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.banner-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);
+}
+.banner-sub{font-family:'Inter',sans-serif;font-size:0.68rem;color:var(--f3);margin-top:2px}
+.banner-right{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem;font-weight:900;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);white-space:nowrap;
+}
+
+/* ─── SECTION HEADS ─────────────────────────── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem}
+.sh-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--f3);
+}
+.sh-link{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);cursor:pointer;
+}
+
+/* ─── LEADERBOARD ───────────────────────────── */
+.lb{background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:4px;overflow:hidden;margin-bottom:1.1rem}
+.lb-row{
+  display:grid;grid-template-columns:32px 20px 1fr auto;
+  align-items:center;gap:0 10px;padding:0.55rem 0.85rem;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.lb-row:last-child{border-bottom:none}
+.lb-row.you{background:rgba(201,168,76,0.04)}
+.lb-rank{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;color:var(--gold2);text-align:center}
+.lb-mv{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;color:var(--f4);text-align:center}
+.lb-name{font-family:'Inter',sans-serif;font-size:0.82rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:5px}
+.lb-sub{font-family:'Inter',sans-serif;font-size:0.65rem;color:var(--f4);margin-top:1px}
+.you-chip{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.52rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--gold);background:rgba(201,168,76,0.12);border:1px solid var(--gold-line);
+  padding:0.08rem 0.3rem;border-radius:2px;
+}
+.lb-pts{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:#fff}
+
+/* ─── INVITE ────────────────────────────────── */
+.invite-box{
+  background:var(--bg);border:1px solid var(--line);border-radius:3px;
+  padding:0.55rem 0.85rem;display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;
+}
+.invite-url{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:600;color:var(--gold);flex:1}
+.copy-btn{
+  font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:800;
+  letter-spacing:0.08em;text-transform:uppercase;background:var(--gold);color:#000;
+  padding:0.3rem 0.7rem;border-radius:2px;border:none;cursor:pointer;white-space:nowrap;
+}
+.share-row{display:flex;gap:6px;flex-wrap:wrap}
+.s-btn{
+  font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;
+  letter-spacing:0.04em;text-transform:uppercase;padding:0.32rem 0.65rem;border-radius:3px;border:none;cursor:pointer;
+}
+.s-wa{background:#25d366;color:#000}
+.s-x{background:#000;color:#fff;border:1px solid var(--line)}
+.s-fb{background:#1877f2;color:#fff}
+.s-more{background:var(--bg3);color:var(--f2);border:1px solid var(--line)}
+
+/* ─── SIDEBAR WIDGETS ───────────────────────── */
+.sw{margin-bottom:0.85rem}
+.sw-head{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.62rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--f4);border-bottom:1px solid var(--line);padding-bottom:0.4rem;margin-bottom:0.55rem;
+}
+.sw-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.sw-row:last-child{border-bottom:none}
+.sw-label{font-family:'Inter',sans-serif;font-size:0.72rem;color:var(--f3)}
+.sw-val{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700}
+.vg{color:var(--gold)}.vgr{color:var(--green)}.vw{color:#fff}
+
+/* ─── SCORING ───────────────────────────────── */
+.score-group{margin-bottom:0.6rem;padding-bottom:0.6rem;border-bottom:1px solid var(--line)}
+.score-group:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.score-group-lbl{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.56rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--f4);margin-bottom:0.3rem;
+}
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:0.26rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.sc-row:last-child{border-bottom:none}
+.sc-label{font-family:'Inter',sans-serif;font-size:0.7rem;color:var(--f3)}
+.sc-pts{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:var(--gold)}
+.sc-pts.dim{color:var(--f2)}
+
+/* ─── SETTINGS CARD (clean, no Manage Payments weirdness) ── */
+.settings-card{background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.settings-head{
+  background:var(--bg3);padding:0.55rem 0.85rem;border-bottom:1px solid var(--line);
+  font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;
+  letter-spacing:0.16em;text-transform:uppercase;color:var(--f4);
+}
+.settings-body{padding:0.75rem 0.85rem}
+.settings-team-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:0.65rem;margin-bottom:0.65rem;border-bottom:1px solid var(--line);
+}
+.settings-team-label{font-family:'Inter',sans-serif;font-size:0.72rem;color:var(--f3)}
+.settings-team-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.05rem;font-weight:900;text-transform:uppercase;
+  letter-spacing:0.03em;color:var(--gold);
+}
+.change-btn{
+  font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:800;
+  letter-spacing:0.06em;text-transform:uppercase;background:transparent;color:var(--f3);
+  border:1px solid var(--f4);padding:0.15rem 0.45rem;border-radius:2px;cursor:pointer;
+  transition:all 0.15s;flex-shrink:0;
+}
+.change-btn:hover{border-color:var(--f2);color:var(--f1)}
+
+/* ── Settings action links — clean, separated ── */
+.settings-actions{display:flex;flex-direction:column;gap:0}
+.settings-action-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:0.55rem 0;border-bottom:1px solid var(--line);
+  cursor:pointer;transition:all 0.15s;text-decoration:none;
+}
+.settings-action-btn:last-child{border-bottom:none;padding-bottom:0}
+.settings-action-btn:first-child{padding-top:0}
+.settings-action-icon{
+  width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:0.9rem;
+}
+.icon-payments{background:rgba(44,182,125,0.1);border:1px solid rgba(44,182,125,0.2)}
+.icon-settings{background:rgba(138,135,128,0.12);border:1px solid rgba(138,135,128,0.15)}
+.settings-action-text{flex:1}
+.settings-action-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.82rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:var(--f1);
+}
+.settings-action-sub{font-family:'Inter',sans-serif;font-size:0.62rem;color:var(--f4);margin-top:1px}
+.settings-action-arrow{
+  font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:900;color:var(--f4);flex-shrink:0;
+}
+.settings-action-btn:hover .settings-action-title{color:var(--gold)}
+.settings-action-btn:hover .settings-action-arrow{color:var(--gold)}
+.settings-action-btn.payments:hover .settings-action-title{color:var(--green)}
+.settings-action-btn.payments:hover .settings-action-arrow{color:var(--green)}
+</style>
+
+<div style="background:#07090e">
+
+  <!-- ─── HERO HEADER ─── -->
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-left">
+        <div class="hero-eyebrow">FIFA World Cup 2026</div>
+        <div class="hero-name">Quiniela Latam</div>
+        <div class="hero-tags">
+          <span class="tag tag-green">● Open</span>
+          <span class="tag tag-gold">$25 pool</span>
+          <span class="tag tag-outline">Private</span>
+          <span class="tag tag-outline">2 players</span>
+          <span class="tag tag-soon">Coming Jun 11</span>
+        </div>
+      </div>
+
+      <!-- ── 5-STAT BLOCK — now includes Prize Pot ── -->
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-n white">1st</div>
+          <div class="stat-l">Rank</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">0</div>
+          <div class="stat-l">Points</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">0/48</div>
+          <div class="stat-l">Picks in</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">0/4</div>
+          <div class="stat-l">Special</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n green">$50</div>
+          <div class="stat-l">Prize pot</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs flush to bottom of hero -->
+    <div class="tabs">
+      <div class="tab active">Match Picks</div>
+      <div class="tab">Special Picks</div>
+      <div class="tab">Leaderboard</div>
+      <div class="tab">Settings</div>
+    </div>
+  </div>
+
+  <!-- ─── BODY ─── -->
+  <div class="body">
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- Action cards -->
+      <div class="action-cards">
+        <div class="ac">
+          <div class="ac-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="18" rx="1"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M2 8h4v8H2"/><path d="M22 8h-4v8h4"/>
+            </svg>
+          </div>
+          <div style="flex:1">
+            <div class="ac-title">Match Picks</div>
+            <div class="ac-sub">Predict scorelines for each matchday</div>
+            <div class="ac-prog">
+              <div class="ac-prog-bar"><div class="ac-prog-fill" style="width:0%"></div></div>
+              <div class="ac-prog-txt">0 / 48</div>
+            </div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac sil">
+          <div class="ac-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8cce0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 3h12l-1.5 8a5 5 0 0 1-9 0L6 3z"/>
+              <path d="M6 5H3a1 1 0 0 0-1 1v2a4 4 0 0 0 4 4"/>
+              <path d="M18 5h3a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4"/>
+              <line x1="12" y1="16" x2="12" y2="20"/>
+              <path d="M8 20h8"/><path d="M7 22h10" stroke-width="2"/>
+            </svg>
+          </div>
+          <div style="flex:1">
+            <div class="ac-title">Special Picks</div>
+            <div class="ac-sub">Champion, top scorer, goalkeeper</div>
+            <div class="ac-prog">
+              <div class="ac-prog-bar"><div class="ac-prog-fill" style="width:0%;background:#b8cce0"></div></div>
+              <div class="ac-prog-txt">0 / 4</div>
+            </div>
+          </div>
+          <div class="ac-arrow" style="color:#b8cce0">→</div>
+        </div>
+      </div>
+
+      <!-- Banner -->
+      <div class="banner">
+        <div>
+          <div class="banner-title">Tournament starts Jun 11, 2026</div>
+          <div class="banner-sub">Submit all picks before the first match kicks off</div>
+        </div>
+        <div class="banner-right">14D 5H 24M</div>
+      </div>
+
+      <!-- Standings -->
+      <div class="sh"><div class="sh-title">Standings</div><div class="sh-link">Full Table →</div></div>
+      <div class="lb">
+        <div class="lb-row you">
+          <div class="lb-rank">1</div>
+          <div class="lb-mv">—</div>
+          <div>
+            <div class="lb-name">
+              The Commissioner
+              <span class="you-chip">YOU</span>
+              <span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block"></span>
+            </div>
+            <div class="lb-sub">Christian Carden</div>
+          </div>
+          <div class="lb-pts">0</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-rank" style="color:var(--f3)">2</div>
+          <div class="lb-mv">—</div>
+          <div>
+            <div class="lb-name">Michis</div>
+            <div class="lb-sub">Maia Antelo</div>
+          </div>
+          <div class="lb-pts">0</div>
+        </div>
+      </div>
+
+      <!-- Invite -->
+      <div class="sh"><div class="sh-title">Invite Friends</div></div>
+      <div class="invite-box">
+        <div class="invite-url">pickpoolr.com/join/quinieks1</div>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <div class="share-row">
+        <button class="s-btn s-wa">WhatsApp</button>
+        <button class="s-btn s-x">𝕏</button>
+        <button class="s-btn s-fb">Facebook</button>
+        <button class="s-btn s-more">••• More</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="side">
+
+      <!-- Pool Info -->
+      <div class="sw">
+        <div class="sw-head">Pool Info</div>
+        <div class="sw-row"><div class="sw-label">Tournament</div><div class="sw-val vw" style="font-size:0.75rem">FIFA World Cup 2026</div></div>
+        <div class="sw-row"><div class="sw-label">Players</div><div class="sw-val vw">2</div></div>
+        <div class="sw-row"><div class="sw-label">Buy-in</div><div class="sw-val vgr">$25</div></div>
+        <div class="sw-row"><div class="sw-label">Prize pot</div><div class="sw-val vgr">$50</div></div>
+        <div class="sw-row"><div class="sw-label">Status</div><div class="sw-val vg">Open</div></div>
+      </div>
+
+      <!-- Your Stats -->
+      <div class="sw">
+        <div class="sw-head">Your Stats</div>
+        <div class="sw-row"><div class="sw-label">Total points</div><div class="sw-val vg">0</div></div>
+        <div class="sw-row"><div class="sw-label">Current rank</div><div class="sw-val vg">1st</div></div>
+        <div class="sw-row"><div class="sw-label">Picks submitted</div><div class="sw-val vw">0 / 48</div></div>
+        <div class="sw-row"><div class="sw-label">Special picks</div><div class="sw-val vw">0 / 4</div></div>
+      </div>
+
+      <!-- Scoring -->
+      <div class="sw">
+        <div class="sw-head">Scoring</div>
+        <div class="score-group">
+          <div class="score-group-lbl">Match Picks</div>
+          <div class="sc-row"><div class="sc-label">Exact scoreline</div><div class="sc-pts">3 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Winner + 1 score</div><div class="sc-pts">2 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Correct winner/tie</div><div class="sc-pts">1 pt</div></div>
+          <div class="sc-row"><div class="sc-label">Correct qualifier</div><div class="sc-pts">2 pts</div></div>
+        </div>
+        <div class="score-group">
+          <div class="score-group-lbl">Knockout Bonus</div>
+          <div class="sc-row"><div class="sc-label">Round of 32</div><div class="sc-pts dim">2 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Round of 16</div><div class="sc-pts dim">3 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Quarterfinals</div><div class="sc-pts dim">4 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Semifinals</div><div class="sc-pts dim">5 pts</div></div>
+        </div>
+        <div class="score-group">
+          <div class="score-group-lbl">Special Picks</div>
+          <div class="sc-row"><div class="sc-label">Champion</div><div class="sc-pts">10 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Runner-up</div><div class="sc-pts">7 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Top scorer</div><div class="sc-pts">5 pts</div></div>
+          <div class="sc-row"><div class="sc-label">Best goalkeeper</div><div class="sc-pts">5 pts</div></div>
+        </div>
+      </div>
+
+      <!-- Your Settings — clean card with proper action buttons -->
+      <div class="settings-card">
+        <div class="settings-head">Your Settings</div>
+        <div class="settings-body">
+
+          <!-- Team name row -->
+          <div class="settings-team-row">
+            <div>
+              <div class="settings-team-label">Team name</div>
+              <div class="settings-team-name">The Commissioner</div>
+            </div>
+            <button class="change-btn">Change</button>
+          </div>
+
+          <!-- Action links — each a proper row with icon -->
+          <div class="settings-actions">
+
+            <div class="settings-action-btn payments">
+              <div class="settings-action-icon icon-payments">💰</div>
+              <div class="settings-action-text">
+                <div class="settings-action-title">Manage Payments</div>
+                <div class="settings-action-sub">View buy-ins · $50 pot</div>
+              </div>
+              <div class="settings-action-arrow">→</div>
+            </div>
+
+            <div class="settings-action-btn">
+              <div class="settings-action-icon icon-settings">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8780" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </div>
+              <div class="settings-action-text">
+                <div class="settings-action-title">Pool Settings</div>
+                <div class="settings-action-sub">Rules · visibility · prizes</div>
+              </div>
+              <div class="settings-action-arrow">→</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

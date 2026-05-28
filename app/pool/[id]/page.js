@@ -289,25 +289,30 @@ export default function PoolDashboard() {
         /* WRAP */
         .a-wrap { background:#07090e;border-top:4px solid var(--gold);min-height:calc(100vh - 56px); }
 
-        /* HEADER */
-        .a-header { background:#0f1420;padding:1.25rem 1.5rem 0;display:flex;align-items:flex-start;gap:2rem;max-width:1200px;margin:0 auto; }
+        /* HERO */
+        .a-hero { background:linear-gradient(180deg,#0f1420 0%,#07090e 100%);border-bottom:1px solid rgba(201,168,76,0.15);padding:1.1rem 1.5rem 0;max-width:1200px;margin:0 auto; }
+        .a-hero-top { display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;padding-bottom:1rem; }
+        .a-pool-tag { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.35rem;display:flex;align-items:center;gap:6px; }
+        .a-pool-tag::before { content:'';width:18px;height:2px;background:var(--gold); }
+        .a-pool-name { font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:#fff;line-height:1;margin-bottom:0.4rem; }
+        .a-tags { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+        .tag { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.18rem 0.55rem;border-radius:2px; }
+        .tag-outline { border:1px solid var(--f4);color:var(--f3); }
+        .tag-gold { border:1px solid var(--gold-line);color:var(--gold);background:rgba(201,168,76,0.08); }
+        .tag-green { border:1px solid rgba(44,182,125,0.25);color:var(--green);background:rgba(44,182,125,0.08); }
         
         /* TABS */
-        .a-tabs { display:flex;border-top:1px solid rgba(255,255,255,0.05);margin:0;padding:0 1.5rem;max-width:1200px;margin:0 auto;background:#0f1420;border-bottom:1px solid rgba(201,168,76,0.15); }
+        .a-tabs { display:flex;border-top:1px solid rgba(255,255,255,0.05);margin:0 -1.5rem;padding:0 1.5rem; }
         .a-tab { font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);padding:0.7rem 1rem;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;text-decoration:none;transition:color 0.15s; }
         .a-tab:hover { color:var(--f1); }
         .a-tab.active { color:#fff;border-bottom-color:var(--gold); }
-        .a-pool-tag { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem;display:flex;align-items:center;gap:6px; }
-        .a-pool-tag::before { content:'';width:18px;height:2px;background:var(--gold); }
-        .a-pool-name { font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:#fff;line-height:1;margin-bottom:0.3rem; }
-        .a-pool-sub { font-size:0.75rem;color:var(--f3);display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap; }
-        .a-pill { display:inline-flex;align-items:center;gap:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.18rem 0.55rem;border-radius:2px;margin-left:0.2rem;background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid var(--gold-line); }
-        .a-stats { display:flex;gap:0;border:1px solid rgba(201,168,76,0.2);border-radius:4px;overflow:hidden;align-self:flex-start;flex-shrink:0; }
-        .a-stat { padding:0.75rem 1.25rem;border-right:1px solid rgba(201,168,76,0.15);text-align:center;background:rgba(201,168,76,0.04); }
+        .a-stats { display:flex;gap:0;border:1px solid rgba(201,168,76,0.18);border-radius:4px;overflow:hidden;align-self:flex-start;flex-shrink:0; }
+        .a-stat { padding:0.65rem 1.1rem;border-right:1px solid rgba(201,168,76,0.12);text-align:center;background:rgba(201,168,76,0.03);min-width:72px; }
         .a-stat:last-child { border-right:none; }
-        .a-stat-n { font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:var(--gold);line-height:1; }
+        .a-stat-n { font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1; }
         .a-stat-n.w { color:#fff; }
-        .a-stat-l { font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4);margin-top:3px; }
+        .a-stat-n.g { color:var(--green); }
+        .a-stat-l { font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--f4);margin-top:3px;white-space:nowrap; }
 
         /* BODY GRID */
         .a-body { display:grid;grid-template-columns:1fr 268px;gap:0;max-width:1200px;margin:0 auto; }
@@ -343,14 +348,17 @@ export default function PoolDashboard() {
         .a-sh-link { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);cursor:pointer;text-decoration:none; }
 
         /* LEADERBOARD */
-        .a-lb-row { display:grid;grid-template-columns:28px 20px 1fr auto;align-items:center;gap:0 10px;padding:0.55rem 0.85rem;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.12);border-radius:3px;margin-bottom:4px; }
+        .a-lb { background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.1);border-radius:4px;overflow:hidden;margin-bottom:1.1rem; }
+        .a-lb-row { display:grid;grid-template-columns:32px 20px 1fr auto;align-items:center;gap:0 10px;padding:0.55rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04); }
+        .a-lb-row:last-child { border-bottom:none; }
+        .a-lb-row.you { background:rgba(201,168,76,0.04); }
         .a-lb-rank { font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:900;color:var(--gold2);text-align:center; }
         .a-lb-mv { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;color:var(--f4);text-align:center; }
         .a-lb-name { font-size:0.82rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:5px;flex-wrap:wrap; }
         .a-lb-sub { font-size:0.65rem;color:var(--f4);margin-top:1px; }
         .you-chip { font-family:'Barlow Condensed',sans-serif;font-size:0.52rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);background:rgba(201,168,76,0.12);border:1px solid var(--gold-line);padding:0.08rem 0.3rem;border-radius:2px; }
         .a-lb-pts { font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:#fff; }
-        .online-dot { width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block; }
+        .online-dot { width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block; }
 
         /* INVITE */
         .a-invite { background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:0.55rem 0.85rem;display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem; }
@@ -386,16 +394,28 @@ export default function PoolDashboard() {
 
         /* SETTINGS CARD */
         .settings-card { background:var(--bg2);border:1px solid var(--line);border-radius:4px;overflow:hidden; }
-        .settings-card-head { background:var(--bg3);padding:0.55rem 0.85rem;border-bottom:1px solid var(--line); }
-        .settings-card-title { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--f3); }
+        .settings-card-head { background:var(--bg3);padding:0.55rem 0.85rem;border-bottom:1px solid var(--line);font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--f4); }
         .settings-card-body { padding:0.75rem 0.85rem; }
-        .settings-row { display:flex;align-items:center;justify-content:space-between;padding:0.35rem 0; }
-        .settings-label { font-size:0.7rem;color:var(--f3); }
-        .settings-team-name { font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:900;text-transform:uppercase;letter-spacing:0.03em;color:var(--gold); }
-        .change-btn { font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:transparent;color:var(--f3);border:1px solid var(--f4);padding:0.15rem 0.45rem;border-radius:2px;cursor:pointer; }
+        .settings-team-row { display:flex;align-items:center;justify-content:space-between;padding-bottom:0.65rem;margin-bottom:0.65rem;border-bottom:1px solid var(--line); }
+        .settings-team-label { font-size:0.72rem;color:var(--f3); }
+        .settings-team-name { font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:900;text-transform:uppercase;letter-spacing:0.03em;color:var(--gold); }
+        .change-btn { font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:transparent;color:var(--f3);border:1px solid var(--f4);padding:0.15rem 0.45rem;border-radius:2px;cursor:pointer;flex-shrink:0; }
         .change-btn:hover { border-color:var(--f2);color:var(--f1); }
-        .manage-link { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);cursor:pointer;display:flex;align-items:center;gap:4px;margin-top:0.65rem;padding-top:0.65rem;border-top:1px solid var(--line);text-decoration:none; }
-        .manage-link.payments { color:var(--green);border-top:none;margin-top:0.5rem;padding-top:0;background:rgba(44,182,125,0.1);padding:0.5rem 0.75rem;border-radius:4px;justify-content:center; }
+        .settings-actions { display:flex;flex-direction:column;gap:0; }
+        .settings-action-btn { display:flex;align-items:center;gap:8px;padding:0.55rem 0;border-bottom:1px solid var(--line);cursor:pointer;transition:all 0.15s;text-decoration:none; }
+        .settings-action-btn:last-child { border-bottom:none;padding-bottom:0; }
+        .settings-action-btn:first-child { padding-top:0; }
+        .settings-action-icon { width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.9rem; }
+        .icon-payments { background:rgba(44,182,125,0.1);border:1px solid rgba(44,182,125,0.2); }
+        .icon-settings { background:rgba(138,135,128,0.12);border:1px solid rgba(138,135,128,0.15); }
+        .settings-action-text { flex:1; }
+        .settings-action-title { font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:var(--f1); }
+        .settings-action-sub { font-size:0.62rem;color:var(--f4);margin-top:1px; }
+        .settings-action-arrow { font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:900;color:var(--f4);flex-shrink:0; }
+        .settings-action-btn:hover .settings-action-title { color:var(--gold); }
+        .settings-action-btn:hover .settings-action-arrow { color:var(--gold); }
+        .settings-action-btn.payments:hover .settings-action-title { color:var(--green); }
+        .settings-action-btn.payments:hover .settings-action-arrow { color:var(--green); }
 
         /* MODAL */
         .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:999; }
@@ -433,30 +453,29 @@ export default function PoolDashboard() {
       </nav>
 
       <div className="a-wrap">
-        {/* HEADER */}
-        <div className="a-header">
-          <div style={{flex:1}}>
-            <div className="a-pool-tag">{getTournamentName(pool?.tournament)}</div>
-            <div className="a-pool-name">{pool?.name}</div>
-            <div className="a-pool-sub">
-              <span>{pool?.player_count} player{pool?.player_count !== 1 ? 's' : ''}</span>
-              <span style={{color:'var(--f4)'}}>·</span>
-              <span>{pool?.buy_in ? `$${pool.buy_in}` : 'Free'} pool</span>
-              <span style={{color:'var(--f4)'}}>·</span>
-              <span>{pool?.visibility === 'private' ? 'Private' : 'Public'}</span>
-              <span style={{color:'var(--f4)'}}>·</span>
-              <span style={{color:'var(--green)'}}>● Open</span>
-              <span className="a-pill">Coming {getTournamentStart(pool?.tournament)?.split(',')[0]}</span>
+        {/* HERO */}
+        <div className="a-hero">
+          <div className="a-hero-top">
+            <div>
+              <div className="a-pool-tag">{getTournamentName(pool?.tournament)}</div>
+              <div className="a-pool-name">{pool?.name}</div>
+              <div className="a-tags">
+                <span className="tag tag-green">● Open</span>
+                <span className="tag tag-gold">{pool?.buy_in ? `$${pool.buy_in} pool` : 'Free pool'}</span>
+                <span className="tag tag-outline">{pool?.visibility === 'private' ? 'Private' : 'Public'}</span>
+                <span className="tag tag-outline">{pool?.player_count} player{pool?.player_count !== 1 ? 's' : ''}</span>
+                <span className="tag tag-gold">Coming {getTournamentStart(pool?.tournament)?.split(',')[0]}</span>
+              </div>
             </div>
-          </div>
-          <div className="a-stats">
-            <div className="a-stat"><div className="a-stat-n w">{pool?.user_rank ? `${pool.user_rank}${rankSuffix}` : '-'}</div><div className="a-stat-l">Rank</div></div>
-            <div className="a-stat"><div className="a-stat-n">{pool?.user_points || 0}</div><div className="a-stat-l">Points</div></div>
-            <div className="a-stat"><div className="a-stat-n">{userPicksCount}/{totalMatches}</div><div className="a-stat-l">Picks in</div></div>
-            <div className="a-stat"><div className="a-stat-n">{userSpecialCount}/{totalSpecial}</div><div className="a-stat-l">Special</div></div>
-            {parseFloat(pool?.buy_in) > 0 && (
-              <div className="a-stat"><div className="a-stat-n" style={{color:'var(--green)'}}>${(members.filter(m => m.paid).length * parseFloat(pool?.buy_in || 0)).toFixed(0)}</div><div className="a-stat-l">Prize pot</div></div>
-            )}
+            <div className="a-stats">
+              <div className="a-stat"><div className="a-stat-n w">{pool?.user_rank ? `${pool.user_rank}${rankSuffix}` : '-'}</div><div className="a-stat-l">Rank</div></div>
+              <div className="a-stat"><div className="a-stat-n">{pool?.user_points || 0}</div><div className="a-stat-l">Points</div></div>
+              <div className="a-stat"><div className="a-stat-n">{userPicksCount}/{totalMatches}</div><div className="a-stat-l">Picks in</div></div>
+              <div className="a-stat"><div className="a-stat-n">{userSpecialCount}/{totalSpecial}</div><div className="a-stat-l">Special</div></div>
+              {parseFloat(pool?.buy_in) > 0 && (
+                <div className="a-stat"><div className="a-stat-n g">${(members.filter(m => m.paid).length * parseFloat(pool?.buy_in || 0)).toFixed(0)}</div><div className="a-stat-l">Prize pot</div></div>
+              )}
+            </div>
           </div>
           
           {/* Tabs */}
@@ -530,21 +549,23 @@ export default function PoolDashboard() {
               <div className="a-sh-title">Standings</div>
               <Link href={`/pool/${params.id}/leaderboard`} className="a-sh-link">Full Table →</Link>
             </div>
-            {members.slice(0, 5).map((player, i) => (
-              <div key={i} className="a-lb-row">
-                <div className="a-lb-rank">{player.rank}</div>
-                <div className="a-lb-mv">—</div>
-                <div>
-                  <div className="a-lb-name">
-                    {player.displayName}
-                    {player.isYou && <span className="you-chip">YOU</span>}
-                    {player.isYou && <span className="online-dot"></span>}
+            <div className="a-lb">
+              {members.slice(0, 5).map((player, i) => (
+                <div key={i} className={`a-lb-row ${player.isYou ? 'you' : ''}`}>
+                  <div className="a-lb-rank" style={!player.isYou && player.rank > 1 ? {color:'var(--f3)'} : {}}>{player.rank}</div>
+                  <div className="a-lb-mv">—</div>
+                  <div>
+                    <div className="a-lb-name">
+                      {player.displayName}
+                      {player.isYou && <span className="you-chip">YOU</span>}
+                      {player.isYou && <span className="online-dot"></span>}
+                    </div>
+                    {player.teamName && <div className="a-lb-sub">{player.fullName}</div>}
                   </div>
-                  {player.teamName && <div className="a-lb-sub">{player.fullName}</div>}
+                  <div className="a-lb-pts">{player.points}</div>
                 </div>
-                <div className="a-lb-pts">{player.points}</div>
-              </div>
-            ))}
+              ))}
+            </div>
 
             {/* Invite */}
             <div style={{marginTop:'1.1rem'}}>
@@ -638,28 +659,41 @@ export default function PoolDashboard() {
             {/* Settings */}
             {currentMember && (
               <div className="settings-card">
-                <div className="settings-card-head">
-                  <div className="settings-card-title">Your Settings</div>
-                </div>
+                <div className="settings-card-head">Your Settings</div>
                 <div className="settings-card-body">
-                  <div className="settings-row">
-                    <div className="settings-label">Team name</div>
-                    <div style={{display:'flex',alignItems:'center',gap:'7px'}}>
+                  <div className="settings-team-row">
+                    <div>
+                      <div className="settings-team-label">Team name</div>
                       <div className="settings-team-name">{currentMember.displayName}</div>
-                      <button className="change-btn" onClick={() => setShowTeamNameModal(true)}>Change</button>
                     </div>
+                    <button className="change-btn" onClick={() => setShowTeamNameModal(true)}>Change</button>
                   </div>
                   {pool?.isCommissioner && (
-                    <>
+                    <div className="settings-actions">
                       {parseFloat(pool?.buy_in) > 0 && (
-                        <Link href={`/pool/${params.id}/payments`} className="manage-link payments">
-                          💰 Manage Payments →
+                        <Link href={`/pool/${params.id}/payments`} className="settings-action-btn payments">
+                          <div className="settings-action-icon icon-payments">💰</div>
+                          <div className="settings-action-text">
+                            <div className="settings-action-title">Manage Payments</div>
+                            <div className="settings-action-sub">View buy-ins · ${(members.filter(m => m.paid).length * parseFloat(pool?.buy_in || 0)).toFixed(0)} pot</div>
+                          </div>
+                          <div className="settings-action-arrow">→</div>
                         </Link>
                       )}
-                      <Link href={`/pool/${params.id}/manage`} className="manage-link">
-                        ⚙️ Pool Settings →
+                      <Link href={`/pool/${params.id}/manage`} className="settings-action-btn">
+                        <div className="settings-action-icon icon-settings">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8780" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                          </svg>
+                        </div>
+                        <div className="settings-action-text">
+                          <div className="settings-action-title">Pool Settings</div>
+                          <div className="settings-action-sub">Rules · visibility · prizes</div>
+                        </div>
+                        <div className="settings-action-arrow">→</div>
                       </Link>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
