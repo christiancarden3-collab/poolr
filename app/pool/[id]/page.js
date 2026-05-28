@@ -302,8 +302,8 @@ export default function PoolDashboard() {
         .tag-green { border:1px solid rgba(44,182,125,0.25);color:var(--green);background:rgba(44,182,125,0.08); }
         
         /* TABS */
-        .a-tabs { display:flex;border-top:1px solid rgba(255,255,255,0.05);margin:0 -1.5rem;padding:0 1.5rem; }
-        .a-tab { font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);padding:0.7rem 1rem;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;text-decoration:none;transition:color 0.15s; }
+        .a-tabs { display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.05);margin:0 -1.5rem;padding:0 1.5rem; }
+        .a-tab { font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);padding:0.7rem 1rem;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;text-decoration:none;transition:color 0.15s;display:inline-block; }
         .a-tab:hover { color:var(--f1); }
         .a-tab.active { color:#fff;border-bottom-color:var(--gold); }
         .a-stats { display:flex;gap:0;border:1px solid rgba(201,168,76,0.18);border-radius:4px;overflow:hidden;align-self:flex-start;flex-shrink:0; }
@@ -479,11 +479,11 @@ export default function PoolDashboard() {
           </div>
           
           {/* Tabs */}
-          <div className="a-tabs">
-            <Link href={`/pool/${params.id}/predictions`} className="a-tab">Match Picks</Link>
-            <Link href={`/pool/${params.id}/special-picks`} className="a-tab">Special Picks</Link>
-            <Link href={`/pool/${params.id}`} className="a-tab active">Overview</Link>
-            {pool?.isCommissioner && <Link href={`/pool/${params.id}/manage`} className="a-tab">Settings</Link>}
+          <div className="a-tabs" style={{display:'flex',gap:0,borderTop:'1px solid rgba(255,255,255,0.05)',margin:'0 -1.5rem',padding:'0 1.5rem'}}>
+            <Link href={`/pool/${params.id}/predictions`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Match Picks</Link>
+            <Link href={`/pool/${params.id}/special-picks`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Special Picks</Link>
+            <Link href={`/pool/${params.id}`} className="a-tab active" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'#fff',borderBottom:'2px solid var(--gold)',whiteSpace:'nowrap',textDecoration:'none'}}>Overview</Link>
+            {pool?.isCommissioner && <Link href={`/pool/${params.id}/manage`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Settings</Link>}
           </div>
         </div>
 
