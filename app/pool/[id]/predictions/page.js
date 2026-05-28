@@ -63,6 +63,40 @@ const getTournamentName = (code) => ({
   'rg2026': 'Roland Garros 2026',
 })[code] || 'FIFA World Cup 2026'
 
+// Get current matchday based on date
+const getCurrentMatchday = (tournament) => {
+  const now = new Date()
+  
+  if (tournament === 'rg2026') {
+    // Roland Garros 2026 schedule
+    const rgDays = [
+      { day: 1, date: new Date('2026-05-24') },
+      { day: 2, date: new Date('2026-05-25') },
+      { day: 3, date: new Date('2026-05-27') }, // R3 Day 1
+      { day: 4, date: new Date('2026-05-28') }, // R3 Day 2
+      { day: 5, date: new Date('2026-05-29') }, // R4 Day 1
+      { day: 6, date: new Date('2026-05-30') }, // R4 Day 2
+      { day: 7, date: new Date('2026-06-01') }, // QF
+    ]
+    // Find the current or most recent day
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    for (let i = rgDays.length - 1; i >= 0; i--) {
+      if (today >= rgDays[i].date) return rgDays[i].day
+    }
+    return 1
+  }
+  
+  if (tournament === 'wc2026') {
+    // World Cup 2026 - starts June 11
+    const wcStart = new Date('2026-06-11')
+    if (now < wcStart) return 1
+    const daysSinceStart = Math.floor((now - wcStart) / (1000 * 60 * 60 * 24))
+    return Math.min(Math.max(1, daysSinceStart + 1), 3) // MD 1-3 for group stage
+  }
+  
+  return 1
+}
+
 export default function MatchPicksPage() {
   const params = useParams()
   const router = useRouter()
@@ -96,6 +130,8 @@ export default function MatchPicksPage() {
       if (poolData) {
         setPool(poolData)
         setDeadlineType(poolData.deadline_type || 'tournament_start')
+        // Set to current matchday based on tournament schedule
+        setMatchday(getCurrentMatchday(poolData.tournament))
         
         // Set deadline based on type
         if (poolData.deadline_type === '30m_before_match') {
