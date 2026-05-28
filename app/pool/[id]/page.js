@@ -290,7 +290,13 @@ export default function PoolDashboard() {
         .a-wrap { background:#07090e;border-top:4px solid var(--gold);min-height:calc(100vh - 56px); }
 
         /* HEADER */
-        .a-header { background:#0f1420;padding:1.25rem 1.5rem 1rem;border-bottom:1px solid rgba(201,168,76,0.15);display:flex;align-items:flex-start;gap:2rem;max-width:1200px;margin:0 auto; }
+        .a-header { background:#0f1420;padding:1.25rem 1.5rem 0;display:flex;align-items:flex-start;gap:2rem;max-width:1200px;margin:0 auto; }
+        
+        /* TABS */
+        .a-tabs { display:flex;border-top:1px solid rgba(255,255,255,0.05);margin:0;padding:0 1.5rem;max-width:1200px;margin:0 auto;background:#0f1420;border-bottom:1px solid rgba(201,168,76,0.15); }
+        .a-tab { font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--f3);padding:0.7rem 1rem;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;text-decoration:none;transition:color 0.15s; }
+        .a-tab:hover { color:var(--f1); }
+        .a-tab.active { color:#fff;border-bottom-color:var(--gold); }
         .a-pool-tag { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem;display:flex;align-items:center;gap:6px; }
         .a-pool-tag::before { content:'';width:18px;height:2px;background:var(--gold); }
         .a-pool-name { font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;color:#fff;line-height:1;margin-bottom:0.3rem; }
@@ -451,6 +457,14 @@ export default function PoolDashboard() {
             {parseFloat(pool?.buy_in) > 0 && (
               <div className="a-stat"><div className="a-stat-n" style={{color:'var(--green)'}}>${(members.filter(m => m.paid).length * parseFloat(pool?.buy_in || 0)).toFixed(0)}</div><div className="a-stat-l">Prize pot</div></div>
             )}
+          </div>
+          
+          {/* Tabs */}
+          <div className="a-tabs">
+            <Link href={`/pool/${params.id}/predictions`} className="a-tab">Match Picks</Link>
+            <Link href={`/pool/${params.id}/special-picks`} className="a-tab">Special Picks</Link>
+            <Link href={`/pool/${params.id}`} className="a-tab active">Overview</Link>
+            {pool?.isCommissioner && <Link href={`/pool/${params.id}/manage`} className="a-tab">Settings</Link>}
           </div>
         </div>
 
