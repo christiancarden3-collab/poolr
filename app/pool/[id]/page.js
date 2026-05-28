@@ -41,6 +41,7 @@ export default function PoolDashboard() {
   const [countdown, setCountdown] = useState('--:--:--')
   const [userPicksCount, setUserPicksCount] = useState(0)
   const [userSpecialCount, setUserSpecialCount] = useState(0)
+  const [userQualifiersCount, setUserQualifiersCount] = useState(0)
 
   useEffect(() => {
     async function loadData() {
@@ -117,6 +118,16 @@ export default function PoolDashboard() {
             .select('id')
             .eq('pool_member_id', currentUserMember.id)
           setUserSpecialCount(specialData?.length || 0)
+        }
+        
+        // Fetch user's qualifiers count (for WC only)
+        if (poolData?.tournament === 'wc2026') {
+          const { data: qualifiersData } = await supabase
+            .from('wc_group_picks')
+            .select('id')
+            .eq('pool_id', params.id)
+            .eq('user_id', currentUser.id)
+          setUserQualifiersCount(qualifiersData?.length || 0)
         }
       } catch (err) {
         setError(err.message)
@@ -320,19 +331,23 @@ export default function PoolDashboard() {
         .a-side { padding:1.25rem;background:#07090d; }
 
         /* ACTION CARDS */
-        .a-cards { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.1rem; }
-        .a-card { border:1px solid rgba(201,168,76,0.18);border-radius:4px;padding:0.9rem 1rem;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:0.85rem;background:rgba(201,168,76,0.03);text-decoration:none; }
+        .a-cards { display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.1rem; }
+        .a-card { border:1px solid rgba(201,168,76,0.18);border-radius:4px;padding:0.85rem 0.9rem;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:0.75rem;background:rgba(201,168,76,0.03);text-decoration:none; }
         .a-card:hover { border-color:var(--gold);background:rgba(201,168,76,0.06); }
         .a-card.sil { border-color:rgba(184,204,224,0.18);background:rgba(184,204,224,0.03); }
         .a-card.sil:hover { border-color:#b8cce0;background:rgba(184,204,224,0.06); }
-        .a-card-icon { width:42px;height:42px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2); }
+        .a-card.grn { border-color:rgba(44,182,125,0.2);background:rgba(44,182,125,0.03); }
+        .a-card.grn:hover { border-color:rgba(44,182,125,0.5);background:rgba(44,182,125,0.06); }
+        .a-card.grn .a-card-icon { background:rgba(44,182,125,0.08);border-color:rgba(44,182,125,0.2); }
+        .a-card.grn .a-arrow { color:var(--green); }
+        .a-card-icon { width:38px;height:38px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2); }
         .a-card.sil .a-card-icon { background:rgba(184,204,224,0.08);border-color:rgba(184,204,224,0.2); }
-        .a-card-title { font-family:'Barlow Condensed',sans-serif;font-size:1.25rem;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:4px; }
-        .a-card-sub { font-size:0.78rem;color:var(--f2);line-height:1.4; }
+        .a-card-title { font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:#fff;margin-bottom:2px; }
+        .a-card-sub { font-size:0.66rem;color:var(--f3);line-height:1.4; }
         .a-prog { display:flex;align-items:center;gap:6px;margin-top:5px; }
         .a-prog-bar { flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px; }
         .a-prog-fill { height:100%;border-radius:1px;background:var(--gold); }
-        .a-prog-txt { font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:700;color:var(--f4); }
+        .a-prog-txt { font-family:'Barlow Condensed',sans-serif;font-size:0.56rem;font-weight:700;color:var(--f4);white-space:nowrap; }
         .a-arrow { margin-left:auto;flex-shrink:0;color:var(--gold);font-size:1rem;font-family:'Barlow Condensed',sans-serif;font-weight:900; }
         .a-card.sil .a-arrow { color:#b8cce0; }
 
@@ -439,6 +454,9 @@ export default function PoolDashboard() {
           .a-header { flex-direction:column;gap:1rem; }
           .a-stats { align-self:stretch; }
           .a-stat { flex:1; }
+          .a-cards { grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width:600px) {
           .a-cards { grid-template-columns:1fr; }
         }
         @media (max-width:768px) {
@@ -510,6 +528,7 @@ export default function PoolDashboard() {
               <div className="a-stat"><div className="a-stat-n">{pool?.user_points || 0}</div><div className="a-stat-l">Points</div></div>
               <div className="a-stat"><div className="a-stat-n">{userPicksCount}/{totalMatches}</div><div className="a-stat-l">Picks in</div></div>
               <div className="a-stat"><div className="a-stat-n">{userSpecialCount}/{totalSpecial}</div><div className="a-stat-l">Special</div></div>
+              {!isRG && <div className="a-stat"><div className="a-stat-n" style={{color: userQualifiersCount === 12 ? 'var(--green)' : 'inherit'}}>{userQualifiersCount}/12</div><div className="a-stat-l">Groups</div></div>}
               {parseFloat(pool?.buy_in) > 0 && (
                 <div className="a-stat"><div className="a-stat-n g">${(members.filter(m => m.paid).length * parseFloat(pool?.buy_in || 0)).toFixed(0)}</div><div className="a-stat-l">Prize pot</div></div>
               )}
@@ -520,6 +539,7 @@ export default function PoolDashboard() {
           <div className="a-tabs" style={{display:'flex',gap:0,borderTop:'1px solid rgba(255,255,255,0.05)',margin:'0 -1.5rem',padding:'0 1.5rem'}}>
             <Link href={`/pool/${params.id}/predictions`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Match Picks</Link>
             <Link href={`/pool/${params.id}/special-picks`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Special Picks</Link>
+            {!isRG && <Link href={`/pool/${params.id}/group-picks`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Qualifiers</Link>}
             <Link href={`/pool/${params.id}`} className="a-tab active" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'#fff',borderBottom:'2px solid var(--gold)',whiteSpace:'nowrap',textDecoration:'none'}}>Overview</Link>
             {pool?.isCommissioner && <Link href={`/pool/${params.id}/manage`} className="a-tab" style={{padding:'0.7rem 1rem',fontFamily:"'Barlow Condensed',sans-serif",fontSize:'0.78rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--f3)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',textDecoration:'none'}}>Settings</Link>}
           </div>
@@ -532,7 +552,7 @@ export default function PoolDashboard() {
             <div className="a-cards">
               <Link href={`/pool/${params.id}/predictions`} className="a-card">
                 <div className="a-card-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="3" width="20" height="18" rx="1"/>
                     <line x1="12" y1="3" x2="12" y2="21"/>
                     <circle cx="12" cy="12" r="3"/>
@@ -540,9 +560,9 @@ export default function PoolDashboard() {
                     <path d="M22 8h-4v8h4"/>
                   </svg>
                 </div>
-                <div style={{flex:1}}>
+                <div style={{flex:1,minWidth:0}}>
                   <div className="a-card-title">Match Picks</div>
-                  <div className="a-card-sub">{isRG ? 'Predict match winners' : 'Predict scorelines for each matchday'}</div>
+                  <div className="a-card-sub">{isRG ? 'Predict winners' : 'Predict scorelines'}</div>
                   <div className="a-prog">
                     <div className="a-prog-bar"><div className="a-prog-fill" style={{width:`${Math.round((userPicksCount/totalMatches)*100)}%`}}></div></div>
                     <div className="a-prog-txt">{userPicksCount} / {totalMatches}</div>
@@ -552,7 +572,7 @@ export default function PoolDashboard() {
               </Link>
               <Link href={`/pool/${params.id}/special-picks`} className="a-card sil">
                 <div className="a-card-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8cce0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b8cce0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 3h12l-1.5 8a5 5 0 0 1-9 0L6 3z"/>
                     <path d="M6 5H3a1 1 0 0 0-1 1v2a4 4 0 0 0 4 4"/>
                     <path d="M18 5h3a1 1 0 0 1 1 1v2a4 4 0 0 1-4 4"/>
@@ -561,9 +581,9 @@ export default function PoolDashboard() {
                     <path d="M7 22h10" strokeWidth="2"/>
                   </svg>
                 </div>
-                <div style={{flex:1}}>
+                <div style={{flex:1,minWidth:0}}>
                   <div className="a-card-title">Special Picks</div>
-                  <div className="a-card-sub">{isRG ? 'Champion, runner-up' : 'Champion, top scorer, goalkeeper'}</div>
+                  <div className="a-card-sub">{isRG ? 'Champion, runner-up' : 'Champion, scorer, GK'}</div>
                   <div className="a-prog">
                     <div className="a-prog-bar"><div className="a-prog-fill" style={{width:`${Math.round((userSpecialCount/totalSpecial)*100)}%`,background:'#b8cce0'}}></div></div>
                     <div className="a-prog-txt">{userSpecialCount} / {totalSpecial}</div>
@@ -571,6 +591,26 @@ export default function PoolDashboard() {
                 </div>
                 <div className="a-arrow" style={{color:'#b8cce0'}}>→</div>
               </Link>
+              {!isRG && (
+                <Link href={`/pool/${params.id}/group-picks`} className="a-card grn">
+                  <div className="a-card-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2cb67d" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <path d="M3 9h18"/><path d="M9 21V9"/>
+                      <path d="M7 6h.01"/><path d="M12 6h.01"/><path d="M17 6h.01"/>
+                    </svg>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div className="a-card-title">Qualifiers</div>
+                    <div className="a-card-sub">Pick 2 per group</div>
+                    <div className="a-prog">
+                      <div className="a-prog-bar"><div className="a-prog-fill" style={{width:`${Math.round((userQualifiersCount/12)*100)}%`,background:'#2cb67d'}}></div></div>
+                      <div className="a-prog-txt">{userQualifiersCount} / 12 groups</div>
+                    </div>
+                  </div>
+                  <div className="a-arrow">→</div>
+                </Link>
+              )}
             </div>
 
             {/* Banner */}
@@ -640,8 +680,9 @@ export default function PoolDashboard() {
               <div className="sw-head">Your Stats</div>
               <div className="sw-row"><div className="sw-label">Total points</div><div className="sw-val vg">{pool?.user_points || 0}</div></div>
               <div className="sw-row"><div className="sw-label">Current rank</div><div className="sw-val vg">{pool?.user_rank ? `${pool.user_rank}${rankSuffix}` : '-'}</div></div>
-              <div className="sw-row"><div className="sw-label">Picks submitted</div><div className="sw-val vw">{userPicksCount} / {totalMatches}</div></div>
+              <div className="sw-row"><div className="sw-label">Match picks</div><div className="sw-val vw">{userPicksCount} / {totalMatches}</div></div>
               <div className="sw-row"><div className="sw-label">Special picks</div><div className="sw-val vw">{userSpecialCount} / {totalSpecial}</div></div>
+              {!isRG && <div className="sw-row"><div className="sw-label">Qualifiers</div><div className="sw-val" style={{color: userQualifiersCount < 12 ? 'var(--red)' : 'var(--green)'}}>{userQualifiersCount} / 12</div></div>}
             </div>
 
             {/* Scoring */}
@@ -674,21 +715,21 @@ export default function PoolDashboard() {
                     <div className="score-row"><div className="score-label">Exact scoreline</div><div className="score-pts">3 pts</div></div>
                     <div className="score-row"><div className="score-label">Winner + 1 score</div><div className="score-pts">2 pts</div></div>
                     <div className="score-row"><div className="score-label">Correct winner/tie</div><div className="score-pts">1 pt</div></div>
-                    <div className="score-row"><div className="score-label">Correct qualifier</div><div className="score-pts">2 pts</div></div>
                   </div>
                   <div className="score-group">
                     <div className="score-group-label">Knockout Bonus</div>
-                    <div className="score-row"><div className="score-label">Round of 32</div><div className="score-pts dim">2 pts</div></div>
-                    <div className="score-row"><div className="score-label">Round of 16</div><div className="score-pts dim">3 pts</div></div>
-                    <div className="score-row"><div className="score-label">Quarterfinals</div><div className="score-pts dim">4 pts</div></div>
-                    <div className="score-row"><div className="score-label">Semifinals</div><div className="score-pts dim">5 pts</div></div>
+                    <div className="score-row"><div className="score-label">R32 · R16 · QF · SF · Final</div><div className="score-pts dim">+2→+6</div></div>
                   </div>
                   <div className="score-group">
                     <div className="score-group-label">Special Picks</div>
                     <div className="score-row"><div className="score-label">Champion</div><div className="score-pts">10 pts</div></div>
                     <div className="score-row"><div className="score-label">Runner-up</div><div className="score-pts">7 pts</div></div>
-                    <div className="score-row"><div className="score-label">Top scorer</div><div className="score-pts">5 pts</div></div>
-                    <div className="score-row"><div className="score-label">Best goalkeeper</div><div className="score-pts">5 pts</div></div>
+                    <div className="score-row"><div className="score-label">Top scorer · Best GK</div><div className="score-pts">5 pts</div></div>
+                  </div>
+                  <div className="score-group">
+                    <div className="score-group-label">Qualifiers</div>
+                    <div className="score-row"><div className="score-label">Correct qualifier</div><div className="score-pts" style={{color:'var(--green)'}}>2 pts</div></div>
+                    <div className="score-row"><div className="score-label">Correct 1st place</div><div className="score-pts" style={{color:'var(--green)'}}>+1 pt</div></div>
                   </div>
                 </>
               )}

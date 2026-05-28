@@ -26,21 +26,57 @@ const TEAMS = WC2026_TEAMS.map(t => ({
   n: t.name
 }))
 
-// Transform forwards/scorers for UI
-const SCORER_PLAYERS = WC2026_FORWARDS.map(p => ({
+// Top scorer favorites (betting odds order) - these show first
+const PICHICHI_FAVORITES = [
+  'Kylian Mbappé', 'Harry Kane', 'Lionel Messi', 'Cristiano Ronaldo', 'Erling Haaland',
+  'Vinícius Jr.', 'Victor Osimhen', 'Lautaro Martínez', 'Romelu Lukaku', 'Julián Álvarez',
+  'Darwin Núñez', 'Kai Havertz', 'Bukayo Saka', 'Cole Palmer', 'Jude Bellingham',
+  'Luis Díaz', 'Álvaro Morata', 'Rafael Leão', 'Jonathan David', 'Dušan Vlahović',
+  'Cody Gakpo', 'Memphis Depay', 'Jamal Musiala', 'Florian Wirtz', 'Christian Pulisic',
+  'Santiago Giménez', 'Sadio Mané', 'Nicolas Jackson', 'Randal Kolo Muani', 'Marcus Rashford'
+]
+
+// Golden glove favorites (betting odds order) - these show first
+const GOLDEN_GLOVE_FAVORITES = [
+  'Thibaut Courtois', 'Emiliano Martínez', 'Mike Maignan', 'Alisson Becker', 'Gianluigi Donnarumma',
+  'Manuel Neuer', 'Marc-André ter Stegen', 'Ederson', 'Jordan Pickford', 'Diogo Costa',
+  'Yann Sommer', 'Dominik Livaković', 'André Onana', 'Unai Simón', 'Gregor Kobel',
+  'Yassine Bounou', 'Wojciech Szczęsny', 'David Raya', 'Kasper Schmeichel', 'Andriy Lunin'
+]
+
+// Transform forwards/scorers for UI - favorites first
+const SCORER_PLAYERS_RAW = WC2026_FORWARDS.map(p => ({
   n: p.name,
   t: COUNTRY_TO_FLAG[p.country] || p.country.toLowerCase(),
   tn: WC2026_TEAMS.find(t => t.code === p.country)?.name || p.country,
-  p: p.position
+  p: p.position,
+  fav: PICHICHI_FAVORITES.indexOf(p.name)
 }))
 
-// Transform goalkeepers for UI
-const KEEPER_PLAYERS = WC2026_GOALKEEPERS.map(p => ({
+// Sort: favorites first (by order in list), then rest alphabetically
+const SCORER_PLAYERS = SCORER_PLAYERS_RAW.sort((a, b) => {
+  if (a.fav >= 0 && b.fav >= 0) return a.fav - b.fav // both favorites, sort by rank
+  if (a.fav >= 0) return -1 // a is favorite
+  if (b.fav >= 0) return 1 // b is favorite
+  return a.n.localeCompare(b.n) // alphabetical for rest
+})
+
+// Transform goalkeepers for UI - favorites first
+const KEEPER_PLAYERS_RAW = WC2026_GOALKEEPERS.map(p => ({
   n: p.name,
   t: COUNTRY_TO_FLAG[p.country] || p.country.toLowerCase(),
   tn: WC2026_TEAMS.find(t => t.code === p.country)?.name || p.country,
-  p: 'GK'
+  p: 'GK',
+  fav: GOLDEN_GLOVE_FAVORITES.indexOf(p.name)
 }))
+
+// Sort: favorites first, then rest alphabetically
+const KEEPER_PLAYERS = KEEPER_PLAYERS_RAW.sort((a, b) => {
+  if (a.fav >= 0 && b.fav >= 0) return a.fav - b.fav
+  if (a.fav >= 0) return -1
+  if (b.fav >= 0) return 1
+  return a.n.localeCompare(b.n)
+})
 
 // Combined for lookups
 const ALL_PLAYERS = [...SCORER_PLAYERS, ...KEEPER_PLAYERS]
@@ -1011,18 +1047,26 @@ export default function SpecialPicksPage() {
 
               {(modalType === 'scorer' || modalType === 'gk') && (
                 <div className="plist">
-                  {filteredPlayers.slice(0, 20).map(p => (
-                    <div key={p.n} className="pitem" onClick={() => pickPlayer(p)}>
-                      <img src={fl(p.t, true)} alt={p.t} />
-                      <div>
-                        <div className="pi-n">{p.n}</div>
-                        <div className="pi-t">{p.tn}</div>
+                  {filteredPlayers.slice(0, 40).map((p, idx) => {
+                    const isFavorite = p.fav >= 0 && p.fav < (modalType === 'gk' ? 20 : 30)
+                    return (
+                      <div key={p.n} className="pitem" onClick={() => pickPlayer(p)}>
+                        <img src={fl(p.t, true)} alt={p.t} />
+                        <div style={{ flex: 1 }}>
+                          <div className="pi-n">{p.n}</div>
+                          <div className="pi-t">{p.tn}</div>
+                        </div>
+                        {isFavorite && (
+                          <span className="pi-p" style={{ background: 'rgba(201,168,76,0.15)', color: '#c9a84c', border: '1px solid rgba(201,168,76,0.3)', marginRight: 4 }}>
+                            ⭐
+                          </span>
+                        )}
+                        <span className="pi-p" style={{ background: p.p === 'GK' ? 'rgba(201,168,76,0.12)' : 'rgba(224,59,59,0.12)', color: p.p === 'GK' ? '#c9a84c' : '#e03b3b' }}>
+                          {p.p}
+                        </span>
                       </div>
-                      <span className="pi-p" style={{ background: p.p === 'GK' ? 'rgba(201,168,76,0.12)' : 'rgba(224,59,59,0.12)', color: p.p === 'GK' ? '#c9a84c' : '#e03b3b' }}>
-                        {p.p}
-                      </span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
