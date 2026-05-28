@@ -81,6 +81,8 @@ export default function PoolDashboard() {
             displayName: teamName || fullName,
             points: m.total_points || 0,
             paid: m.payment_status === 'paid',
+            payment_status: m.payment_status,
+            payment_method: m.payment_method,
             isYou: m.user_id === currentUser.id,
             name_changes_count: m.name_changes_count || 0
           }
@@ -217,6 +219,45 @@ export default function PoolDashboard() {
 
   if (loading) return <div className="loading">Loading...</div>
   if (error) return <div className="loading">{error} <Link href="/dashboard">← Back</Link></div>
+  
+  // Block pending members until approved
+  if (currentMember?.payment_status === 'pending') {
+    return (
+      <>
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+          :root { --bg:#0a0c10;--bg2:#111318;--bg3:#181c24;--gold:#c9a84c;--gold2:#e6c76a;--f1:#f0ede8;--f2:#c8c5be;--f3:#8a8780;--f4:#4a4845;--line:rgba(255,255,255,0.07);--gold-line:rgba(201,168,76,0.3); }
+          body { background:var(--bg);margin:0;font-family:'Inter',sans-serif; }
+          .pending-screen { min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center; }
+          .pending-icon { font-size:4rem;margin-bottom:1.5rem; }
+          .pending-title { font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;text-transform:uppercase;color:var(--f1);margin-bottom:0.5rem; }
+          .pending-sub { color:var(--f3);font-size:0.95rem;line-height:1.6;max-width:400px;margin-bottom:2rem; }
+          .pending-pool { font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:var(--gold);margin-bottom:0.5rem; }
+          .pending-box { background:var(--bg2);border:1px solid var(--gold-line);border-radius:8px;padding:1.5rem 2rem;margin-bottom:2rem; }
+          .pending-status { font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:600;color:var(--f2);margin-bottom:0.5rem; }
+          .pending-status span { color:var(--gold);font-weight:800; }
+          .pending-method { font-size:0.8rem;color:var(--f4); }
+          .pending-btn { font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;background:transparent;border:1px solid var(--f4);color:var(--f2);padding:0.75rem 1.5rem;border-radius:4px;text-decoration:none;transition:all 0.15s; }
+          .pending-btn:hover { border-color:var(--gold);color:var(--gold); }
+        `}</style>
+        <div className="pending-screen">
+          <div className="pending-icon">⏳</div>
+          <div className="pending-title">Esperando Aprobación</div>
+          <div className="pending-pool">{pool?.name}</div>
+          <div className="pending-sub">
+            Tu solicitud ha sido enviada. El comisionado verificará tu pago y te aceptará a la liga.
+          </div>
+          <div className="pending-box">
+            <div className="pending-status">Estado: <span>Pendiente</span></div>
+            {currentMember?.payment_method && (
+              <div className="pending-method">Pagaste por: {currentMember.payment_method.charAt(0).toUpperCase() + currentMember.payment_method.slice(1)}</div>
+            )}
+          </div>
+          <Link href="/dashboard" className="pending-btn">← Volver al Dashboard</Link>
+        </div>
+      </>
+    )
+  }
 
   const isRG = pool?.tournament === 'rg2026'
   const rankSuffix = pool?.user_rank === 1 ? 'st' : pool?.user_rank === 2 ? 'nd' : pool?.user_rank === 3 ? 'rd' : 'th'
