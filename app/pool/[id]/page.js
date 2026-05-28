@@ -441,6 +441,44 @@ export default function PoolDashboard() {
           .a-stat { flex:1; }
           .a-cards { grid-template-columns:1fr; }
         }
+        @media (max-width:768px) {
+          .a-wrap { padding:0; }
+          .a-hero { padding:1rem; border-radius:0; }
+          .a-hero-top { flex-direction:column; gap:1rem; }
+          .a-pool-name { font-size:1.8rem; }
+          .a-pool-tag { font-size:0.6rem; }
+          .a-tags { flex-wrap:wrap; gap:0.4rem; }
+          .tag { font-size:0.6rem; padding:0.2rem 0.5rem; }
+          .a-stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; padding:0.75rem 0; margin-top:0.5rem; border-top:1px solid var(--line); }
+          .a-stat { border:1px solid var(--line); border-radius:4px; padding:0.6rem 0.4rem; text-align:center; }
+          .a-stat-n { font-size:1.1rem; }
+          .a-stat-l { font-size:0.55rem; }
+          .a-tabs { padding:0 1rem; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+          .a-tab { font-size:0.7rem; padding:0.6rem 0.75rem; white-space:nowrap; }
+          .a-main { padding:1rem; }
+          .a-card { border-radius:6px; }
+          .a-card-head { padding:0.75rem; }
+          .a-card-title { font-size:0.85rem; }
+          .a-card-body { padding:0.75rem; }
+          .progress-label { font-size:0.65rem; }
+          .progress-val { font-size:0.65rem; }
+          .countdown-row { flex-direction:column; gap:0.5rem; padding:0.75rem; }
+          .countdown-left { font-size:0.65rem; }
+          .countdown-val { font-size:1.1rem; }
+          .lb-row { padding:0.6rem 0.75rem; }
+          .lb-rank { font-size:0.75rem; width:28px; }
+          .lb-name { font-size:0.8rem; }
+          .lb-pts { font-size:0.8rem; }
+        }
+        @media (max-width:480px) {
+          .a-hero { padding:0.75rem; }
+          .a-pool-name { font-size:1.5rem; }
+          .a-stats { grid-template-columns:repeat(2, 1fr); }
+          .a-main { padding:0.75rem; }
+          .nav { padding:0 0.75rem; }
+          .nav-logo { font-size:1.3rem; }
+          .nav-link { font-size:0.65rem; }
+        }
       `}</style>
 
       {/* NAV */}
