@@ -448,6 +448,9 @@ export default function PoolDashboard() {
             <div className="a-stat"><div className="a-stat-n">{pool?.user_points || 0}</div><div className="a-stat-l">Points</div></div>
             <div className="a-stat"><div className="a-stat-n">{userPicksCount}/{totalMatches}</div><div className="a-stat-l">Picks in</div></div>
             <div className="a-stat"><div className="a-stat-n">{userSpecialCount}/{totalSpecial}</div><div className="a-stat-l">Special</div></div>
+            {parseFloat(pool?.buy_in) > 0 && (
+              <div className="a-stat"><div className="a-stat-n" style={{color:'var(--green)'}}>${(members.filter(m => m.paid).length * parseFloat(pool?.buy_in || 0)).toFixed(0)}</div><div className="a-stat-l">Prize pot</div></div>
+            )}
           </div>
         </div>
 
