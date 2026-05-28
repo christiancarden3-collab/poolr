@@ -112,12 +112,12 @@ export default function JoinPoolPage() {
       return
     }
 
+    // Show payment/confirmation modal for both paid and free pools
+    setShowConfirm(true)
     if (isPaidPool) {
-      // Redirect to payment page
-      router.push(`/pool/${pool.id}/pay?join=true`)
+      setShowPaymentStep(true)
     } else {
-      // Show confirmation for free pools
-      setShowConfirm(true)
+      setShowPaymentStep(false)
     }
   }
 
@@ -398,13 +398,29 @@ export default function JoinPoolPage() {
             </>
           ) : (
             <div className="auth-body">
-              <div className="join-success">
-                <div className="js-icon">🏆</div>
-                <div className="js-title">You&apos;re in!</div>
-                <div className="js-sub">You&apos;ve joined <strong style={{ color: 'var(--gold)' }}>{pool?.name}</strong>. Submit your picks before Jun 11 when special picks lock.</div>
-                <Link href={`/pool/${pool?.id}`} className="btn-full">Go to Pool →</Link>
-                <Link href={`/pool/${pool?.id}/predictions`} className="btn-outline-full" style={{ marginTop: '0.6rem' }}>Submit picks now</Link>
-              </div>
+              {isPaidPool && paymentMethod ? (
+                <div className="join-success">
+                  <div className="js-icon">⏳</div>
+                  <div className="js-title">Solicitud Enviada</div>
+                  <div className="js-sub">
+                    Tu solicitud para unirte a <strong style={{ color: 'var(--gold)' }}>{pool?.name}</strong> ha sido enviada.
+                    <br/><br/>
+                    El comisionado verificará tu pago por <strong style={{ color: 'var(--gold)' }}>{paymentMethod?.charAt(0).toUpperCase() + paymentMethod?.slice(1)}</strong> y te aceptará a la liga.
+                  </div>
+                  <div className="pending-box">
+                    <div className="pending-status">Estado: <span>Pendiente de aprobación</span></div>
+                  </div>
+                  <Link href="/dashboard" className="btn-full">Ir al Dashboard →</Link>
+                </div>
+              ) : (
+                <div className="join-success">
+                  <div className="js-icon">🏆</div>
+                  <div className="js-title">You&apos;re in!</div>
+                  <div className="js-sub">You&apos;ve joined <strong style={{ color: 'var(--gold)' }}>{pool?.name}</strong>. Submit your picks before the tournament starts.</div>
+                  <Link href={`/pool/${pool?.id}`} className="btn-full">Go to Pool →</Link>
+                  <Link href={`/pool/${pool?.id}/predictions`} className="btn-outline-full" style={{ marginTop: '0.6rem' }}>Submit picks now</Link>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -482,6 +498,10 @@ export default function JoinPoolPage() {
         .js-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .js-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 0.4rem; }
         .js-sub { font-size: 0.8rem; color: var(--f3); line-height: 1.6; margin-bottom: 1.25rem; }
+
+        .pending-box { background: rgba(201,168,76,0.1); border: 1px solid var(--gold-line); border-radius: 6px; padding: 1rem; margin-bottom: 1.25rem; }
+        .pending-status { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--f2); }
+        .pending-status span { color: var(--gold); font-weight: 800; }
 
         /* Confirmation Modal */
         .confirm-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem; }

@@ -46,6 +46,7 @@ export default function ManagePaymentsPage({ params }) {
         profiles:user_id (name, avatar_url)
       `)
       .eq('pool_id', params.id)
+      .order('payment_status', { ascending: false })
       .order('joined_at', { ascending: true })
 
     setMembers(membersData || [])
@@ -149,16 +150,21 @@ export default function ManagePaymentsPage({ params }) {
               <div key={member.id} className="member-row">
                 <div className="member-info">
                   <div className="member-avatar">
-                    {member.profiles?.name?.[0]?.toUpperCase() || '?'}
+                    {(member.team_name || member.profiles?.name)?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="member-details">
                     <span className="member-name">
-                      {member.profiles?.name || 'Unknown'}
+                      {member.team_name || member.profiles?.name || 'Unknown'}
                       {member.user_id === pool.commissioner_id && (
                         <span className="you-badge">You</span>
                       )}
                     </span>
                     <span className="member-email">
+                      {member.payment_method && (
+                        <span className="payment-method">
+                          Paid via {member.payment_method.charAt(0).toUpperCase() + member.payment_method.slice(1)} · 
+                        </span>
+                      )}
                       Joined {new Date(member.joined_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -361,6 +367,11 @@ export default function ManagePaymentsPage({ params }) {
         .member-email {
           color: var(--muted);
           font-size: 0.8rem;
+        }
+
+        .payment-method {
+          color: var(--gold);
+          font-weight: 600;
         }
 
         .member-actions {
