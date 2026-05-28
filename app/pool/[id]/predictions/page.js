@@ -71,6 +71,7 @@ export default function MatchPicksPage() {
   const [poolMember, setPoolMember] = useState(null)
   const [matches, setMatches] = useState([])
   const [picks, setPicks] = useState({})
+  const [results, setResults] = useState({}) // Match results from DB
   const [matchday, setMatchday] = useState(1)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState({})
@@ -138,18 +139,45 @@ export default function MatchPicksPage() {
         setPicks(picksMap)
       }
       
+      // Load match results (for showing completed matches)
+      const { data: matchResults } = await supabase
+        .from('match_results')
+        .select('*')
+      
+      if (matchResults && matchResults.length > 0) {
+        const resultsMap = {}
+        matchResults.forEach(r => {
+          resultsMap[r.match_id] = {
+            resultHome: r.home_score,
+            resultAway: r.away_score,
+            winner: r.winner
+          }
+        })
+        setResults(resultsMap)
+      }
+      
       setLoading(false)
     }
     loadData()
   }, [params.id, router])
 
-  // Load matches for current matchday
+  // Load matches for current matchday (merge with results)
   useEffect(() => {
     if (!pool) return
     const matchData = pool.tournament === 'rg2026' 
       ? getRGMatches(matchday)
       : getWCMatches(matchday)
-    setMatches(matchData)
+    
+    // Merge results into matches
+    const matchesWithResults = matchData.map(m => {
+      const result = results[m.id]
+      if (result) {
+        return { ...m, resultHome: result.resultHome, resultAway: result.resultAway }
+      }
+      return m
+    })
+    
+    setMatches(matchesWithResults)
 
     // Calculate lock status
     const now = new Date()
@@ -169,7 +197,7 @@ export default function MatchPicksPage() {
     
     setDateLockStatus(newDateLockStatus)
     setMatchLockStatus(newMatchLockStatus)
-  }, [pool, matchday, deadlineType])
+  }, [pool, matchday, deadlineType, results])
 
   // Helper functions
   const getMatchDateTime = (match) => {
