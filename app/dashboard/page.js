@@ -578,9 +578,39 @@ export default function DashboardPage() {
         .btn-primary:hover { background: var(--gold2); }
 
         @media (max-width: 768px) {
-          .wrap { padding: 1rem; }
-          .pool-grid { grid-template-columns: 1fr; }
+          .wrap { padding: 0.75rem; }
+          .pool-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+          .overview-grid { grid-template-columns: repeat(2, 1fr); gap: 1px; }
+          .overview-stat { padding: 0.6rem 0.5rem; }
+          .overview-val { font-size: 1.4rem; }
+          .overview-label { font-size: 0.55rem; }
+          .card { border-radius: 0; margin-left: -0.75rem; margin-right: -0.75rem; width: calc(100% + 1.5rem); }
+          .card-head { padding: 0.6rem 0.75rem; flex-wrap: wrap; gap: 0.5rem; }
+          .card-title { font-size: 0.85rem; }
+          .card-body { padding: 0.75rem; }
+          .pc-card { border-radius: 4px; }
+          .pc-stats { grid-template-columns: repeat(3, 1fr); }
+          .pc-stat { padding: 0.5rem 0.4rem; }
+          .pc-stat-val { font-size: 1rem; }
+          .pc-stat-label { font-size: 0.55rem; }
+          .pc-footer { padding: 0.6rem 0.75rem; }
+          .pc-cta { font-size: 0.65rem; padding: 0.3rem 0.7rem; }
+          .match-row { grid-template-columns: 70px 1fr 60px; padding: 0.6rem 0.75rem; gap: 0.5rem; }
+          .match-time { font-size: 0.65rem; }
+          .match-teams { font-size: 0.75rem; gap: 0.3rem; }
+          .match-group { font-size: 0.55rem; }
+          .section-header { padding: 0.5rem 0.75rem; }
+          .section-title { font-size: 0.7rem; }
+        }
+        @media (max-width: 480px) {
+          .wrap { padding: 0.5rem; }
+          .card { margin-left: -0.5rem; margin-right: -0.5rem; width: calc(100% + 1rem); }
           .overview-grid { grid-template-columns: repeat(2, 1fr); }
+          .overview-stat { padding: 0.5rem 0.35rem; }
+          .overview-val { font-size: 1.2rem; }
+          .pc-name { font-size: 0.95rem; }
+          .pc-meta { font-size: 0.6rem; }
+          .match-row { grid-template-columns: 60px 1fr 50px; padding: 0.5rem 0.6rem; }
         }
       `}</style>
     </AppShell>
