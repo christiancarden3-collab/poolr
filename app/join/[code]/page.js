@@ -262,7 +262,7 @@ export default function JoinPoolPage() {
                       <div className="payment-option" onClick={() => setPaymentMethod('paypal')}>
                         <div className={`po-radio ${paymentMethod === 'paypal' ? 'selected' : ''}`}></div>
                         <div className="po-info">
-                          <div className="po-name">PayPal</div>
+                          <div className="po-name">PayPal <span style={{fontSize:'0.7rem',color:'var(--f3)',fontWeight:400}}>(Friends & Family)</span></div>
                           <div className="po-detail">christiancarden3@gmail.com</div>
                         </div>
                       </div>
