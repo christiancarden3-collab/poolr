@@ -28,11 +28,24 @@ export default function DashboardPage() {
         .eq('user_id', currentUser.id)
 
       if (memberships) {
-        setPools(memberships.map(m => ({
-          ...m.pool,
-          role: m.role,
-          points: m.total_points || 0
-        })))
+        // Get player counts for each pool
+        const poolsWithCounts = await Promise.all(
+          memberships.map(async (m) => {
+            const { count } = await supabase
+              .from('pool_members')
+              .select('*', { count: 'exact', head: true })
+              .eq('pool_id', m.pool.id)
+            
+            return {
+              ...m.pool,
+              role: m.role,
+              points: m.total_points || 0,
+              user_rank: m.rank,
+              player_count: count || 0
+            }
+          })
+        )
+        setPools(poolsWithCounts)
       }
       setLoading(false)
     }
