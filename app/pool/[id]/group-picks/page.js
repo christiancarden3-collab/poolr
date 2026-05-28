@@ -5,20 +5,20 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, getCurrentUser } from '@/lib/supabase'
 
-// Official FIFA WC 2026 Groups
+// Official FIFA WC 2026 Groups - matches wc2026-data.js
 const GROUPS = [
-  {g:'A', teams:[{c:'mx',n:'Mexico',id:'MEX'},{c:'kr',n:'South Korea',id:'KOR'},{c:'za',n:'S. Africa',id:'RSA'},{c:'cz',n:'Czechia',id:'CZE',po:true}]},
-  {g:'B', teams:[{c:'ca',n:'Canada',id:'CAN'},{c:'ch',n:'Switzerland',id:'SUI'},{c:'qa',n:'Qatar',id:'QAT'},{c:'ba',n:'Bosnia',id:'BIH',po:true}]},
-  {g:'C', teams:[{c:'br',n:'Brazil',id:'BRA'},{c:'ma',n:'Morocco',id:'MAR'},{c:'ht',n:'Haiti',id:'HAI'},{c:'gb-sct',n:'Scotland',id:'SCO'}]},
-  {g:'D', teams:[{c:'us',n:'USA',id:'USA'},{c:'py',n:'Paraguay',id:'PAR'},{c:'au',n:'Australia',id:'AUS'},{c:'at',n:'Austria',id:'AUT',po:true}]},
-  {g:'E', teams:[{c:'de',n:'Germany',id:'GER'},{c:'cw',n:'Curaçao',id:'CUW'},{c:'ci',n:'Ivory Coast',id:'CIV'},{c:'ec',n:'Ecuador',id:'ECU'}]},
-  {g:'F', teams:[{c:'nl',n:'Netherlands',id:'NED'},{c:'jp',n:'Japan',id:'JPN'},{c:'tn',n:'Tunisia',id:'TUN'},{c:'pl',n:'Poland',id:'POL',po:true}]},
-  {g:'G', teams:[{c:'be',n:'Belgium',id:'BEL'},{c:'eg',n:'Egypt',id:'EGY'},{c:'ir',n:'Iran',id:'IRN'},{c:'nz',n:'New Zealand',id:'NZL'}]},
-  {g:'H', teams:[{c:'es',n:'Spain',id:'ESP'},{c:'cv',n:'Cabo Verde',id:'CPV'},{c:'sa',n:'Saudi Arabia',id:'KSA'},{c:'uy',n:'Uruguay',id:'URU'}]},
-  {g:'I', teams:[{c:'fr',n:'France',id:'FRA'},{c:'sn',n:'Senegal',id:'SEN'},{c:'no',n:'Norway',id:'NOR'},{c:'iq',n:'Iraq',id:'IRQ',po:true}]},
-  {g:'J', teams:[{c:'ar',n:'Argentina',id:'ARG'},{c:'dz',n:'Algeria',id:'ALG'},{c:'jo',n:'Jordan',id:'JOR'},{c:'cd',n:'DR Congo',id:'COD',po:true}]},
-  {g:'K', teams:[{c:'pt',n:'Portugal',id:'POR'},{c:'co',n:'Colombia',id:'COL'},{c:'ng',n:'Nigeria',id:'NGA'},{c:'ve',n:'Venezuela',id:'VEN'}]},
-  {g:'L', teams:[{c:'gb-eng',n:'England',id:'ENG'},{c:'hr',n:'Croatia',id:'CRO'},{c:'gh',n:'Ghana',id:'GHA'},{c:'pa',n:'Panama',id:'PAN'}]},
+  {g:'A', teams:[{c:'us',n:'USA',id:'USA'},{c:'co',n:'Colombia',id:'COL'},{c:'sn',n:'Senegal',id:'SEN'},{c:'nz',n:'New Zealand',id:'NZL'}]},
+  {g:'B', teams:[{c:'mx',n:'Mexico',id:'MEX'},{c:'gb-eng',n:'England',id:'ENG'},{c:'ir',n:'Iran',id:'IRN'},{c:'ng',n:'Nigeria',id:'NGA'}]},
+  {g:'C', teams:[{c:'ca',n:'Canada',id:'CAN'},{c:'de',n:'Germany',id:'GER'},{c:'jp',n:'Japan',id:'JPN'},{c:'cm',n:'Cameroon',id:'CMR'}]},
+  {g:'D', teams:[{c:'ar',n:'Argentina',id:'ARG'},{c:'nl',n:'Netherlands',id:'NED'},{c:'au',n:'Australia',id:'AUS'},{c:'eg',n:'Egypt',id:'EGY'}]},
+  {g:'E', teams:[{c:'fr',n:'France',id:'FRA'},{c:'uy',n:'Uruguay',id:'URU'},{c:'kr',n:'South Korea',id:'KOR'},{c:'ma',n:'Morocco',id:'MAR'}]},
+  {g:'F', teams:[{c:'br',n:'Brazil',id:'BRA'},{c:'es',n:'Spain',id:'ESP'},{c:'rs',n:'Serbia',id:'SRB'},{c:'cr',n:'Costa Rica',id:'CRC'}]},
+  {g:'G', teams:[{c:'pt',n:'Portugal',id:'POR'},{c:'be',n:'Belgium',id:'BEL'},{c:'cl',n:'Chile',id:'CHI'},{c:'gh',n:'Ghana',id:'GHA'}]},
+  {g:'H', teams:[{c:'it',n:'Italy',id:'ITA'},{c:'ch',n:'Switzerland',id:'SUI'},{c:'ec',n:'Ecuador',id:'ECU'},{c:'tn',n:'Tunisia',id:'TUN'}]},
+  {g:'I', teams:[{c:'hr',n:'Croatia',id:'CRO'},{c:'dk',n:'Denmark',id:'DEN'},{c:'py',n:'Paraguay',id:'PRY'},{c:'sa',n:'Saudi Arabia',id:'SAU'}]},
+  {g:'J', teams:[{c:'at',n:'Austria',id:'AUT'},{c:'ve',n:'Venezuela',id:'VEN'},{c:'ci',n:"Côte d'Ivoire",id:'CIV'},{c:'hn',n:'Honduras',id:'HON'}]},
+  {g:'K', teams:[{c:'ua',n:'Ukraine',id:'UKR'},{c:'se',n:'Sweden',id:'SWE'},{c:'pe',n:'Peru',id:'PER'},{c:'qa',n:'Qatar',id:'QAT'}]},
+  {g:'L', teams:[{c:'tr',n:'Turkey',id:'TUR'},{c:'gb-wls',n:'Wales',id:'WAL'},{c:'dz',n:'Algeria',id:'ALG'},{c:'pa',n:'Panama',id:'PAN'}]},
 ]
 
 const TEAM_BY_ID = {}
