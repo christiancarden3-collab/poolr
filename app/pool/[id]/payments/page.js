@@ -129,18 +129,46 @@ export default function ManagePaymentsPage({ params }) {
 
         <div className="stats-grid">
           <div className="stat-card">
+            <span className="stat-value">${pool.buy_in || 0}</span>
+            <span className="stat-label">Buy-in</span>
+          </div>
+          <div className="stat-card">
             <span className="stat-value">{paidCount}</span>
             <span className="stat-label">Paid</span>
           </div>
-          <div className="stat-card">
-            <span className="stat-value">{pendingCount}</span>
-            <span className="stat-label">Pending</span>
-          </div>
           <div className="stat-card highlight">
             <span className="stat-value">${totalCollected}</span>
-            <span className="stat-label">Collected</span>
+            <span className="stat-label">Prize Pool</span>
           </div>
         </div>
+
+        {/* Pending Approvals Section */}
+        {pendingCount > 0 && (
+          <div className="pending-section">
+            <h2>⏳ Pending Approval ({pendingCount})</h2>
+            <div className="pending-list">
+              {members.filter(m => m.payment_status === 'pending').map(member => (
+                <div key={member.id} className="pending-row">
+                  <div className="pending-info">
+                    <div className="pending-name">{member.team_name || member.profiles?.name || 'Unknown'}</div>
+                    <div className="pending-method">
+                      {member.payment_method ? `Paid via ${member.payment_method.charAt(0).toUpperCase() + member.payment_method.slice(1)}` : 'No payment method'}
+                    </div>
+                  </div>
+                  <div className="pending-actions">
+                    <button 
+                      onClick={() => updatePaymentStatus(member.id, 'paid')}
+                      disabled={updating === member.id}
+                      className="btn-approve"
+                    >
+                      {updating === member.id ? '...' : '✓ Approve'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="members-section">
           <h2>Members ({members.length})</h2>
@@ -287,6 +315,75 @@ export default function ManagePaymentsPage({ params }) {
           text-transform: uppercase;
           letter-spacing: 0.1em;
           color: var(--muted);
+        }
+
+        .pending-section {
+          background: rgba(212, 175, 55, 0.08);
+          border: 2px solid var(--gold);
+          border-radius: 16px;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .pending-section h2 {
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 1.1rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--gold);
+          margin-bottom: 1rem;
+        }
+
+        .pending-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .pending-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: var(--ink2);
+          border-radius: 8px;
+          padding: 1rem 1.25rem;
+        }
+
+        .pending-name {
+          font-weight: 600;
+          color: var(--silk);
+          font-size: 1rem;
+        }
+
+        .pending-method {
+          font-size: 0.8rem;
+          color: var(--gold);
+          margin-top: 2px;
+        }
+
+        .btn-approve {
+          background: var(--success);
+          color: white;
+          border: none;
+          padding: 0.6rem 1.25rem;
+          border-radius: 6px;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+
+        .btn-approve:hover {
+          background: #4aa876;
+        }
+
+        .btn-approve:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .members-section {

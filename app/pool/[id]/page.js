@@ -389,6 +389,7 @@ export default function PoolDashboard() {
         .change-btn { font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:transparent;color:var(--f3);border:1px solid var(--f4);padding:0.15rem 0.45rem;border-radius:2px;cursor:pointer; }
         .change-btn:hover { border-color:var(--f2);color:var(--f1); }
         .manage-link { font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);cursor:pointer;display:flex;align-items:center;gap:4px;margin-top:0.65rem;padding-top:0.65rem;border-top:1px solid var(--line);text-decoration:none; }
+        .manage-link.payments { color:var(--green);border-top:none;margin-top:0.5rem;padding-top:0;background:rgba(44,182,125,0.1);padding:0.5rem 0.75rem;border-radius:4px;justify-content:center; }
 
         /* MODAL */
         .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:999; }
@@ -632,9 +633,16 @@ export default function PoolDashboard() {
                     </div>
                   </div>
                   {pool?.isCommissioner && (
-                    <Link href={`/pool/${params.id}/manage`} className="manage-link">
-                      ⚙️ Manage Pool Settings →
-                    </Link>
+                    <>
+                      {parseFloat(pool?.buy_in) > 0 && (
+                        <Link href={`/pool/${params.id}/payments`} className="manage-link payments">
+                          💰 Manage Payments →
+                        </Link>
+                      )}
+                      <Link href={`/pool/${params.id}/manage`} className="manage-link">
+                        ⚙️ Pool Settings →
+                      </Link>
+                    </>
                   )}
                 </div>
               </div>
