@@ -369,32 +369,32 @@ export default function MatchPicksPage() {
   }
 
   // Calculate points for a completed match
+  // Scoring: Exact score = 3 pts, Correct winner = 1 pt, Max = 4 pts
   const calculateResult = (match, pick) => {
     if (!match.resultHome && match.resultHome !== 0) return null
-    if (!pick || pick.winner == null) return { points: 0, winnerCorrect: false, scoreCorrect: false, oneScoreCorrect: false, description: 'No pick' }
+    if (!pick || pick.winner == null) return { points: 0, winnerCorrect: false, scoreCorrect: false, description: 'No pick' }
     
     const resultWinner = match.resultHome > match.resultAway ? 'home' : (match.resultAway > match.resultHome ? 'away' : 'tie')
     const winnerCorrect = pick.winner === resultWinner
     const homeScoreCorrect = pick.homeScore === match.resultHome
     const awayScoreCorrect = pick.awayScore === match.resultAway
-    const scoreCorrect = homeScoreCorrect && awayScoreCorrect
-    const oneScoreCorrect = homeScoreCorrect || awayScoreCorrect
+    const scoreCorrect = homeScoreCorrect && awayScoreCorrect && winnerCorrect // Exact score only counts if winner is also correct
     
     let points = 0
-    let description = 'No correct picks'
+    let description = 'Wrong'
     
-    if (scoreCorrect && winnerCorrect) {
-      points = 3
+    if (scoreCorrect) {
+      // Exact score (includes correct winner) = 3 + 1 = 4 pts
+      points = 4
       description = 'Exact score + winner'
-    } else if (winnerCorrect && oneScoreCorrect) {
-      points = 2
-      description = 'Winner + 1 score'
     } else if (winnerCorrect) {
+      // Just correct winner = 1 pt
       points = 1
-      description = 'Correct winner only'
+      description = 'Correct winner'
     }
+    // Wrong winner = 0 pts
     
-    return { points, winnerCorrect, scoreCorrect, oneScoreCorrect, homeScoreCorrect, awayScoreCorrect, description }
+    return { points, winnerCorrect, scoreCorrect, homeScoreCorrect, awayScoreCorrect, description }
   }
 
   const formatCountdown = () => {
@@ -737,14 +737,12 @@ export default function MatchPicksPage() {
                                         </div>
                                         <div className="pill-row">
                                           {result?.scoreCorrect ? (
-                                            <span className="pill pill-ok">✓ Exact score</span>
-                                          ) : result?.oneScoreCorrect ? (
-                                            <span className="pill pill-ok">✓ 1 score</span>
+                                            <span className="pill pill-ok">✓ Exact score (+3)</span>
                                           ) : (
                                             <span className="pill pill-bad">✗ Score</span>
                                           )}
                                           {result?.winnerCorrect ? (
-                                            <span className="pill pill-ok">✓ Winner</span>
+                                            <span className="pill pill-ok">✓ Winner (+1)</span>
                                           ) : (
                                             <span className="pill pill-bad">✗ Winner</span>
                                           )}
@@ -887,8 +885,9 @@ export default function MatchPicksPage() {
                 <>
                   <div className="score-group">
                     <div className="score-group-label">Match Picks</div>
-                    <div className="score-row"><div className="score-label">Correct score</div><div className="score-pts">5 pts</div></div>
+                    <div className="score-row"><div className="score-label">Exact score</div><div className="score-pts">3 pts</div></div>
                     <div className="score-row"><div className="score-label">Correct winner</div><div className="score-pts">1 pt</div></div>
+                    <div className="score-row"><div className="score-label">Max per match</div><div className="score-pts">4 pts</div></div>
                   </div>
                   <div className="score-group">
                     <div className="score-group-label">Round Bonus</div>
