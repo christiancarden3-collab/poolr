@@ -220,8 +220,9 @@ export default function PoolDashboard() {
   if (loading) return <div className="loading">Loading...</div>
   if (error) return <div className="loading">{error} <Link href="/dashboard">← Back</Link></div>
   
-  // Block pending members until approved
-  if (currentMember?.payment_status === 'pending') {
+  // Block pending members until approved (but not the commissioner)
+  const isCommissioner = pool?.commissioner_id === user?.id
+  if (currentMember?.payment_status === 'pending' && !isCommissioner) {
     return (
       <>
         <style jsx global>{`

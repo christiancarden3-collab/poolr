@@ -107,12 +107,11 @@ function CreatePoolContent() {
 
       if (poolError) throw poolError
 
-      // Add commissioner as member (pending payment if paid pool)
-      const isPaidPool = poolType === 'paid' && parseFloat(buyinAmount) > 0
+      // Add commissioner as member (always paid - they're the owner)
       await supabase.from('pool_members').insert({
         pool_id: pool.id,
         user_id: user.id,
-        payment_status: isPaidPool ? 'pending' : 'paid'
+        payment_status: 'paid'
       })
 
       setCreatedPoolId(pool.id)
