@@ -36,12 +36,17 @@ export default function DashboardPage() {
               .select('*', { count: 'exact', head: true })
               .eq('pool_id', m.pool.id)
             
+            // Calculate pot amount from buy_in * paid players
+            const buyIn = parseFloat(m.pool.buy_in) || 0
+            const potAmount = buyIn * (count || 0)
+            
             return {
               ...m.pool,
               role: m.role,
               points: m.total_points || 0,
               user_rank: m.rank,
-              player_count: count || 0
+              player_count: count || 0,
+              pot_amount: potAmount
             }
           })
         )
