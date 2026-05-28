@@ -416,7 +416,7 @@ function CreatePoolContent() {
                 </div>
               </div>
             </div>
-            <PaymentSidebar poolType={poolType} buyinAmount={buyinAmount} />
+            <PaymentSidebar poolType={poolType} buyinAmount={buyinAmount} feeType={feeType} />
           </>
         )}
 
@@ -555,7 +555,7 @@ function Sidebar({ poolName, privacy, buyinAmount, poolType, inviteCode, tournam
   )
 }
 
-function PaymentSidebar({ poolType, buyinAmount }) {
+function PaymentSidebar({ poolType, buyinAmount, feeType }) {
   const buyin = parseFloat(buyinAmount) || 0
   const fee = buyin * 0.05
   const total = feeType === 'on_top' ? buyin + fee : buyin
