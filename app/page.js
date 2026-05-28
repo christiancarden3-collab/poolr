@@ -211,23 +211,31 @@ export default function LandingPage() {
             </div>
 
             <div className="scoring-wrap">
-              <div className="scoring-section-label">Match picks</div>
+              <div className="scoring-section-label">Match picks (base)</div>
               <table className="scoring-table">
                 <thead><tr><th>Result</th><th className="right">Pts</th></tr></thead>
                 <tbody>
-                  <tr><td>Exact scoreline</td><td className="pts">3</td></tr>
-                  <tr><td>Correct winner + one score right</td><td className="pts">2</td></tr>
-                  <tr><td>Correct winner or draw only</td><td className="pts">1</td></tr>
+                  <tr><td>Exact scoreline</td><td className="pts">4</td></tr>
+                  <tr><td>Correct winner only</td><td className="pts">2</td></tr>
                 </tbody>
               </table>
-              <div className="scoring-section-label">Knockout advancement</div>
+              <div className="scoring-section-label">Knockout multipliers</div>
               <table className="scoring-table">
                 <tbody>
-                  <tr><td>Round of 32</td><td className="pts">2</td></tr>
-                  <tr><td>Round of 16</td><td className="pts">2</td></tr>
-                  <tr><td>Quarter-final</td><td className="pts">3</td></tr>
-                  <tr><td>Semi-final</td><td className="pts">4</td></tr>
-                  <tr><td>Final</td><td className="pts">5</td></tr>
+                  <tr><td>Group stage</td><td className="pts">1×</td></tr>
+                  <tr><td>Round of 32</td><td className="pts">1.5×</td></tr>
+                  <tr><td>Round of 16</td><td className="pts">1.5×</td></tr>
+                  <tr><td>Quarter-final</td><td className="pts">2×</td></tr>
+                  <tr><td>Semi-final</td><td className="pts">2.5×</td></tr>
+                  <tr><td>Final</td><td className="pts">3×</td></tr>
+                </tbody>
+              </table>
+              <div className="scoring-section-label">Group qualifiers</div>
+              <table className="scoring-table">
+                <tbody>
+                  <tr><td>Correct 1st place</td><td className="pts">5</td></tr>
+                  <tr><td>Correct 2nd place</td><td className="pts">3</td></tr>
+                  <tr><td>Both correct bonus</td><td className="pts">+2</td></tr>
                 </tbody>
               </table>
               <div className="scoring-section-label">Special picks</div>
@@ -235,7 +243,7 @@ export default function LandingPage() {
                 <tbody>
                   <tr><td>Champion</td><td className="pts">10</td></tr>
                   <tr><td>Runner-up</td><td className="pts">10</td></tr>
-                  <tr><td>Top scorer</td><td className="pts">5</td></tr>
+                  <tr><td>Top scorer (Pichichi)</td><td className="pts">5</td></tr>
                   <tr><td>Best goalkeeper</td><td className="pts">5</td></tr>
                 </tbody>
               </table>
