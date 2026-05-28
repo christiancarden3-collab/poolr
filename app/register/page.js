@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [language, setLanguage] = useState('English')
   const [terms, setTerms] = useState(false)
   const [showMagic, setShowMagic] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -89,7 +90,12 @@ export default function RegisterPage() {
         }
       }
       
-      router.push('/dashboard')
+      // Check if email confirmation is required (no session = needs confirmation)
+      if (!authData.session) {
+        setShowConfirmation(true)
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err) {
       console.error('Registration error:', err)
       setError(err.message)
@@ -144,7 +150,38 @@ export default function RegisterPage() {
           </div>
 
           <div className="auth-body">
-            {!showMagic ? (
+            {showConfirmation ? (
+              <div className="magic-sent">
+                <div className="magic-icon">✉</div>
+                <div className="magic-title">Check your email</div>
+                <div className="magic-sub">
+                  We sent a confirmation link to <span className="magic-email">{email}</span>. Click it to activate your account, then sign in.
+                </div>
+                <Link 
+                  href="/login"
+                  style={{
+                    width: '100%',
+                    display: 'block',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                    background: '#c9a84c',
+                    color: '#000',
+                    padding: '0.9rem 1rem',
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    marginTop: '1.5rem',
+                    textDecoration: 'none'
+                  }}
+                >
+                  Go to Sign In →
+                </Link>
+              </div>
+            ) : !showMagic ? (
               <form onSubmit={handleRegister}>
                 <div className="name-row">
                   <div className="field">
