@@ -57,11 +57,13 @@ export default function ResultsPage() {
   const rgRounds = [
     { day: 1, label: 'Day 1 (May 24)', count: RG_SCHEDULE[1]?.length || 0 },
     { day: 2, label: 'Day 2 (May 25)', count: RG_SCHEDULE[2]?.length || 0 },
-    { day: 3, label: 'R3', count: 0 },
-    { day: 4, label: 'R16', count: 0 },
-    { day: 5, label: 'QF', count: 0 },
-    { day: 6, label: 'SF', count: 0 },
-    { day: 7, label: 'Final', count: 0 },
+    { day: 3, label: 'R3 Day 1', count: RG_SCHEDULE[3]?.length || 0 },
+    { day: 4, label: 'R3 Day 2', count: RG_SCHEDULE[4]?.length || 0 },
+    { day: 5, label: 'R16 Day 1', count: RG_SCHEDULE[5]?.length || 0 },
+    { day: 6, label: 'R16 Day 2', count: RG_SCHEDULE[6]?.length || 0 },
+    { day: 7, label: 'QF', count: RG_SCHEDULE[7]?.length || 0 },
+    { day: 8, label: 'SF', count: RG_SCHEDULE[8]?.length || 0 },
+    { day: 9, label: 'Final', count: RG_SCHEDULE[9]?.length || 0 },
   ]
 
   return (
