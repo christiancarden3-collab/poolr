@@ -25,6 +25,18 @@
   },
   {
     "id": "rg6-3",
+    "sofascore_id": 16198526,
+    "p1": "F. Auger-Aliassime",
+    "c1": "Canada",
+    "p2": "B. Nakashima",
+    "c2": "USA",
+    "time": "05:00",
+    "date": "May 30",
+    "status": "notstarted",
+    "round": "Round of 32"
+  },
+  {
+    "id": "rg6-4",
     "sofascore_id": 16198522,
     "p1": "F. Cobolli",
     "c1": "Italy",
@@ -36,7 +48,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-4",
+    "id": "rg6-5",
     "sofascore_id": 16198523,
     "p1": "F. Cerundolo",
     "c1": "Argentina",
@@ -48,7 +60,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-5",
+    "id": "rg6-6",
     "sofascore_id": 16198503,
     "p1": "J. Faria",
     "c1": "Portugal",
@@ -60,7 +72,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-6",
+    "id": "rg6-7",
     "sofascore_id": 16198498,
     "p1": "J. Manuel Cerundolo",
     "c1": "Argentina",
@@ -72,7 +84,31 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-7",
+    "id": "rg6-8",
+    "sofascore_id": 16198525,
+    "p1": "M. Arnaldi",
+    "c1": "Italy",
+    "p2": "R. Collignon",
+    "c2": "Belgium",
+    "time": "05:00",
+    "date": "May 30",
+    "status": "notstarted",
+    "round": "Round of 32"
+  },
+  {
+    "id": "rg6-9",
+    "sofascore_id": 16198508,
+    "p1": "M. Berrettini",
+    "c1": "Italy",
+    "p2": "F. Comesaña",
+    "c2": "Argentina",
+    "time": "05:00",
+    "date": "May 30",
+    "status": "notstarted",
+    "round": "Round of 32"
+  },
+  {
+    "id": "rg6-10",
     "sofascore_id": 16198524,
     "p1": "M. Kouame",
     "c1": "France",
@@ -84,7 +120,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-8",
+    "id": "rg6-11",
     "sofascore_id": 16198471,
     "p1": "J. Sinner",
     "c1": "Italy",
@@ -96,7 +132,7 @@
     "round": "Round of 64"
   },
   {
-    "id": "rg6-9",
+    "id": "rg6-12",
     "sofascore_id": 16198528,
     "p1": "A. Michelsen",
     "c1": "USA",
@@ -108,7 +144,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-10",
+    "id": "rg6-13",
     "sofascore_id": 16198501,
     "p1": "H. Hurkacz",
     "c1": "Poland",
@@ -120,7 +156,7 @@
     "round": "Round of 64"
   },
   {
-    "id": "rg6-11",
+    "id": "rg6-14",
     "sofascore_id": 16198492,
     "p1": "F. Cerundolo",
     "c1": "Argentina",
@@ -132,7 +168,7 @@
     "round": "Round of 64"
   },
   {
-    "id": "rg6-12",
+    "id": "rg6-15",
     "sofascore_id": 16198527,
     "p1": "A. de Minaur",
     "c1": "Australia",
@@ -144,7 +180,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-13",
+    "id": "rg6-16",
     "sofascore_id": 16198529,
     "p1": "K. Khachanov",
     "c1": "Russia",
@@ -156,7 +192,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-14",
+    "id": "rg6-17",
     "sofascore_id": 16198472,
     "p1": "M. Landaluce",
     "c1": "Spain",
@@ -168,7 +204,7 @@
     "round": "Round of 64"
   },
   {
-    "id": "rg6-15",
+    "id": "rg6-18",
     "sofascore_id": 16198494,
     "p1": "A. Tabilo",
     "c1": "Chile",
@@ -180,7 +216,7 @@
     "round": "Round of 64"
   },
   {
-    "id": "rg6-16",
+    "id": "rg6-19",
     "sofascore_id": 16198530,
     "p1": "C. Ruud",
     "c1": "Norway",
@@ -192,7 +228,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-17",
+    "id": "rg6-20",
     "sofascore_id": 16198518,
     "p1": "J. Fonseca",
     "c1": "Brazil",
@@ -204,7 +240,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-18",
+    "id": "rg6-21",
     "sofascore_id": 16198490,
     "p1": "F. Auger-Aliassime",
     "c1": "Canada",
@@ -216,7 +252,7 @@
     "round": "Round of 64"
   },
   {
-    "id": "rg6-19",
+    "id": "rg6-22",
     "sofascore_id": 16198502,
     "p1": "F. Comesaña",
     "c1": "Argentina",
@@ -224,11 +260,11 @@
     "c2": "Italy",
     "time": "11:15",
     "date": "May 28",
-    "status": "inprogress",
+    "status": "finished",
     "round": "Round of 64"
   },
   {
-    "id": "rg6-20",
+    "id": "rg6-23",
     "sofascore_id": 16198488,
     "p1": "L. Van Assche",
     "c1": "France",
@@ -236,11 +272,11 @@
     "c2": "USA",
     "time": "12:20",
     "date": "May 28",
-    "status": "inprogress",
+    "status": "finished",
     "round": "Round of 64"
   },
   {
-    "id": "rg6-21",
+    "id": "rg6-24",
     "sofascore_id": 16198500,
     "p1": "M. Arnaldi",
     "c1": "Italy",
@@ -248,11 +284,11 @@
     "c2": "Greece",
     "time": "13:50",
     "date": "May 28",
-    "status": "inprogress",
+    "status": "finished",
     "round": "Round of 64"
   },
   {
-    "id": "rg6-22",
+    "id": "rg6-25",
     "sofascore_id": 16198489,
     "p1": "R. Collignon",
     "c1": "Belgium",
@@ -260,11 +296,11 @@
     "c2": "USA",
     "time": "13:50",
     "date": "May 28",
-    "status": "inprogress",
+    "status": "finished",
     "round": "Round of 64"
   },
   {
-    "id": "rg6-23",
+    "id": "rg6-26",
     "sofascore_id": 16198516,
     "p1": "Q. Halys",
     "c1": "France",
@@ -276,7 +312,7 @@
     "round": "Round of 32"
   },
   {
-    "id": "rg6-24",
+    "id": "rg6-27",
     "sofascore_id": 16198470,
     "p1": "A. Rinderknech",
     "c1": "France",
@@ -284,7 +320,7 @@
     "c2": "Italy",
     "time": "14:30",
     "date": "May 28",
-    "status": "inprogress",
+    "status": "finished",
     "round": "Round of 64"
   }
 ]
